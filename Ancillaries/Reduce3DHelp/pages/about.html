@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+        <title>About Reduce3D</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="../sty/main.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+    <body>
+    <h1>About Reduce 3D</h1>
+    <p><strong>In Brief: </strong>This program takes a text file containing data for a set of crystals (idealized as spheres), and performs a series of statistical measures on the dataset, saving the results to one or more text files.</p>
+    <p><strong>Details: </strong>(note that every option in the Setting Window has a help tag (tool tip), and that each item is also described in the <a href="op_notes.html">Operator Notes</a>)</p>
+    <ul>
+      <li><strong>Interface-controlled envelopes</strong>. A primary concern when examining spatial statistics for crystallization purposes is to know whether the statistics we measure are significant. In order to help answer this question, Reduce3D can run a set of null-hypothesis simulations, in which the set of measured crystals are placed randomly in the measured volume. However, a crystal cannot nucleate inside another, so to decided how close two crystals can be, we use the criterion of interface-controlled growth, in which radial growth rate is constant. There is the option of creating &quot;diffusion-controlled&quot; simulations instead as defined by Daniel and Spear (1999), but these are not truly diffusionally controlled.</li>
+      <li><strong>Bounds / Bounding Box.</strong> In order to measure many of the statistics, the limits of the dataset must be known. These limits can be provided in the input file as a set of bounds that define a recangular prism or as a center, radius, and height that define a cylinder with its axis in the z direction. If no limts are provided, then a convex hull will be created around the volume defined by the crystal centers. Optionally, a &quot;primitive&quot; (rectangular prism or cylinder) can be fit to this hull, which will dramatically increase execution speed, but at the expense of discarding (possibly numerous) crystals from consideration.</li>
+      <li><strong>Shaving.</strong> The data set can be  gradually shrunk in one or more dimensions, and the statistics measured on the shrinking data set in order to test for resilience of the data signal with fewer and fewer crystals, or each shaved file can be saved as a new separate data set for late statistical processing. Shaving requires an <a href="io.html">input file with explicitly stated bounds</a>.</li>
+      <li><strong>Holes. </strong>A set of &quot;holes&quot; can optionally be included as well (to represent a second phase within which the phase of interest could not grow). These holes essentially are treated the same way as the external boundaries of the data set.</li>
+      <li><strong>Drag-and-drop.</strong> The program can be run by double-clicking one or more .Int files or dragging correctly formatted text files (with a .txt extension) onto the application icon.</li>
+    </ul>
+    <p><a href="../Reduce3DHelp.html" class="Back_link">Back to top</a></p>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+        <title>Code Architecture</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="../sty/main.css" rel="stylesheet" type="text/css" media="all" />
+</head>
+
+    <body>
+    <h1>Code Architecture</h1>
+    <p>There is a fair amount of documentation in the code itself, and  users interested in the detailed workings of the code should examine it themselves. This document provides an overview. I have tried to separate the code involved in the calculation from that involved with user interaction. Part of this was by design prior to the 3.0 overhaul, but most was incorporated in the version 3.0 overhaul and was necessitated by the desire to retain as much as possible of the pre-3.0 C++ code intact.</p>
+    <h2>Overview of program operation (from a code perspective)</h2>
+    <p>When run, the OS automatically displays the Settings window, pre-populated with the default values (either the hard-coded ones, or those from the previous run of the program). Every change in a setting is immediately saved to the preferences. When the Begin analysis is clicked, control is handed to a spawned thread in which the calculation runs. This enables the application to have user interaction (updating progress, clicking the cancel button) during the calculation. The inter-thread communication is handled using the high-level Distributed Objects method. This allows data to be sent either synchronously or asynchronously between threads, and allows synchronous or asynchronous method calls between objects.</p>
+    <p>When the cancel button is clicked, a notification is posted, and the AppController will receive a notification of the fact. It then merely sets a flag. This flag is checked after many portions of the calculation (but not every time the progress indicator is incremented). If the flag is set, then an exception is thrown, objects are cleaned up, and the settings window is posted again.</p>
+    <h2>C++, Objective-C, and Objective-C++</h2>
+    <p>Way back in the early 1990, Reduce3D was written in Pascal. It was overhauled and substantially expanded as part of Dave Hirsch's dissertation and during that process was ported to C (briefly), then C++ for version 2.5.8. As part of the 3.0 overhaul, due to the obsolescence of the CodeWarrior IDE and PowerPlant UI classes, all the PowerPlant UI was replaced with XCode/InterfaceBuilder UI, and the utility classes of PowerPlant (LArray, LString, etc.) that were heavily used in the code were replaced with classes from the C++ standard library (e.g., vector, string). This makes the computational part of the code largely independent of the UI, and fully portable to other operating systems.</p>
+    <p>For the Mac OS X user interface code, it is much easier to write in Objective-C. All the top-level code (AppController) is Obj-C, and the classes designed to manage to user interface are objective-C as well (AppController, progressController). There is another Obj-C class that serves to setup the Distributed Objects thread system and starts the calculation when the button is clicked (Mediator). A number of classes need to make Obj-C calls (e.g., to interact with those Obj-C classes for updating progress bars, checking whether the cancel button was clicked, getting settings from the settings window, using OS calls to read and write files) but which must be C++ for interfacing with the rest of the program. These use a language construct called <a href="http://developer.apple.com/documentation/Cocoa/Conceptual/ObjectiveC/Articles/chapter_12_section_1.html#//apple_ref/doc/uid/TP30001163-CH10-SW1">Objective-C++</a> and have the &quot;.mm&quot; extension. Objective-C++ classes can mix the two languages, almost at will. An Obj-C The primary instance of this is the Calculator class, which does the bulk of the work in the program. Most of these classes have pure C++ header files that can be included in other C++ definition files. In some cases, a C++ class needs to hold a pointer to an Obj-C object, but have the header be include-able by pure C++ definition files. In such cases, these are stored as void * and are cast to (for example) AppController * before use.</p>
+    <h2>Computation Overview</h2>
+    <p>Here is pseudo-code for a standard execution involving a set of input files, each with null hypothesis interface-controlled envelopes:</p>
+    <ul>
+      <li>For each input file:
+        <ul>
+          <li>Make a Bounding Box and read crystal data from the input file into its Crystal Array</li>
+          <li>Set up the bounding box
+            <ul>
+              <li>If bounds were given in the input file, then:
+                <ul>
+                  <li>create an appropriate geometric primitive from those bounds and </li>
+                  <li>check to see if any crystals fall outside the primitive</li>
+                </ul>
+              </li>
+              <li>Otherwise:
+                <ul>
+                  <li>find the convex hull around the dataset, </li>
+                  <li>and if a primitive was selected by the user:
+                    <ul>
+                      <li>find the largest such primitive that fits inside the convex hull</li>
+                      <li>discard any crystals that fall outside the bounds of the primitive</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>Calculate the desired statistics for the dataset itself</li>
+          <li>For each of the <em>n</em> null-hypothesis envelope simulations:
+            <ul>
+              <li>Make an envelope simulation by:
+                <ul>
+                  <li>placing each of the crystals of the dataset randomly within the bounding box, starting with the largest and going down in size</li>
+                  <li>checking to see if it overlaps too much with any existing crystal, based on:
+                    <ul>
+                      <li>the interface-controlled growth criterion, or</li>
+                      <li>either observability criterion</li>
+                    </ul>
+                  </li>
+                  <li>if it overlaps too much try again to place it randomly and check again. Repeat this a large number of times (currently 10000).</li>
+                  <li>If it still fails, start over with that simulation. Only a small number of such restarts are allowed (currently 6).</li>
+                </ul>
+              </li>
+              <li>Once a valid envelope simulation is completed, measure the statistics on this dataset</li>
+              <li>Store the results of the statistics in an array</li>
+            </ul>
+          </li>
+          <li>Once the envelope calculations are complete, analyze the statistics array to determine either the mean and standard deviation of the statistical measures, or the top and bottom of the confidence interval.</li>
+          <li>Save results in output files.</li>
+        </ul>
+      </li>
+    </ul>
+    <p><a href="../Reduce3DHelp.html" class="Back_link">Back to top</a></p>
+</body>
+</html>

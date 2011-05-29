@@ -1,1 +1,144 @@
-// =================================================================================//	NumPtArray.cp 						// =================================================================================#include "NumPtArray.h"// ---------------------------------------------------------------------------//		¥ NumPtArray// ---------------------------------------------------------------------------//	Constructor for an empty NumPtArrayNumPtArray::NumPtArray(	LComparator	*inComparator,	Boolean		inKeepSorted)		: LArray(sizeof(NumberedPt), inComparator, inKeepSorted){	theNumberedPtComp = new NumberedPtComp;	SetComparator(theNumberedPtComp, false);	SetKeepSorted(false);}// ---------------------------------------------------------------------------//		¥ NumPtArray// ---------------------------------------------------------------------------//	Constructor for an empty NumPtArrayNumPtArray::NumPtArray(CrystalArray *inXls)		: LArray(sizeof(NumberedPt), (LComparator *) nil, false){	theNumberedPtComp = new NumberedPtComp;	SetComparator(theNumberedPtComp, false);	SetKeepSorted(false);	Crystal thisXl;	NumberedPt	thisPt;		for (short i=1;i <= inXls->GetCount(); i ++) {		inXls->FetchItemAt(i, &thisXl);		thisPt.x = thisXl.ctr.x;		thisPt.y = thisXl.ctr.y;		thisPt.z = thisXl.ctr.z;		thisPt.seq = i;		PushPt(thisPt);	}}// ---------------------------------------------------------------------------//		¥ ~NumPtArray// ---------------------------------------------------------------------------//	Destructor for NumPtArrayNumPtArray::~NumPtArray(){	Clear();	if (theNumberedPtComp != nil) {		delete theNumberedPtComp;		theNumberedPtComp = nil;	}}// ---------------------------------------------------------------------------------//		¥ PointInArray// ---------------------------------------------------------------------------------BooleanNumPtArray::PointInArray(NumberedPt &inPt){	if (FetchIndexOf(&inPt) == index_Bad)		return false;	return true;}// ---------------------------------------------------------------------------------//		¥ PopPt// ---------------------------------------------------------------------------------NumberedPtNumPtArray::PopPt(){	static Boolean XlFound;	static NumberedPt outXl;		XlFound = FetchItemAt(GetCount(), &outXl);	if (XlFound)		RemoveItemsAt(1, GetCount());	else		throw ArrayIOErr();	return outXl;}// ---------------------------------------------------------------------------------//		¥ PushPt// ---------------------------------------------------------------------------------voidNumPtArray::PushPt(NumberedPt &inXl){	InsertItemsAt(1, index_Last, &inXl);}// ---------------------------------------------------------------------------------//		¥ Clear// ---------------------------------------------------------------------------------voidNumPtArray::Clear(){	RemoveItemsAt(index_Last, 1);}// ---------------------------------------------------------------------------//		¥ operator[]// ---------------------------------------------------------------------------NumberedPt &NumPtArray::operator[](short inSub){	static NumberedPt outPt;	FetchItemAt(inSub, &outPt);	return outPt;}// ===========================================================================//	¥ NumberedPtComp// ===========================================================================//	Compares sequence of NumberedPtsNumberedPtComp::NumberedPtComp(){}NumberedPtComp::~NumberedPtComp(){}SInt32NumberedPtComp::Compare(	const void*		inItemOne,	const void*		inItemTwo,	UInt32			/* inSizeOne */,	UInt32			/* inSizeTwo */) const{	NumberedPt pt1 = *((NumberedPt*)inItemOne);	NumberedPt pt2 = *((NumberedPt*)inItemTwo);	if (pt1.seq < pt2.seq)		return -1;	else if (pt1.seq > pt2.seq)		return 1;	else return 0;}BooleanNumberedPtComp::IsEqualTo(	const void*		inItemOne,	const void*		inItemTwo,	UInt32			/* inSizeOne */,	UInt32			/* inSizeTwo */) const{	return (Compare(inItemOne, inItemTwo, sizeof(inItemOne), sizeof(inItemTwo)) == 0);}
+// =================================================================================
+//	NumPtArray.cp 						
+//		A 1-based array of NumberedPt's using the C++ STL for storage.  Used for legacy
+//		(CW PowerPlant) compatibility
+// =================================================================================
+
+#import "NumPtArray.h"
+#import "NumberedPt.h"
+#import <algorithm>
+#import "CrystalArray.h"
+
+// ---------------------------------------------------------------------------
+//		¥ NumPtArray
+// ---------------------------------------------------------------------------
+//	Constructor for an empty NumPtArray
+
+NumPtArray::NumPtArray()
+{
+	// reserve space for the array
+	array.reserve(1000);
+}
+
+// ---------------------------------------------------------------------------
+//		¥ NumPtArray
+// ---------------------------------------------------------------------------
+//	Copy Constructor (CrystalArray) for an empty NumPtArray
+
+NumPtArray::NumPtArray(CrystalArray *inXls)
+{
+	Crystal * thisXl;
+	NumberedPt	thisPt;
+	
+	int numXls = inXls->GetNumXls();
+	array.reserve(numXls);
+	
+	for (short i=0;i <= numXls-1; i ++) {
+		thisXl = inXls->GetItemPtr(i);
+		thisPt.x = thisXl->ctr.x;
+		thisPt.y = thisXl->ctr.y;
+		thisPt.z = thisXl->ctr.z;
+		thisPt.seq = i;
+		PushPt(thisPt);
+	}
+}
+
+
+// ---------------------------------------------------------------------------
+//		¥ ~NumPtArray
+// ---------------------------------------------------------------------------
+//	Destructor for NumPtArray
+
+NumPtArray::~NumPtArray()
+{
+	// array should free memory automatically
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ PointInArray
+// ---------------------------------------------------------------------------------
+bool
+NumPtArray::PointInArray(const NumberedPt &inPt)
+{
+	std::vector<NumberedPt>::iterator it;
+	it = std::find(array.begin(), array.end(), inPt);
+	return (it != array.end());
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ PushPt
+// ---------------------------------------------------------------------------------
+void
+NumPtArray::PushPt(NumberedPt &inXl)
+{
+	array.push_back(inXl);
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ PopPt
+// ---------------------------------------------------------------------------------
+NumberedPt
+NumPtArray::PopPt()
+{
+	static NumberedPt outXl;
+	
+	if (array.size() > 0) {
+		outXl = array.back();
+		array.pop_back();
+	} else {		
+		throw ArrayIOErr();
+	}
+
+	return outXl;
+
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ RemoveItem
+// ---------------------------------------------------------------------------------
+void
+NumPtArray::RemoveItem(int inAtIndex)
+{	
+	array.erase(array.begin() + inAtIndex);
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ Clear
+// ---------------------------------------------------------------------------------
+void
+NumPtArray::Clear()
+{
+	array.clear();
+}
+
+// ---------------------------------------------------------------------------
+//		¥ operator[]
+// ---------------------------------------------------------------------------
+NumberedPt &
+NumPtArray::operator[](short inSub)
+{
+	static NumberedPt outPt;
+	outPt = array.at(inSub);
+	return outPt;
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ Compare
+//	Comparator based on sequence numbers, not locations
+// ---------------------------------------------------------------------------------
+bool
+NumPtArray::Compare(const NumberedPt &inItem1, const NumberedPt &inItem2)
+{
+	return (inItem1.seq < inItem2.seq);
+}
+
+// ---------------------------------------------------------------------------------
+//		¥ AreEqual
+//	Comparator based on sequence numbers, not locations
+// ---------------------------------------------------------------------------------
+bool
+NumPtArray::AreEqual(const NumberedPt &inItem1, const NumberedPt &inItem2)
+{
+	return (inItem1.seq == inItem2.seq);
+}
+

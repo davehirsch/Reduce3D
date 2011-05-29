@@ -1,0 +1,51 @@
+To Do:
+
+Error Handling - need to add auto-removing window after set time
+
+Add better logging to log file
+
+Need more checks for cancel button
+
+Modify FindBestPrimitive to use bounds in file if present as starting point
+
+for writing envelope int files:
+/*	} else {
+		mProgress->SetActionDescriptor("Writing Envelope File");
+		// write identifier for envelope file
+		firstLine += " Envelope Output; Run number ";
+		firstLine += (LStr255) (SInt32) inEnvRun;
+		firstLine += "; Original Mean Radius = ";
+		firstLine += FltStr(inOldMeanR, 5);
+		firstLine += "; New Mean Radius = ";
+		firstLine += FltStr(inNewMeanR, 5);
+	}
+*/
+
+
+explicitly record format of versioned integrate files in docs.  Then use the version to do a better job of 
+parsing the input files.
+
+sloccount output:
+(note that it can't handle .mm files, and some must be .m some must be .cpp.  Also it needs C++ to be .cpp not .cp)
+Totals grouped by language (dominant language first):
+cpp:           7499 (85.67%)
+objc:          1140 (13.02%)
+ansic:          114 (1.30%)
+
+
+
+
+Total Physical Source Lines of Code (SLOC)                = 8,753
+Development Effort Estimate, Person-Years (Person-Months) = 1.95 (23.41)
+ (Basic COCOMO model, Person-Months = 2.4 * (KSLOC**1.05))
+Schedule Estimate, Years (Months)                         = 0.69 (8.29)
+ (Basic COCOMO model, Months = 2.5 * (person-months**0.38))
+Estimated Average Number of Developers (Effort/Schedule)  = 2.83
+Total Estimated Cost to Develop                           = $ 263,576
+ (average salary = $56,286/year, overhead = 2.40).
+SLOCCount, Copyright (C) 2001-2004 David A. Wheeler
+SLOCCount is Open Source Software/Free Software, licensed under the GNU GPL.
+SLOCCount comes with ABSOLUTELY NO WARRANTY, and you are welcome to
+redistribute it under certain conditions as specified by the GNU GPL license;
+see the documentation for details.
+Please credit this data as "generated using David A. Wheeler's 'SLOCCount'."

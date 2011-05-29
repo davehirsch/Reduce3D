@@ -1,1 +1,23 @@
-// ===========================================================================//	HoleSet.h// ===========================================================================#pragma once#include "myLFileStream.h"#include "CrystalArray.h"#include "LProgressDialog.h"// ---------------------------------------------------------------------------//		¥ HoleSet// ---------------------------------------------------------------------------class	HoleSet : public CrystalArray {	public:						HoleSet(myLFileStream *inFile);						~HoleSet();		Boolean			PointInHole(Point3DFloat &inPoint);		double		NearestHoleDist(Point3DFloat &inPoint);		void		TidyCrystalsUp(CrystalArray *inXls);};
+// ===========================================================================
+//	HoleSet.h
+// ===========================================================================
+#pragma once
+
+#import "CrystalArray.h"
+class stringFile;
+class Calculator;
+
+// ---------------------------------------------------------------------------
+//		¥ HoleSet
+// ---------------------------------------------------------------------------
+
+
+
+class	HoleSet : public CrystalArray {
+	public:
+					HoleSet(Calculator *inCalc, long inNumExpected, stringFile *inFile);
+					~HoleSet();
+		bool		PointInHole(Point3DFloat &inPoint);
+		double		NearestHoleDist(Point3DFloat &inPoint);
+		void		TidyCrystalsUp(CrystalArray *inXls);
+};

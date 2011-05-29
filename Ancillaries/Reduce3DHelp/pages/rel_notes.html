@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+        <title>About Reduce3D</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="../sty/main.css" rel="stylesheet" type="text/css" media="all" />
+        <style type="text/css">
+        <!--
+p.MsoSubtitle {
+margin-top:12.0pt;
+margin-right:0in;
+margin-bottom:3.0pt;
+margin-left:0in;
+font-size:12.0pt;
+font-family:Helvetica;
+font-weight:bold;
+}
+p.releaseitem {
+	margin-top:0.1in;
+	margin-right:0in;
+	margin-bottom:0.0001pt;
+	margin-left:0.75in;
+	text-align:justify;
+	text-indent:-0.5in;
+	font-size:10pt;
+	font-family:Helvetica;
+}
+p.releasesubitem {
+margin-top:0in;
+margin-right:0in;
+margin-bottom:.0001pt;
+margin-left:.75in;
+text-align:justify;
+font-size:10.0pt;
+font-family:Helvetica;
+}
+-->
+        </style>
+</head>
+
+    <body>
+    <h1>Release History</h1>
+    This program was based on a version to analyze 2D data sets, called <span class="program_name">Reduce</span>.&nbsp; That was renamed <span class="program_name">Reduce2D</span> and this evolved into <span class="program_name">Reduce3D</span> in 1992.
+    <h2>Reduce history</h2>
+    <p class="releaseitem">1.0.0  11 June 91</p>
+    <p class="releasesubitem">Initial release.</p>
+   
+    <p class="releaseitem">1.0.1  16 June 91</p>
+    <p class="releasesubitem">Added possibility of inputting multiple <span style="text-transform:uppercase; ">MERGE</span> files; fixed bug in 'GetInfo' dialog to restore default values; added check for exceeding total number of crystals.</p>
+   
+    <p class="releaseitem">1.0.2  27 June 91</p>
+    <p class="releasesubitem">Added ability to recognize hack files.</p>
+   
+    <p class="releaseitem">1.0.3 16 November 1991</p>
+    <p class="releasesubitem">Added 2d and 3d random point test, though the 3d test only works on rectangular samples, since for normal samples we need a 3d bounding box.</p>
+   
+    <p class="releaseitem">1.0.3a 28 November 1991</p>
+    <p class="releasesubitem">Cambria fixed a bug in 3d random point test.</p>
+   
+    <p class="releaseitem">1.0.4 6 December 1991</p>
+    <p class="releasesubitem">Put in 2d and 3d quadrat test, with same 3d limitation as in 1.0.3.&nbsp; Also now allows crystals with negative volumes for spacial statistics, although it informs the user if there are in fact any zero or negative radii.</p>
+   
+    <p class="releaseitem">1.0.5 13 January 1992</p>
+    <p class="releasesubitem">Put in 3d bounding box calculation, so random point and quadrat tests now work in 3d.</p>
+   
+    <h2>Reduce3D history
+    </h2>
+   
+    <p class="releaseitem">1.1.0 1 December 1992</p>
+    <p class="releasesubitem">Basically stripped out 2d stuff, put in mean-normalized CSD and volume correction.&nbsp; Allows user to select which calculations to perform.</p>
+   
+    <p class="releaseitem">1.1.1 17 February 1993</p>
+    <p class="releasesubitem">Put in batch runs, isolation stats, ordering index boundary corrections and t-test.</p>
+   
+    <p class="releaseitem">1.1.2 23 February 1993</p>
+    <p class="releasesubitem">Worked out some kinks in batch runs, put in crystal density and volume fraction, fixed it so Portia would run.</p>
+   
+    <p class="releaseitem">1.1.3 14 July 1993</p>
+    <p class="releasesubitem">Took out the cubic (i.e. regular) quadrat test, so it only uses the spherical one now.&nbsp; Also put in some checks to warn the user and exit if the quad test is doomed to fail (in either case) because the quad is too big, and sped up the spherical calculations.</p>
+   
+    <p class="releaseitem">1.1.4 10 June 1994</p>
+    <p class="releasesubitem">Corrected a minor bug Carlotta discovered in the bounding box calculation, which only got tripped off in very unusual cases.</p>
+   
+    <p class="releaseitem">1.1.5 21 July 1994</p>
+    <p class="releasesubitem">As it turns out, the correction in 1.1.4 made it so it only works in those unusual cases.&nbsp; This version gets it right.</p>
+   
+    <p class="releaseitem">1.1.6 29 July 1994</p>
+    <p class="releasesubitem">Put in skewness and kurtosis.</p>
+   
+    <p class="releaseitem">1.1.7 5 August 1994</p>
+    <p class="releasesubitem">Changed formats of CSD files to correspond to changes in REDSIM3D.</p>
+   
+    <p class="releaseitem">1.1.8 14 March 1995</p>
+    <p class="releasesubitem">Changed random point calculation so it will not accept a point placement if it is nearer to a wall of the bounding box than the nearest crystal.</p>
+   
+    <p class="releaseitem">1.2.0 9 April 1995</p>
+    <p class="releasesubitem">Combined it with REDSIM3D, put in “shaving” functions, changed RP test back to original, but left old logic in program.</p>
+   
+    <p class="releaseitem">2.0.0 18 July 1995</p>
+    <p class="releasesubitem">Added version 2 enhancements.</p>
+   
+    (There was a hiatus in Program Notes hiatus)
+    <p class="releaseitem">2.5.3 28 September, 1999</p>
+    <p class="releasesubitem">Rewritten in C++ (was in Pascal), using Metrowerks Codewarrior &amp; PowerPlant framework.</p>
+    <p class="releasesubitem">Added all cool Mac behavior: icons, cool UI, AppleEvents, Nav Services, etc.</p>
+    <p class="releasesubitem">Added 3-D rendering of crystal array, holes array, and bounding box.</p>
+    <p class="releasesubitem">Added logic for null-hypothesis envelopes.</p>
+    <p class="releasesubitem">Added observability filtering.</p>
+    <p class="releasesubitem">Removed user interface for 3-D rendering (this has been moved to a separate program, Render3D), separated settings for envelopes into their own tab.&nbsp; Added ability to make “diffusion-controlled envelopes” a la Daniel &amp; Spear (99).</p>
+   
+    <p class="releaseitem">2.5.4 1 October, 1999</p>
+    <p class="releasesubitem">Added selection for verbose logging, and made this independent of debugging status.&nbsp; Also changed DC envelope implementation to reduce beta until a good simulation is made.</p>
+   
+    <p class="releaseitem">(Program Notes hiatus)</p>
+    <p class="releaseitem">2.5.7 3 May 2000</p>
+    <p class="releasesubitem">Changed verbose logging from occurring with debug builds to a Settings Window checkbox.</p>
+    <p class="releasesubitem">Changed parameters for “diffusion-controlled envelope” calculation</p>
+    <p class="releasesubitem">Added special code for the bad analysis of Claude</p>
+    <p class="releasesubitem">Fixed problem with adjusting crystal volume for overlap.</p>
+   
+    <p class="releaseitem">(Program Notes hiatus)</p>
+    <p class="releaseitem">2.6.2 August 25, 2005</p>
+    <p class="releasesubitem">Recompiled with CodeWarrior 8.3 for Mac OSX.</p>
+    <p class="releasesubitem">Works on OSX 10.2.8 - 10.4.</p>
+    <p class="releasesubitem">Fixed minor problems with Info.plist and icons.</p>
+    <p class="releasesubitem">Set up file names, types, and Info.plist stuff so that files should open in the correct programs based on the data flow path (Crystallize -&gt; Reduce -&gt; GraphCFs).</p>
+   
+    <p class="releaseitem">2.6.3 August 8, 2007</p>
+    <p class="releasesubitem">Fixed bug in translation method calculation for cylindrical primitives.</p>
+   
+    <p class="releaseitem">2.7 September 15, 2007</p>
+    <p class="releasesubitem">Removed greediness aspect of progress box (no longer applicable for modern computers).</p>
+    <p class="releasesubitem">Added help tags to settings window controls.</p>
+    <p class="releasesubitem">Fixed algorithm in BoundingBox::PrimitiveInBox routine for cylindrical primitives, as well as a related bug in OffsetIntersectVol for cylinders.</p>
+    <p class="releasesubitem">Improved UI Logic in Settings window.</p>
+    <p class="releasesubitem">Added the ability to shave a cylinder.</p>
+    <p class="releasesubitem">Changed preferences to use a text file and removed preference resources for default values </p>
+    <p class="releasesubitem">Changed About box.</p>
+    <p class="releasesubitem">Removed Claude-specific code and settings.</p>
+   
+    <p class="releaseitem">3.0 December 31, 2007</p>
+    <p class="releasesubitem">Thorough overhaul and migration from CodeWarrior to XCode.</p>
+    <p class="releasesubitem">UI recreated in Project Builder and  recoded in Objective-C.</p>
+    <p class="releasesubitem">PowerPlant code removed and replaced with C++ standard library classes.</p>
+    <p><a href="../Reduce3DHelp.html" class="Back_link">Back to top</a></p>
+</body>
+</html>

@@ -1,1 +1,62 @@
-// ===========================================================================//	Reduce 3D Constants.h				// ===========================================================================#pragma once#include "fp.h"	// defines float#include <CoreFoundation/CoreFoundation.h>// Machine Issuesconst long		kExtraStackRoom			= 96-32;	// stack begins at 32K, we want 96K// Menu commandsconst CommandT	cmd_ShowBBox			= 'swBB';const CommandT	cmd_ShowXls				= 'swXl';const CommandT	cmd_ShowHoles			= 'swHl';const CommandT	cmd_DoShave				= 'Shav';// BB Image Window & Panesconst ResIDT	rPPob_RegularWindow		= 1000;const PaneIDT	kRegW_ScrollView		= 1;const PaneIDT	kRegW_ImagePane			= 2;// Settings Window, Panes, Messagesconst ResIDT	rPPob_SettingsWindow	= 2000;const ResIDT	rRidL_SettingsWindow	= rPPob_SettingsWindow;const PaneIDT	item_OK					= 'OK  ';const PaneIDT	item_Cancel				= 'CXL ';const PaneIDT	item_RestoreDefaults	= 'rSdV';const MessageT	msg_RestoreDefaults		= item_RestoreDefaults;const PaneIDT	item_TabsPanel			= 'TABS';const PaneIDT	item_Placeholder		= 'PHST';const PaneIDT	view_CSD				= 'CSDP';const ResIDT	rPPob_CSD				= 2100;const short		CSD_index				= 1;	const PaneIDT	item_MeanCSD			= 'MnNC';	const PaneIDT	item_MeanNumClasses		= 'MnSC';	const PaneIDT	item_MaxXValue			= 'MnMV';	const PaneIDT	item_MaxCSD				= 'MxNC';	const PaneIDT	item_MaxNumClasses		= 'MxSC';	const PaneIDT	item_LogCSD				= 'LgSD';	const PaneIDT	item_LogNumClasses		= 'LgSC';	const PaneIDT	item_RegCSD				= 'RgNN';	const PaneIDT	item_DeltaL				= 'RgDL';const PaneIDT	view_Stats				= 'STTP';const ResIDT	rPPob_Stats				= 2200;const short		Stats_index				= 2;	const PaneIDT	item_DoOtherTests		= 'OStt';	const PaneIDT	item_DoQuadrat			= 'Qdrt';	const PaneIDT	item_QuadratNumPlacings	= 'QTPl';	const PaneIDT	item_QuadratNumReps		= 'QTRp';	const PaneIDT	item_DoRandomPt			= 'RdPt';	const PaneIDT	item_RPNumPlacings		= 'RPPl';	const PaneIDT	item_RPNumReps			= 'RPRp';	const PaneIDT	item_ImpingementCrxn	= 'ImCr';	const PaneIDT	item_MeanErrorTol		= 'ICMn';	const PaneIDT	item_MaxErrorTol		= 'ICMx';	const PaneIDT	item_DoLMCFPCF			= 'CrFn';	const PaneIDT	item_NumNNDist			= 'CFNm';	const PaneIDT	item_BandwidthOverlap	= 'OvLp';	const PaneIDT	item_NumCFOffsetVolPts	= 'CFOV';	const PaneIDT	item_CvalEpanecnikov	= 'CFcV';	const PaneIDT	item_SampleShape		= 'SSPM';	const MessageT	msg_SampleShape			= item_SampleShape;		const short	popup_RectPrism			 = 1;		const short	popup_Cylinder			 = 2;		const short	popup_Sides				 = 3;	const PaneIDT	item_InflateBBox		= 'NfBB';	const MessageT	msg_InflateBBox			= item_InflateBBox;	const PaneIDT	item_DiscardNegs		= 'LzBd';	const PaneIDT	item_UseRaeburn			= 'Rbrn';	const PaneIDT	item_UseVolume			= 'Volm';const PaneIDT	view_Envelopes			= 'DSPP';const ResIDT	rPPob_Envelopes			= 2300;const short		Envelopes_index			= 3;	const PaneIDT	item_NumEnvelopeRuns	= 'NmER';	const PaneIDT	item_matchVF			= 'MtcV';	const PaneIDT	item_VFPercent			= 'VFPc';	const PaneIDT	item_matchPDF			= 'Mpdf';	const PaneIDT	item_makeDCEnv			= 'DCNv';	const PaneIDT	item_ObservabiltyFilter	= 'ObsF';	const PaneIDT	item_Criterion1Factor	= 'Crt1';	const PaneIDT	item_Criterion2Factor	= 'Crt2';const PaneIDT	view_Output				= 'OUTP';const ResIDT	rPPob_Output				= 2400;const short		Output_index			= 4;	const PaneIDT	item_OutputRED3			= 'RD3D';	const PaneIDT	item_IndXlData			= 'XlDt';	const PaneIDT	item_R3STT				= 'R3ST';	const PaneIDT	item_OutputSigmas		= 'StDv';	const PaneIDT	msg_OutputSigmas		= item_OutputSigmas;	const PaneIDT	item_Confidence			= 'Conf';	const PaneIDT	msg_Confidence			= item_Confidence;const PaneIDT	view_Misc				= 'MSCP';const ResIDT	rPPob_Misc				= 2500;const short		Misc_index				= 5;	const PaneIDT	item_LoadHoles			= 'lDhS';	const MessageT	msg_LoadHoles			= item_LoadHoles;	const PaneIDT	item_HolesFile			= 'HlFl';	const PaneIDT	item_ResetHolesFile		= 'rShS';	const MessageT	msg_ResetHoles			= item_ResetHolesFile;	const PaneIDT	menuitem_RP				= 1;	const PaneIDT	menuitem_Cyl			= 2;	const PaneIDT	menuitem_Sides			= 3;	const PaneIDT	item_RandomSeed			= 'Seed';	const PaneIDT	item_MCReps				= 'MCRp';	const PaneIDT	item_TidyUp				= 'Tidy';	const PaneIDT	item_Verbose			= 'Verb';	const PaneIDT	item_Discard			= 'Disc';	const PaneIDT	item_FixClaude			= 'Clod';const PaneIDT	view_Shave				= 'SHVP';const ResIDT	rPPob_Shave				= 2600;const short		Shave_index				= 6;	const PaneIDT	item_DoShave			= 'Shav';	const MessageT	msg_DoShave				= item_DoShave;	const PaneIDT	item_ShaveNote			= 'ShNt';	const PaneIDT	item_MultiPane			= 'MPVW';	const PaneIDT	item_AspectRatioToggle	= 'KpAR';	const MessageT	msg_AspectRatioToggle	= item_AspectRatioToggle;	const PaneIDT	item_XYZPopup			= 'pXYZ';	const PaneIDT	item_RHPopup			= 'ppRH';	const PaneIDT	item_IntervalET			= 'NTVL';	// applies to both views	const PaneIDT	item_DirectionPopup		= 'DRXN';	// applies to both views	const PaneIDT	item_MaxPercentET		= 'PRCT';	// applies to both views	const PaneIDT	item_MinNumberXlsET		= 'NMBR';	// applies to both views	const PaneIDT	item_MaxAspRatioET		= 'MxAR';	const PaneIDT	item_SmallerLargerPopup	= 'SmLg';	// applies to both views		const short		menuitem_Smaller		= 1;		const short		menuitem_Larger			= 2;	const PaneIDT	item_MaxAspRatioST		= 'ARST';	const PaneIDT	item_ShaveSaveCB		= 'ShXt';	const MessageT	msg_ShaveSaveCB			= item_ShaveSaveCB;// About Boxconst ResIDT	rPPob_AboutBox		= 5000;const PaneIDT	item_ProgNameStr	= 'Prog';// Decision Boxconst ResIDT	rPPob_DecisionBox		= 7000;const PaneIDT	item_NoteST				= 'Msg ';const PaneIDT	item_DefBtn				= 'Btn1';const PaneIDT	item_AltBtn				= 'Btn2';const MessageT	msg_DefBtn				= 'DefM';const MessageT	msg_AltBtn				= 'AltM';// save before closing boxconst ResIDT	rPPob_SaveB4CloseBox	= 10000;// constants for savingconst OSType	SimpleText_fileCreator	= 'ttxt';const OSType	MSExcel_fileCreator		= 'XCEL';const OSType	BlobFileCreator			= 'qtBB';const OSType	GraphCFsFileCreator		= 'qtGF';const OSType	Merge_binary_fileType	= 'mRgE';const OSType	Text_fileType			= 'TEXT';const OSType	Integrate_bin_fileType	= 'iNgT';const OSType	FlyThrough_fileCreator	= 'Fly3';const OSType	CW_fileCreator			= 'CWIE';// Bounding Box Constants			// this is as a fraction of the rough averaged dimension; it is compared			// to a dot productconst double	kDiscardPointsThreshold	= 0.001;	// smaller is more conservativeconst double	kCoplanarThreshold		= 0.000001;	// this is a theta valueconst Boolean	kFinished				= true;const Boolean	kUnfinished				= false;const short		kPerspective			= 1;		/* 10 is strong perspective view */const float	kScale					= 6000;	/* scaling for 3DBB plot *///const float	kScale					= 6000/kPerspective;	/* scaling for 3DBB plot */const short		kPicSize				= 300;		/* approximate desired pic size, in pixels, for the BB */// Bounding Box Windowconst ResIDT	rPPob_BBWindow			= 1000;const ResIDT	rRidL_BBWindow			= rPPob_BBWindow;const PaneIDT	k_Scroller				= 1;const PaneIDT	k_ImageView				= 2;const PaneIDT	rview_PlainBBView		= 1100;const short		k_InitialGWSize			= 800;// Bounding Box 3D Windowconst ResIDT	rPPob_BBWindow3D		= 1500;const ResIDT	rRidL_BBWindow3D		= rPPob_BBWindow3D;const ResIDT	k_3DViewerPane			= 2;enum Models {kNone, kBBox, kXls, kHoles};// Misc constantsconst short		kStdStringSize			= 256;const RGBColor myBlackColor = {0x0000, 0x0000, 0x0000};const RGBColor myWhiteColor = {0xFFFF, 0xFFFF, 0xFFFF};const long		k72dpi = 0x00480000;const long		myCommandKey = 0x00008000;const long		myOptionKey = 0x00000004;const long		myShiftKey = 0x00000001;const short		kDefaultGreediness		= 1;	// means will share CPU time as often as possibleconst short		kDefaultNumThermoIncrements = 25;const long		kNumTriesToPlaceXl = 10000;const short		kNumSimMakerRestarts = 6;// Statistics constantsconst short		kWeightFrequency		= 1;		// pre-calculates every kWeightFrequency-th valueenum boxTypes {kCubeBox, kSidesBox, kRPBox, kCylBox};enum quadTypes {kCube, kSphere};enum runTypes {kSingle, kBatch};enum CSDTypes {kMeanCumCSD, kMaxCumCSD, kLogCSD, kNNCSD, kRegCSD, kRedStats, kReduce, kIntegrate, kEnvelope};enum fileTypes {kUndefined = 0, kReal = 0x01, kDiffSimulation = 0x02 | 0x04, kIntSimulation = 0x02 | 0x08, kHFSimulation = 0x02 | 0x10};#define isSim(A) ((A) & 0x02)const short		kMaxNumBins				= 500;	// max number of bins for the quadrat testconst short		kNumBinsNNCSD			= 50;const short		kNumBinsRegCSD			= 50;enum		primitiveTypes {kRectPrism = menuitem_RP, kCylinder = menuitem_Cyl, kSides = menuitem_Sides};enum		directions {kFromMax = 1, kSymmetric = 2, kFromMin = 3};enum		xyzCoordinates {kX = 1, kY = 2, kZ = 3};enum		rhCoordinates {kR = 1, kH = 2};enum		boundsTypes {kBoundsNone = 0, kBoundsRP = 1, kBoundsCyl = 2};
+// ===========================================================================
+//	Reduce 3D Constants.h				
+// ===========================================================================
+
+#define	popup_RectPrism 0
+#define	popup_Cylinder	1
+#define	popup_Sides	2
+#define kUserCanceledErr 101
+#define kProcessingError 102
+
+const short		menuitem_Smaller		= 0;
+const short		menuitem_Larger			= 1;
+
+// Bounding Box Constants
+			// this is as a fraction of the rough averaged dimension; it is compared
+			// to a dot product
+//const double	kDiscardPointsThreshold	= 0.001;	// smaller is more conservative
+const double	kCoplanarThreshold		= 0.000001;	// this is a theta value
+const bool	kFinished				= true;
+const bool	kUnfinished				= false;
+const short		kPerspective			= 1;		/* 10 is strong perspective view */
+const float	kScale					= 6000;	/* scaling for 3DBB plot */
+//const float	kScale					= 6000/kPerspective;	/* scaling for 3DBB plot */
+const short		kPicSize				= 300;		/* approximate desired pic size, in pixels, for the BB */
+
+enum Models {kNone, kBBox, kXls, kHoles};
+
+// Misc constants
+const short		kStdStringSize			= 500;
+const short		kDefaultNumThermoIncrements = 50;
+const long		kNumTriesToPlaceXl = 10000;
+const short		kNumSimMakerRestarts = 6;
+const short		kNumOctantPoints = 25;	// number of points to use (*16) for BoundingBox::PrimitiveInBox
+const short		kRoughMCReductionFactor = 10;
+const float		kTimeIntervalBetweenProgressSpins = 0.05;
+const float		kSleepTimeForProgressUpdate = 0.01;
+const long		myOptionKey = 0x00000004;
+const long		myShiftKey = 0x00000001;
+
+// Statistics constants
+const short		kWeightFrequency		= 1;		// pre-calculates every kWeightFrequency-th value
+enum boxTypes {kCubeBox, kSidesBox, kRPBox, kCylBox};
+enum quadTypes {kCube, kSphere};
+enum runTypes {kSingle, kBatch};
+enum openPanelTypes {kPrimaryInput, kHolesInput};
+enum CSDTypes {kMeanCumCSD, kMaxCumCSD, kLogCSD, kNNCSD, kRegCSD, kRedStats, kReduce, kIntegrate, kEnvelope};
+enum fileTypes {kUndefined = 0, kReal = 0x01, kDiffSimulation = 0x02 | 0x04, kIntSimulation = 0x02 | 0x08, kHFSimulation = 0x02 | 0x10};
+#define isSim(A) ((A) & 0x02)
+
+const short		kMaxNumBins				= 500;	// max number of bins for the quadrat test
+const short		kNumBinsNNCSD			= 50;
+const short		kNumBinsRegCSD			= 50;
+enum		primitiveTypes {kRectPrism = 0, kCylinder = 1, kSides = 2};
+enum		criteriaRelations {kSmaller = 0, kLarger = 1};
+enum		directions {kFromMax = 0, kSymmetric = 1, kFromMin = 2};
+enum		xyzCoordinates {kX = 0, kY = 1, kZ = 2};
+enum		boundsTypes {kBoundsNone = 0, kBoundsRP = 1, kBoundsCyl = 2};
+
+const short kArrayIncrement = 10;
+
+// Macros
+#define REDUCELOG(A) if (prefs->verbose) mLogFile->putOneLine((A))

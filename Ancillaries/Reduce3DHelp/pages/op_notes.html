@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+        <title>Notes on Operation</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <link href="../sty/main.css" rel="stylesheet" type="text/css" media="all" />
+        <style type="text/css">
+<!--
+ul     ul   li   {
+	font-weight: normal;
+	font-size: 12px;
+	color: #000000;
+}
+ul li {
+	font-weight: bold;
+	font-size: larger;
+	color: #660000;
+}
+-->
+        </style>
+</head>
+
+    <body>
+    <h1>Notes on Operation</h1>
+    <p><span class="program_name">Reduce3D</span> can be run by launching the application,  by dragging the input files onto the application, or by double-clicking text (ascii / UTF8) files ending in &quot;.Int&quot;.&nbsp; Note that you cannot drag a holes file onto the application – it must be set in the settings window. If launched by running the program directly (i.e., without dragging or clicking input files), then when the settings window is dismissed, the user will be prompted to choose one or more input files. Following this, a progress window will be posted to inform the user of the progress of the calculations. Output file(s) for a particular input file will be saved to the same directory.</p>
+    <p>Saving envelope datasets is possible. If the [Shift] and {Option] keys are both held down when an envelope simulation is created, then that dataset will be saved to a suitably-named file in the same directory as the input file. If the input file was located at: &quot;/Users/bob/Desktop/data.Int&quot;, and the [Shift] and {Option] keys were held down when simulation 83 was created, then that simulation's data will be recorded in a file at: &quot;/Users/bob/Desktop/data_Sim_83.Int&quot;. Note that this is an .Int file and can be used as input to <span class="program_name">Reduce3D</span>.</p>
+    <p>Upon launch, a settings/preferences window with six tabs is posted.&nbsp; The settings in this window persist between runs, stored in a file in the Preferences folder &quot;com.davehirsch.Reduce3D.plist”.&nbsp; The default settings are hard-coded, and can be recalled with the button at the bottom of the window.&nbsp; Each of the tabs controls different aspects of the program’s operation (note that each item has a help tag (aka &quot;tool tip&quot;) that will pop up when the cursor hovers over it. The text of each is very similar to the following text).</p>
+    <ul> <li>CSDs – These items control whether to output various types of crystal size distribution (CSD) files, and how to calculate the bin sizes</li>
+    <ul>
+      <li> <strong>Mean-Normalized  CSD</strong> - Histogram of (extended) crystal radii, normalized to the mean radius of the population. This includes both cumulative and non-cumulative data.</li>
+      <li> <strong>Number of size classes</strong> - number of bins in histogram</li>
+      <li> <strong>Max  x-value</strong> - the maximum number of radii for the top histogram bin.</li>
+      <li> <strong>Logarithmic CSD</strong> - A CSD designed to be comparable to that shown in Cashman &amp; Ferry (1988). It plots the logarithm of the slope of the cumulate histogram of extended radius, normalized to maximum radius and unit volume.</li>
+      <li> <strong>Max-Normalized  CSD</strong> - Histogram of (extended) crystal radii, normalized to the maximum radius of the population. This includes both cumulative and non-cumulative data.</li>
+      <li> <strong>Regular and NN CSD</strong> - Regular CSD (histogram of extended radius), and CSD of nearest neighbors' extended radius.</li>
+      <li> <strong>Delta L</strong> - size of histogram bins, in cm.</li>
+    </ul>
+    <li>
+      Statistics - These settings control which statistics to calculate, and details of that calculation. Note that some basic statistics are calculated regardless of these settings.</li>
+    <ul>
+      <li> <strong>Quadrat Test</strong> - Rarely used now, places a sphere in the volume and counts crystals inside it to measure ordering / clustering
+        <ul>
+          <li><strong>Number of placings</strong> - How many placings per test.</li>
+          <li><strong>Number of repetitions</strong> - How many tests are performed (and then averaged into a single measurement)</li>
+        </ul>
+      </li>
+      <li><strong> Impingement Correction (if needed) </strong>- This operation adjusts crystal sizes to account for impingement in Crystallize simulations.&nbsp; In these simulations, crystal volume is based solely on domain volume, and if two crystals overlap, then the joint volume is less than the appropriate percentage of their joint domains.&nbsp; This operation increases the extended volume to account for the impingement.&nbsp; The process is iterative (over the whole set of crystals), and continues until both the maximum error is less than the value indicated, and the mean error is less than the value indicated. More info on this <a href="impingement.html">here</a>.</li>
+      <li><strong> Do other statistical tests</strong> - This  chooses whether to perform a range of basic statistical measures.&nbsp; Note that some of these measures are required for other tests, and will be performed regardless.&nbsp; These tests include: Nearest neighbor tests, Avrami Tests, and crystal size distribution measures.</li>
+      <li> <strong>Inflate bounding box</strong> - This operation takes the finished bounding box, and moves each vertex away from the box's center by the radius of the crystal the vertex occupies, in order to include more crystals in the calculation (because crystals on or outside the bounding box are discarded). This advantage, however, comes at the expense of accuracy in certain measures such as volume fraction and crystal number density.</li>
+      <li> <strong>Discard boundary crystals</strong> - This causes any crystals that have a negative radius to be discarded.&nbsp;  Negative radii are used by Crystallize to label those crystals that have illegal domains. This typically indicates that a crystal lies on the boundary of the volume. If not checked, all crystals are kept, and those with negative radii are changed into their positive versions.</li>
+      <li> <strong>Use Raeburn’s version</strong> - This uses the formulation of <a href="refs_cited.html">Raeburn (1996)</a> and <a href="refs_cited.html">Daniel &amp; Spear (1999)</a> for the Correlation functions.&nbsp; See <a href="refs_cited.html">Hirsch, et al. (2000)</a> for details.</li>
+      <li> <strong>Use volume for mark</strong> - This uses volume in the calculation of the MCF.</li>
+      <li> <strong>Random Point Test</strong> - This test is described in <a href="refs_cited.html">Denison, et al. (1997).</a>&nbsp; A point is placed randomly, and if the nearest crystal center is nearer than the nearest hole surface and the nearest bounding box surface, then the distance to the crystal is noted.&nbsp; This distance is compared to the value expected in a random distribution, and comparison to envelope values can also be perfomed.</li>
+      <li><strong> L function, PCF, MCF</strong> - See <a href="refs_cited.html">Hirsch, et al. (2000)</a> for full details.&nbsp; These functions measure the isolation of crystals at a range of scales.</li>
+      <li> <strong>Number of NN distances to measure</strong> - This setting dictates the maximum scale over which to measure the function, in terms of nearest-neighbor distance.</li>
+      <li> <strong>Overlap bandwiths by</strong> - This setting dictates the spacing of the scales of measurement.&nbsp; Overlapping is needed because the outer edged of the bandwidth are weighted very lightly, so do not contribute greatly to the final value at the point.</li>
+      <li> <strong>Number of offset volume points</strong> - When calculating the volume of overlap of the bounding box and its offset copy, depending on the shape of the box (see below), an analytical solution may be tractable or not.&nbsp; If not, then a monte carlo estimation is performed.&nbsp; This value controls the number of points in the monte carlo operation.</li>
+      <li> <strong>“c” value for Epanecnikov bandwidth </strong>- Dictates the size of the bandwidth, together with the crystal number density.&nbsp; See <a href="refs_cited.html">Hirsch, et al. (2000)</a> for more details.</li>
+      <li> <strong>Sample shape</strong> - This is a very important setting. If this is set at “Sides”, the behavior is the older style - uses all the crystals, but it’s very computationally intensive.&nbsp; Other settings cause a geometric primitive to be fit inside the sides-based bounding box, optimized to enclose as many crystals as possible, and used as the new bounding box to dramatically speed up calculations. This will, however, discard a large number of crystals that fall outside the bounds of this new, inset, primitive. (Note that perhaps the best option is to <a href="io.html">include explicit bounds</a> of the data volume in terms of a cylinder or a rectangular prism right in the input file.)</li>
+    </ul>
+    <li>
+      Envelopes - These settings control how the interface-control null hypothesis runs are calculated.</li>
+    <ul>
+      <li>
+        <strong>Number of envelope runs</strong> - How many null-hypothesis simulations are produced for the null-hypothesis regions.</li>
+      <li> <strong>Match volume fraction in envelope sims</strong> - Deprecated.&nbsp; Alters crystal radii in null hypothesis simulations to match the volume fraction of the array of crystals being measured. This is problematic, because you essentially force the null-hypothesis simulations to look too much like your rock in terms of the amount of impingement.</li>
+      <li> <strong>Match nucleation PDF, if present</strong>. - Deprecated.&nbsp; Parses comment line in Crystallize datasets for nucleation probability distribution function, and uses this PDF in making envelope simulations.</li>
+      <li> <strong>Observability Filter</strong> - See <a href="refs_cited.html">Hirsch, et al. (2000)</a> and <a href="refs_cited.html">Ketcham, et al. (2005) </a>for details.&nbsp; Filters out simulation crystals that would be unobservable based on the two parts of the criterion. These values must be carefuly tuned for the data collection method. Using this filter ensures that your null hypothesis simulations do not contain crystal pairs that might exist in your real dataset but that your data collection method is unable to detect.
+        <ul>
+          <li><strong>Separation / Int. Plane Factor</strong> - Dictates how close together crystals may be and still be recognizable as separate.</li>
+          <li><strong>Pair len. / smaller radius factor</strong> - Dictates the minimum aspect ratio necessary for crystals to be separately recognizable.</li>
+        </ul>
+      </li>
+     </ul>
+    <li>
+      Output - These settings deal with other files that may be output.</li>
+    <ul>
+      <li> <strong>Output Reduce3D text file</strong> - This is the main file.&nbsp; It will be marked as belonging to GraphCFs for easy graphing.</li>
+      <li> <strong>Output individual crystal data</strong> - Whether the set of crystal data should be included in the Reduce3D file.</li>
+      <li>  <strong>Output 1,2,3 sigma</strong> - This is an option of saving, in the Reduce3D file, mean and sigma values as opposed to the bottom and top of the n-percent confidence regions.</li>
+      <li> <strong>Confidence level</strong> - Regular confidence limits, i.e., 95% is 1-sigma.&nbsp; As the number of envelopes is small (typically ~100), you will not get exactly the confidence level you ask for, due to rounding.</li>
+    </ul>
+    <li>
+      Miscellaneous - Various other settings, including algorithm parameters.</li>
+    <ul>
+      <li>  <strong>Random seed</strong> - This allows for deterministic, random behavior.</li>
+      <li> <strong>Tidy up files</strong> - This subjects the incoming crystal array (the data we’re measuring) to the same observability tests as the envelope simulations.</li>
+      <li> <strong>Verbose</strong> - Saves a file on the desktop with information about program operation.</li>
+      <li> <strong>Holes File</strong> - This is an option to read in another set of crystals, in the same coordinates and with the same origin as the main data set, to be treated as holes.&nbsp; The surfaces of the holes are treated similarly to the edges of the bounding box.</li>
+     </ul>
+    <li>
+      Shave - Settings for “Shaving” volume off the input volume, and how to deal with the gradually reduced volumes.</li>
+    <ul>
+      <li> <strong>Do Shave analysis</strong> - turns on shaving</li>
+      <li> <strong>Keep aspect ratio</strong> - shave in all dimensions, or only one?</li>
+      <li><strong> X / Y / Z </strong>- Which dimension to shave, if not keeping aspect ratio</li>
+      <li> <strong>Percent field</strong> - Thickness of shavings</li>
+      <li> <strong>Outside Popup</strong> - Shave from low values, high values, or both (“outside”).&nbsp; This applies to 1-D or 3-D shaving</li>
+      <li> <strong>Percent bound</strong> - Minimum percent of original left at end.</li>
+      <li> <strong>Crystal bound</strong> - Minimum number of crystals left at end.</li>
+      <li> <strong>Aspect Ratio bound</strong> - Maximum aspect ratio at end.&nbsp; Only applies to 1-D shaving.</li>
+      <li> <strong>Larger / Smaller</strong> - Really, “larger” means larger-larger-smaller for the three fields just above it.&nbsp; In other words, shaving will continue longer if this is set to “smaller”, and it will stop sooner if this is set to “larger”.</li>
+      <li> <strong>Shave and output only</strong> - If this is checked, then each shaved data volume is saved to a file, instead of being measured for statistics each time.&nbsp; This is probably best, now that batch mode is so easy to do, by dragging and dropping in the finder.</li>
+    </ul></ul>
+
+    <p><a href="../Reduce3DHelp.html" class="Back_link">Back to top</a></p>
+</body>
+</html>

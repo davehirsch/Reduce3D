@@ -1,0 +1,33 @@
+{
+    IBClasses = (
+        {
+            ACTIONS = {
+                adjustShaveUISettings = id; 
+                beginAnalysis = id; 
+                loadHolesFile = id; 
+                removeHolesFile = id; 
+                restoreDefaults = id; 
+            }; 
+            CLASS = AppController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                beginButton = NSButton; 
+                holesText = NSTextField; 
+                mainWindow = NSWindow; 
+                maxAspectRatioLabel = NSTextField; 
+                maxAspectRatioTextField = NSTextField; 
+                shaveButton = NSButton; 
+                shaveText = NSTextField; 
+                xyzButton = NSPopUpButton; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {"" = id; }; 
+            CLASS = FirstResponder; 
+            LANGUAGE = ObjC; 
+            SUPERCLASS = NSObject; 
+        }
+    ); 
+    IBVersion = 1; 
+}
