@@ -25,6 +25,7 @@ typedef struct {
 	bool		verbose;
 	bool		playSoundWhenDone;
 	bool		matchPDF;
+	bool		exscribedPrimitive;
 	short		numClassesMeanCSD;
 	short		numClassesMaxCSD;
 	short		numClassesLogCSD;
@@ -55,6 +56,7 @@ typedef struct {
 	float		minPercent;
 	float		maxAspectRatio;
 	float		VFPercent;
+	float		shrinkExscribedPrimitive;
 } PrefStruct;
 
 typedef struct {

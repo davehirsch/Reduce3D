@@ -1,33 +1,64 @@
-{
-    IBClasses = (
-        {
-            ACTIONS = {
-                adjustShaveUISettings = id; 
-                beginAnalysis = id; 
-                loadHolesFile = id; 
-                removeHolesFile = id; 
-                restoreDefaults = id; 
-            }; 
-            CLASS = AppController; 
-            LANGUAGE = ObjC; 
-            OUTLETS = {
-                beginButton = NSButton; 
-                holesText = NSTextField; 
-                mainWindow = NSWindow; 
-                maxAspectRatioLabel = NSTextField; 
-                maxAspectRatioTextField = NSTextField; 
-                shaveButton = NSButton; 
-                shaveText = NSTextField; 
-                xyzButton = NSPopUpButton; 
-            }; 
-            SUPERCLASS = NSObject; 
-        }, 
-        {
-            ACTIONS = {"" = id; }; 
-            CLASS = FirstResponder; 
-            LANGUAGE = ObjC; 
-            SUPERCLASS = NSObject; 
-        }
-    ); 
-    IBVersion = 1; 
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IBClasses</key>
+	<array>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key></key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key>adjustShaveUISettings</key>
+				<string>id</string>
+				<key>beginAnalysis</key>
+				<string>id</string>
+				<key>loadHolesFile</key>
+				<string>id</string>
+				<key>removeHolesFile</key>
+				<string>id</string>
+				<key>restoreDefaults</key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>AppController</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
+			<key>OUTLETS</key>
+			<dict>
+				<key>beginButton</key>
+				<string>NSButton</string>
+				<key>holesText</key>
+				<string>NSTextField</string>
+				<key>mainWindow</key>
+				<string>NSWindow</string>
+				<key>maxAspectRatioLabel</key>
+				<string>NSTextField</string>
+				<key>maxAspectRatioTextField</key>
+				<string>NSTextField</string>
+				<key>shaveButton</key>
+				<string>NSButton</string>
+				<key>shaveText</key>
+				<string>NSTextField</string>
+				<key>xyzButton</key>
+				<string>NSPopUpButton</string>
+			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+	</array>
+	<key>IBVersion</key>
+	<string>1</string>
+</dict>
+</plist>

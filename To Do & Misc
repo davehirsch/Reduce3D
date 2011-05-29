@@ -6,7 +6,7 @@ Add better logging to log file
 
 Need more checks for cancel button
 
-Modify FindBestPrimitive to use bounds in file if present as starting point
+Be sure that we aren't doing any primitive fitting or hull stuff if bounds are present in the file.
 
 for writing envelope int files:
 /*	} else {

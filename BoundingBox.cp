@@ -274,9 +274,17 @@ BoundingBox::CheckedAgainstBounds()
 
 		if (result == 0) {
 			// User chose Discard Crystals, which means that the Bounds are good and we want to adapt the crystals to fit them
+			if (mPrefs->verbose) {
+				std::string logStr ("In CheckedAgainstBounds.  There were crystals outside the stated bounds, and the user chose to discard them.\n");
+				mCalc->log(logStr);
+			}
 			return true;
 		} else {
 			// User chose to make a new bounding box around the data set.  This mwans that the bounds are bad.
+			if (mPrefs->verbose) {
+				std::string logStr ("In CheckedAgainstBounds.  There were crystals outside the stated bounds, and the user chose to make a new bounding box.\n");
+				mCalc->log(logStr);
+			}
 			return false;
 		}
 	} else {
@@ -312,6 +320,22 @@ BoundingBox::FindBoundPoints()
 		if (thisPt.z > zMax.z )
 			zMax = thisPt;
 	}
+	if (mPrefs->verbose) {
+		mCalc->log("Looked for bounding crystal centers (BoundingBox::FindBoundPoints).  Found these:");
+		char logMsg[kStdStringSize];
+		sprintf (logMsg, "\t xMin = (%f, %f, %f)\n", xMin.x, xMin.y, xMin.z);
+		mCalc->log(logMsg);
+		sprintf (logMsg, "\t yMin = (%f, %f, %f)\n", yMin.x, yMin.y, yMin.z);
+		mCalc->log(logMsg);
+		sprintf (logMsg, "\t zMin = (%f, %f, %f)\n", zMin.x, zMin.y, zMin.z);
+		mCalc->log(logMsg);
+		sprintf (logMsg, "\t xMax = (%f, %f, %f)\n", xMax.x, xMax.y, xMax.z);
+		mCalc->log(logMsg);
+		sprintf (logMsg, "\t yMax = (%f, %f, %f)\n", yMax.x, yMax.y, yMax.z);
+		mCalc->log(logMsg);
+		sprintf (logMsg, "\t zMax = (%f, %f, %f)\n", zMax.x, zMax.y, zMax.z);
+		mCalc->log(logMsg);
+	}	
 }
 
 // ---------------------------------------------------------------------------
@@ -326,6 +350,11 @@ BoundingBox::FindCenter()
 	mCtr.x = (xMax.x + xMin.x) / 2.0;
 	mCtr.y = (yMax.y + yMin.y) / 2.0;
 	mCtr.z = (zMax.z + zMin.z) / 2.0;
+	if (mPrefs->verbose) {
+		char logMsg[kStdStringSize];
+		sprintf (logMsg, "Found center from max/min points: (%f, %f, %f)\n", mCtr.x, mCtr.y, mCtr.z);
+		mCalc->log(logMsg);
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -343,6 +372,17 @@ BoundingBox::FindBetterCenter()
 	} else {
 		throw("There's some problem with the data set.  BoundingBox::FindBetterCenter couldn't.");
 	}
+}
+
+// ---------------------------------------------------------------------------
+//		¥ PrepForHullOrPrimitive
+// ---------------------------------------------------------------------------
+void
+BoundingBox::PrepForHullOrPrimitive()
+{
+	mPtArray = new NumPtArray(theXls);	// this is basically a secondary array with each point containing the index and center of a crystal
+	FindBoundPoints();
+	FindCenter();
 }
 
 // ---------------------------------------------------------------------------
@@ -430,9 +470,11 @@ BoundingBox::DiscardInteriorPoints()
 			} else
 				i++;
 		}
-		char logMsg[kStdStringSize];
-		sprintf(logMsg, "In BoundingBox::DiscardInteriorPoints.  Discarded a total of %d points.", numRemoved);
-		mCalc->log(logMsg);
+		if (mPrefs->verbose) {
+			char logMsg[kStdStringSize];
+			sprintf(logMsg, "In BoundingBox::DiscardInteriorPoints.  Discarded a total of %d points.", numRemoved);
+			mCalc->log(logMsg);
+		}
 		Clear();
 	}
 }
@@ -469,12 +511,12 @@ BoundingBox::FindConvexHull()
 		}
 		theXls->RebuildList();
 	} else {	// the three criteria did not all apply
+		if (mPrefs->verbose) mCalc->log("Finding Convex Hull.\n");
+		
 		theXls->SetBounds(kBoundsNone);	// remove bounds from crystal array
 		mType = kSidesBox;	// we are going to be a Sides box (for now at least; if the user selected a different
 							// primitive, then that primitive will be adopted later
-		mPtArray = new NumPtArray(theXls);	// this is basically a secondary array with each point containing the index and center of a crystal
-		FindBoundPoints();
-		FindCenter();
+		PrepForHullOrPrimitive();
 		DiscardInteriorPoints();
 
 		mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 0, 0, true);
@@ -513,44 +555,47 @@ BoundingBox::FindConvexHull()
 //		¥ FindFirstSide
 // ---------------------------------------------------------------------------
 /* This is part of the convex hull operation.  This method finds the first side
-of the bounding box to start things off.  It does this by making a side out of
-the three points with the minimum Z coordinate  These must be a side, but just
-in case, it verifies the side, looking for any points in the dataset that are
-outside this Side. */
+of the bounding box to start things off.  It does this by making a fake horizontal
+side out of the point with the minimum Z coordinate, and then using this to find the 
+first real side.  It then verifies the side, looking for any points in the dataset 
+that are outside this Side. */
 void
 BoundingBox::FindFirstSide()
 {
 	NumPtArray coplanars;
-	NumberedPt thisPt, zMin2, zMin3, betterPt;
-	short i;
-	
-	zMin2 = zMin3 = zMax;
-	for (i  = 0 ; i  <= mPtArray->GetCount()-1 ; i ++) {
-		thisPt = (*mPtArray)[i];
-		// we already know what the min-z point is, because we found it in FindBoundPoints, but
-		// we need to know the 3 minimum-z points to make a temporary side out of them.
-		if (thisPt != zMin) {	
-			if (thisPt.z < zMin2.z ) {
-				zMin3 = zMin2;
-				zMin2 = thisPt;
-			} else if (thisPt.z < zMin3.z ) {
-				zMin3 = thisPt;
-			}
-		}
-	}
-	
+	NumberedPt thisPt, fakePt1, fakePt2, newPt, betterPt;
+
+	fakePt1.seq = -1;
+	fakePt1.x = zMin.x + 1;
+	fakePt1.y = zMin.y + 1;
+	fakePt1.z = zMin.z;
+
+	fakePt2.seq = -2;
+	fakePt2.x = zMin.x + 1;
+	fakePt2.y = zMin.y;
+	fakePt2.z = zMin.z;
+
 	Side thisSide;
 	thisSide.pt1 = zMin;
-	thisSide.pt2 = zMin2;
-	thisSide.pt3 = zMin3;
+	thisSide.pt2 = fakePt1;
+	thisSide.pt3 = fakePt2;
 	
 	AlignSide(thisSide);
-	FindCoplanars(coplanars, thisSide);
+
+	newPt = BendAroundSide(coplanars, thisSide.pt1, thisSide.pt2, thisSide.pt3);	// ignore coplanars for now; this side will not be a real side either
+
+	thisSide.pt2 = newPt;	// newPt is our second good point in the side
+	AlignSide(thisSide);
+
+	newPt = BendAroundSide(coplanars, thisSide.pt1, thisSide.pt2, thisSide.pt3);
+	thisSide.pt3 = newPt;	// newPt is our third good point in the side
+	AlignSide(thisSide);
+
 	while (!VerifySide(thisSide, &betterPt, &coplanars)) {
 		// while there are points outside this Side:
-		double dist1 = zMin.Distance(betterPt);
-		double dist2 = zMin2.Distance(betterPt);
-		double dist3 = zMin3.Distance(betterPt);
+		double dist1 = thisSide.pt1.Distance(betterPt);
+		double dist2 = thisSide.pt2.Distance(betterPt);
+		double dist3 = thisSide.pt3.Distance(betterPt);
 		// replace the point that is closest to the better point
 		if (myMin(dist1, dist2, dist3) == dist1)
 			thisSide.pt1 = betterPt;
@@ -558,6 +603,7 @@ BoundingBox::FindFirstSide()
 			thisSide.pt2 = betterPt;
 		else
 			thisSide.pt3 = betterPt;
+		AlignSide(thisSide);
 		FindCoplanars(coplanars, thisSide);
 	}
 	
@@ -742,7 +788,7 @@ BoundingBox::FindCoplanars (NumPtArray &coplanars, Side &inSide)
 	for (short i = 0; i <= mPtArray->GetCount() - 1; i++) {
 		if (!inSide.PointOnSide((*mPtArray)[i])) {
 			double newTheta = norm.Angle((*mPtArray)[i] - inSide.pt1);
-			if (newTheta - M_PI / 2.0 <= kCoplanarThreshold) {	// angle is near 90¡, or less than
+			if (newTheta - M_PI_2 <= kCoplanarThreshold) {	// angle is near 90¡, or less than
 																// 90¡ (means point is outside
 																// plane, so include it no matter
 																// what - by finding that out here,
@@ -898,7 +944,7 @@ BoundingBox::BendAroundSide (NumPtArray &coplanars, NumberedPt &inPt1,
 	for (i = 0; i <= mPtArray->GetCount() - 1; i++) {
 		if (!startSide.PointOnSide((*mPtArray)[i])) {	// if this point is not on the side already
 			tempSide.pt3 = (*mPtArray)[i];
-			if (tempSide.Area() > kCoplanarThreshold) {	// if the point is not collinear with the first two points of the side
+			if (tempSide.MinAngle() > kCoplanarThreshold) {	// if the point is not collinear with the first two points of the side
 				newTheta = lastSideOutVect.Angle(tempSide.Vect12to3());	// newTheta is the angle the candidate makes with the vector pointing towards 3 from the 1-2 edge
 				if (::fabs(newTheta - maxTheta) <= kCoplanarThreshold)	// if the difference between newTheta and maxTheta is small, we call the point coplanar
 					coplanars.PushPt((*mPtArray)[i]);
@@ -907,7 +953,7 @@ BoundingBox::BendAroundSide (NumPtArray &coplanars, NumberedPt &inPt1,
 					goodPoint = i;			// record the new best point
 					coplanars.Clear();		// clear the coplanars array
 				}
-			}
+			}	// else the point is collinear; ignore it
 		}
 	}
 	tempSide.pt3 = (*mPtArray)[goodPoint];	// record the best point in the side
@@ -1001,6 +1047,8 @@ BoundingBox::PointInBox(Point3DFloat &inPt)
 void
 BoundingBox::BetterInscribedBox()
 {
+	if (mPrefs->verbose) mCalc->log("Making a BetterInscribedBox.\n");
+
 	// First, delete the old inscribed box made in DiscardInteriorPoints
 	if (mInscribedBox != nil) {
 		delete mInscribedBox;
@@ -1011,6 +1059,7 @@ BoundingBox::BetterInscribedBox()
 												// for an inscribed or exscribed box
 	} else {		// we are a Sides box.  Operations on a Sides box are slow, so let's create an inscribed
 					// and exscribed rectangular prism to speed things up
+		if (mPrefs->verbose) mCalc->log("\tThis box is a SidesBox.\n");
 		
 		NumberedPt			xMin, xMax, yMin, yMax, zMin, zMax;
 		float					increment;
@@ -1057,6 +1106,23 @@ BoundingBox::BetterInscribedBox()
 			zMax.z += increment;
 		} while (PointInBox(zMax));
 		zMax.z -= increment;
+
+		if (mPrefs->verbose) {
+			mCalc->log("\tFound points for OctahedronBox:");
+			char logMsg[kStdStringSize];
+			sprintf (logMsg, "\t\t xMin = (%f, %f, %f)\n", xMin.x, xMin.y, xMin.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t yMin = (%f, %f, %f)\n", yMin.x, yMin.y, yMin.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t zMin = (%f, %f, %f)\n", zMin.x, zMin.y, zMin.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t xMax = (%f, %f, %f)\n", xMax.x, xMax.y, xMax.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t yMax = (%f, %f, %f)\n", yMax.x, yMax.y, yMax.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t zMax = (%f, %f, %f)\n", zMax.x, zMax.y, zMax.z);
+			mCalc->log(logMsg);
+		}	
 		
 		SideSet *OctahedronBox;
 		OctahedronBox = new SideSet;
@@ -1128,15 +1194,26 @@ BoundingBox::BetterInscribedBox()
 		// ...and then shrink it by one increment
 		tempLen = CubeBox->GetSideLen();
 		CubeBox->SetSideLen(tempLen-increment);
+
+		if (mPrefs->verbose) {
+			mCalc->log("\tFound inscribed CubeBox:");
+			char logMsg[kStdStringSize];
+			sprintf (logMsg, "\t\t center = (%f, %f, %f)\n", mCtr.x, mCtr.y, mCtr.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t sideLen = %f\n", tempLen);
+			mCalc->log(logMsg);
+		}	
 		
 		// We test the incsribed cube to see how much volume it has relative to the octahedron.
 		// If the cube is much smaller (by 50%), then we don't use the cube.
 		// We give the cube an advantage since it is so much faster to calculate.	
 		float CubeVolume = pow(CubeBox->GetSideLen(), 3);
 		if (OctahedronBox->Volume() < (CubeVolume * 1.5)) {
+			if (mPrefs->verbose) mCalc->log("\t Chose CubeBox.\n");
 			delete OctahedronBox;
 			mInscribedBox = CubeBox;
 		} else {
+			if (mPrefs->verbose) mCalc->log("\t Chose OctahedronBox.\n");
 			delete CubeBox;
 			mInscribedBox = OctahedronBox;
 		}
@@ -1170,6 +1247,15 @@ BoundingBox::BetterInscribedBox()
 		// ...and then expand it by one increment
 		tempLen = mExscribedBox->GetSideLen();
 		mExscribedBox->SetSideLen(tempLen+increment);
+
+		if (mPrefs->verbose) {
+			mCalc->log("\tFound exscribed CubeBox:");
+			char logMsg[kStdStringSize];
+			sprintf (logMsg, "\t\t center = (%f, %f, %f)\n", mCtr.x, mCtr.y, mCtr.z);
+			mCalc->log(logMsg);
+			sprintf (logMsg, "\t\t sideLen = %f\n", tempLen);
+			mCalc->log(logMsg);
+		}	
 	}
 }
 

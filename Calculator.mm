@@ -255,10 +255,11 @@ Calculator::reduceOneDataset(BoundingBox *ioBBox, HoleSet *inHoles)
 		/* Have the bounding box find the convex hull; it will also find 
 		the appropriate primitive as part of this process (if Sides wasn't 
 		selected by the user), and adapt the crystal data set to that primitive */
-		ioBBox->FindConvexHull();
+		if (!prefs->exscribedPrimitive)
+			ioBBox->FindConvexHull();
+
 		if ([cont shouldStopCalculating]) throw(kUserCanceledErr);
-		
-		// these used to be within an if (theXls->GetBounds() != kBoundsNone) clause.  why. I wonder?
+
 		FindBestPrimitive(ioBBox, inHoles);
 		AdaptToPrimitiveBox(stats, ioBBox);
 
@@ -709,8 +710,7 @@ Calculator::calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 			of the primitive inside the box.  Put the primitive in the middle of this range.
 		4) Expand the primitive until it's just outside the box.
 		5) Redo 2-4 a couple of times.
-
-	Why aren't we starting with the bounds, if the bounds are present?
+	* Unless we are doing the exscribed primitive instead *
 */
 void
 Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
@@ -723,368 +723,616 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 	
 	switch (prefs->sampleShape) {
 		case kRectPrism:
-		NewFindBestRPPrimitive(curPrim, ioBBox, inHoles);	// start with a Monte Carlo search for best box
+			if (prefs->exscribedPrimitive) {
+				FindBestExscRPPrimitive(ioBBox);
+			} else {
+				NewFindBestRPPrimitive(curPrim, ioBBox, inHoles);	// start with a Monte Carlo search for best box
 
-		curLengths = curPrim.GetSideLenPt();
-		
-		do {		// expand box until just too big
-			curLengths *= 1.01;
-			curPrim.SetDimensions(curLengths);
-		} while (ioBBox->PrimitiveInBox(&curPrim));
+				curLengths = curPrim.GetSideLenPt();
+				
+				do {		// expand box until just too big
+					curLengths *= 1.01;
+					curPrim.SetDimensions(curLengths);
+				} while (ioBBox->PrimitiveInBox(&curPrim));
 
-		for (tryNum = 1; tryNum <= numtries; tryNum++) {
-				// set shrinking factors; get finer-grained with later tries
-			float bigFactor = 1.0 - ((numtries - tryNum + 1) * 0.015);
-			float smFactor = 1.0 - ((numtries - tryNum + 1) * 0.03);
-			// Shrink until primitive is inside box: try for each dimension, pick version with largest volume
-			// Try Shrinking X:
-			Point3DFloat beforeLengths = curPrim.GetSideLenPt();
-			beforeCtr = curPrim.GetCtr();
+				for (tryNum = 1; tryNum <= numtries; tryNum++) {
+						// set shrinking factors; get finer-grained with later tries
+					float bigFactor = 1.0 - ((numtries - tryNum + 1) * 0.015);
+					float smFactor = 1.0 - ((numtries - tryNum + 1) * 0.03);
+					// Shrink until primitive is inside box: try for each dimension, pick version with largest volume
+					// Try Shrinking X:
+					Point3DFloat beforeLengths = curPrim.GetSideLenPt();
+					beforeCtr = curPrim.GetCtr();
 
-//	OLD Version: keeps ratios among dimensions
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths *= bigFactor;
-				if (curLengths.x < (beforeLengths.x / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
+		//	OLD Version: keeps ratios among dimensions
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths *= bigFactor;
+						if (curLengths.x < (beforeLengths.x / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double oldVersionVolume = curPrim.Volume();
+					Point3DFloat oldVersionLen = curLengths;
+					Point3DFloat oldVersionCtr = curPrim.GetCtr();
+
+		//  Shrink x faster:
+					curLengths = beforeLengths;
+					curPrim.SetDimensions(curLengths);
+					curPrim.SetCtr(beforeCtr);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths.x *= smFactor;
+						curLengths.y *= bigFactor;
+						curLengths.z *= bigFactor;
+						if (curLengths.y < (beforeLengths.y / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double yzVersionVolume = curPrim.Volume();
+					Point3DFloat yzVersionLen = curLengths;
+					Point3DFloat yzVersionCtr = curPrim.GetCtr();
+
+		//  Shrink y faster:
+					curLengths = beforeLengths;
+					curPrim.SetDimensions(curLengths);
+					curPrim.SetCtr(beforeCtr);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths.x *= bigFactor;
+						curLengths.y *= smFactor;
+						curLengths.z *= bigFactor;
+						if (curLengths.z < (beforeLengths.z / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double xzVersionVolume = curPrim.Volume();
+					Point3DFloat xzVersionLen = curLengths;
+					Point3DFloat xzVersionCtr = curPrim.GetCtr();
+
+		//  Shrink z faster:
+					curLengths = beforeLengths;
+					curPrim.SetDimensions(curLengths);
+					curPrim.SetCtr(beforeCtr);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths.x *= bigFactor;
+						curLengths.y *= bigFactor;
+						curLengths.z *= smFactor;
+						if (curLengths.x < (beforeLengths.x / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double xyVersionVolume = curPrim.Volume();
+					Point3DFloat xyVersionLen = curLengths;
+					Point3DFloat xyVersionCtr = curPrim.GetCtr();
+
+		//  Shrink x slower:
+					curLengths = beforeLengths;
+					curPrim.SetDimensions(curLengths);
+					curPrim.SetCtr(beforeCtr);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths.x *= bigFactor;
+						curLengths.y *= smFactor;
+						curLengths.z *= smFactor;
+						if (curLengths.x < (beforeLengths.x / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double xVersionVolume = curPrim.Volume();
+					Point3DFloat xVersionLen = curLengths;
+					Point3DFloat xVersionCtr = curPrim.GetCtr();
+
+		//  Shrink y slower:
+					curLengths = beforeLengths;
+					curPrim.SetDimensions(curLengths);
+					curPrim.SetCtr(beforeCtr);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths.x *= smFactor;
+						curLengths.y *= bigFactor;
+						curLengths.z *= smFactor;
+						if (curLengths.y < (beforeLengths.y / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double yVersionVolume = curPrim.Volume();
+					Point3DFloat yVersionLen = curLengths;
+					Point3DFloat yVersionCtr = curPrim.GetCtr();
+
+		//  Shrink z slower:
+					curLengths = beforeLengths;
+					curPrim.SetDimensions(curLengths);
+					curPrim.SetCtr(beforeCtr);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+															// we shrink it's dimensions by 99%
+						curLengths.x *= smFactor;
+						curLengths.y *= smFactor;
+						curLengths.z *= bigFactor;
+						if (curLengths.z < (beforeLengths.z / 1000)) {
+							postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
+							throw CalcError();
+						}
+						curPrim.SetDimensions(curLengths);
+					}
+					PutPrimInMiddle(curPrim, ioBBox, tryNum);
+					do {
+						curLengths *= 1.01;
+						curPrim.SetDimensions(curLengths);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+
+					double zVersionVolume = curPrim.Volume();
+					Point3DFloat zVersionLen = curLengths;
+					Point3DFloat zVersionCtr = curPrim.GetCtr();
+
+		// Choose the best one:
+					Point3DFloat maxVolLengths;
+					Point3DFloat maxVolCtr;
+					double	curMaxVol = 0;
+
+					maxVolLengths = xVersionLen;
+					maxVolCtr = xVersionCtr;
+					curMaxVol = xVersionVolume;
+
+					if (yVersionVolume > curMaxVol) {
+						maxVolLengths = yVersionLen;
+						maxVolCtr = yVersionCtr;
+						curMaxVol = yVersionVolume;
+					}
+					if (zVersionVolume > curMaxVol) {
+						maxVolLengths = zVersionLen;
+						maxVolCtr = zVersionCtr;
+						curMaxVol = zVersionVolume;
+					}
+					if (xyVersionVolume > curMaxVol) {
+						maxVolLengths = xyVersionLen;
+						maxVolCtr = xyVersionCtr;
+						curMaxVol = xyVersionVolume;
+					}
+					if (yzVersionVolume > curMaxVol) {
+						maxVolLengths = yzVersionLen;
+						maxVolCtr = yzVersionCtr;
+						curMaxVol = yzVersionVolume;
+					}
+					if (xzVersionVolume > curMaxVol) {
+						maxVolLengths = xzVersionLen;
+						maxVolCtr = xzVersionCtr;
+						curMaxVol = xzVersionVolume;
+					}
+					if (oldVersionVolume > curMaxVol) {
+						maxVolLengths = oldVersionLen;
+						maxVolCtr = oldVersionCtr;
+						curMaxVol = oldVersionVolume;
+					}
+					curPrim.SetDimensions(maxVolLengths);
+					curPrim.SetCtr(maxVolCtr);
+				}	// for tryNum
+
+				while (!ioBBox->PrimitiveInBox(&curPrim)) {	// reduce by very small increments, until
+					curLengths *= 0.999;							// it's inside the box
+					curPrim.SetDimensions(curLengths);
 				}
-				curPrim.SetDimensions(curLengths);
-			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
 
-			double oldVersionVolume = curPrim.Volume();
-			Point3DFloat oldVersionLen = curLengths;
-			Point3DFloat oldVersionCtr = curPrim.GetCtr();
-
-//  Shrink x faster:
-			curLengths = beforeLengths;
-			curPrim.SetDimensions(curLengths);
-			curPrim.SetCtr(beforeCtr);
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths.x *= smFactor;
-				curLengths.y *= bigFactor;
-				curLengths.z *= bigFactor;
-				if (curLengths.y < (beforeLengths.y / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
+				// take this primitive we've made, and make the BBox that primitive
+				ioBBox->SetType(kRPBox);
+				ioBBox->SetCtr(curPrim.GetCtr());
+				ioBBox->SetDimensions(curPrim.GetSideLenPt());
+				
+				// make the inscribed box this primitive, too
+				if (ioBBox->mInscribedBox == nil) {
+					ioBBox->mInscribedBox = new SideSet();
 				}
-				curPrim.SetDimensions(curLengths);
+				ioBBox->mInscribedBox->SetType(kRPBox);
+				ioBBox->mInscribedBox->SetCtr(curPrim.GetCtr());
+				ioBBox->mInscribedBox->SetDimensions(curPrim.GetSideLenPt());
 			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-
-			double yzVersionVolume = curPrim.Volume();
-			Point3DFloat yzVersionLen = curLengths;
-			Point3DFloat yzVersionCtr = curPrim.GetCtr();
-
-//  Shrink y faster:
-			curLengths = beforeLengths;
-			curPrim.SetDimensions(curLengths);
-			curPrim.SetCtr(beforeCtr);
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths.x *= bigFactor;
-				curLengths.y *= smFactor;
-				curLengths.z *= bigFactor;
-				if (curLengths.z < (beforeLengths.z / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
-				}
-				curPrim.SetDimensions(curLengths);
-			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-
-			double xzVersionVolume = curPrim.Volume();
-			Point3DFloat xzVersionLen = curLengths;
-			Point3DFloat xzVersionCtr = curPrim.GetCtr();
-
-//  Shrink z faster:
-			curLengths = beforeLengths;
-			curPrim.SetDimensions(curLengths);
-			curPrim.SetCtr(beforeCtr);
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths.x *= bigFactor;
-				curLengths.y *= bigFactor;
-				curLengths.z *= smFactor;
-				if (curLengths.x < (beforeLengths.x / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
-				}
-				curPrim.SetDimensions(curLengths);
-			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-
-			double xyVersionVolume = curPrim.Volume();
-			Point3DFloat xyVersionLen = curLengths;
-			Point3DFloat xyVersionCtr = curPrim.GetCtr();
-
-//  Shrink x slower:
-			curLengths = beforeLengths;
-			curPrim.SetDimensions(curLengths);
-			curPrim.SetCtr(beforeCtr);
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths.x *= bigFactor;
-				curLengths.y *= smFactor;
-				curLengths.z *= smFactor;
-				if (curLengths.x < (beforeLengths.x / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
-				}
-				curPrim.SetDimensions(curLengths);
-			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-
-			double xVersionVolume = curPrim.Volume();
-			Point3DFloat xVersionLen = curLengths;
-			Point3DFloat xVersionCtr = curPrim.GetCtr();
-
-//  Shrink y slower:
-			curLengths = beforeLengths;
-			curPrim.SetDimensions(curLengths);
-			curPrim.SetCtr(beforeCtr);
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths.x *= smFactor;
-				curLengths.y *= bigFactor;
-				curLengths.z *= smFactor;
-				if (curLengths.y < (beforeLengths.y / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
-				}
-				curPrim.SetDimensions(curLengths);
-			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-
-			double yVersionVolume = curPrim.Volume();
-			Point3DFloat yVersionLen = curLengths;
-			Point3DFloat yVersionCtr = curPrim.GetCtr();
-
-//  Shrink z slower:
-			curLengths = beforeLengths;
-			curPrim.SetDimensions(curLengths);
-			curPrim.SetCtr(beforeCtr);
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-													// we shrink it's dimensions by 99%
-				curLengths.x *= smFactor;
-				curLengths.y *= smFactor;
-				curLengths.z *= bigFactor;
-				if (curLengths.z < (beforeLengths.z / 1000)) {
-					postError("I couldn't make an inscribed box after many tries.  You should inspect the crystal array for an outlier, which is the typical cause of this error.", "Bad Shape", nil, -1, -1);
-					throw CalcError();
-				}
-				curPrim.SetDimensions(curLengths);
-			}
-			PutPrimInMiddle(curPrim, ioBBox, tryNum);
-			do {
-				curLengths *= 1.01;
-				curPrim.SetDimensions(curLengths);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-
-			double zVersionVolume = curPrim.Volume();
-			Point3DFloat zVersionLen = curLengths;
-			Point3DFloat zVersionCtr = curPrim.GetCtr();
-
-// Choose the best one:
-			Point3DFloat maxVolLengths;
-			Point3DFloat maxVolCtr;
-			double	curMaxVol = 0;
-
-			maxVolLengths = xVersionLen;
-			maxVolCtr = xVersionCtr;
-			curMaxVol = xVersionVolume;
-
-			if (yVersionVolume > curMaxVol) {
-				maxVolLengths = yVersionLen;
-				maxVolCtr = yVersionCtr;
-				curMaxVol = yVersionVolume;
-			}
-			if (zVersionVolume > curMaxVol) {
-				maxVolLengths = zVersionLen;
-				maxVolCtr = zVersionCtr;
-				curMaxVol = zVersionVolume;
-			}
-			if (xyVersionVolume > curMaxVol) {
-				maxVolLengths = xyVersionLen;
-				maxVolCtr = xyVersionCtr;
-				curMaxVol = xyVersionVolume;
-			}
-			if (yzVersionVolume > curMaxVol) {
-				maxVolLengths = yzVersionLen;
-				maxVolCtr = yzVersionCtr;
-				curMaxVol = yzVersionVolume;
-			}
-			if (xzVersionVolume > curMaxVol) {
-				maxVolLengths = xzVersionLen;
-				maxVolCtr = xzVersionCtr;
-				curMaxVol = xzVersionVolume;
-			}
-			if (oldVersionVolume > curMaxVol) {
-				maxVolLengths = oldVersionLen;
-				maxVolCtr = oldVersionCtr;
-				curMaxVol = oldVersionVolume;
-			}
-			curPrim.SetDimensions(maxVolLengths);
-			curPrim.SetCtr(maxVolCtr);
-		}	// for tryNum
-
-		while (!ioBBox->PrimitiveInBox(&curPrim)) {	// reduce by very small increments, until
-			curLengths *= 0.999;							// it's inside the box
-			curPrim.SetDimensions(curLengths);
-		}
-
-		// take this primitive we've made, and make the BBox that primitive
-		ioBBox->SetType(kRPBox);
-		ioBBox->SetCtr(curPrim.GetCtr());
-		ioBBox->SetDimensions(curPrim.GetSideLenPt());
-		
-		// make the inscribed box this primitive, too
-		if (ioBBox->mInscribedBox == nil) {
-			ioBBox->mInscribedBox = new SideSet();
-		}
-		ioBBox->mInscribedBox->SetType(kRPBox);
-		ioBBox->mInscribedBox->SetCtr(curPrim.GetCtr());
-		ioBBox->mInscribedBox->SetDimensions(curPrim.GetSideLenPt());
-		break;
-	case kCylinder:
-		float	ht, rad;
-		ctr = ioBBox->GetCtr();
-		rad = dmh_max(ioBBox->xMax.x - ioBBox->xMin.x, ioBBox->yMax.y - ioBBox->yMin.y) / 2;
-		ht = ioBBox->zMax.z - ioBBox->zMin.z;
-		curPrim.SetType(kCylBox);
-		curPrim.SetCtr(ctr);
-		curPrim.SetDimensions(rad, ht);	// this RP is now the exscribed box
-		
-		for (tryNum = 1; tryNum <= numtries; tryNum++) {
-			while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
-														// we shrink it's dimensions by 99%
-				rad *= 0.99;
-				ht *= 0.99;
-				curPrim.SetDimensions(rad, ht);
-			}
-			// now the RP should be inscribed, but might not be very large.  We'll try moving the
-			// center, and then expanding the box a bit.
-			Point3DFloat lastCtr = ctr;
-			float minCtrX, maxCtrX, minCtrY, maxCtrY, minCtrZ, maxCtrZ;
-			do {
-				ctr.x -= rad * 0.01;
+			break;
+		case kCylinder:
+			if (prefs->verbose) log ("Trying to Find the Best Cylindrical Primitive, as selected by the user.\n");
+			if (prefs->exscribedPrimitive) {
+				FindBestExscCylPrimitive(ioBBox);
+			} else {
+				setupProgress("Looking for best primitive to fit in bounding box...", nil, nil, nil, -1, 1, numtries, 1, false);
+				float	ht, rad;
+				ctr = ioBBox->GetCtr();
+				rad = dmh_max(ioBBox->xMax.x - ioBBox->xMin.x, ioBBox->yMax.y - ioBBox->yMin.y) / 2;
+				ht = ioBBox->zMax.z - ioBBox->zMin.z;
+				curPrim.SetType(kCylBox);
 				curPrim.SetCtr(ctr);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-			ctr.x += rad * 0.01;
-			minCtrX = ctr.x;
-			ctr = lastCtr;
-			curPrim.SetCtr(lastCtr);
-			do {
-				ctr.x += rad * 0.01;
-				curPrim.SetCtr(ctr);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-			ctr.x -= rad * 0.01;
-			maxCtrX = ctr.x;
-			ctr = lastCtr;
-			curPrim.SetCtr(lastCtr);
+				curPrim.SetDimensions(rad, ht);	// this Primitive is now the exscribed box
 
-			do {
-				ctr.y -= rad * 0.01;
-				curPrim.SetCtr(ctr);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-			ctr.y += rad * 0.01;
-			minCtrY = ctr.y;
-			ctr = lastCtr;
-			curPrim.SetCtr(lastCtr);
-			do {
-				ctr.y += rad * 0.01;
-				curPrim.SetCtr(ctr);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-			ctr.y -= rad * 0.01;
-			maxCtrY = ctr.y;
-			ctr = lastCtr;
-			curPrim.SetCtr(lastCtr);
+				if (prefs->verbose) {
+					log("\tFound starting primitive:");
+					char logMsg[kStdStringSize];
+					sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
+					log(logMsg);
+				}
 
-			do {
-				ctr.z -= ht * 0.01;
-				curPrim.SetCtr(ctr);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-			ctr.z += ht * 0.01;
-			minCtrZ = ctr.z;
-			ctr = lastCtr;
-			curPrim.SetCtr(lastCtr);
-			do {
-				ctr.z += ht * 0.01;
-				curPrim.SetCtr(ctr);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-			ctr.z -= ht * 0.01;
-			maxCtrZ = ctr.z;
-			curPrim.SetCtr(lastCtr);
+				for (tryNum = 1; tryNum <= numtries; tryNum++) {
+					progress(tryNum);
+					while (!ioBBox->PrimitiveInBox(&curPrim)) {	// as long as the RP isn't inside the box,
+																// we shrink it's dimensions by 99%
+						rad *= 0.99;
+						ht *= 0.99;
+						curPrim.SetDimensions(rad, ht);
+					}
+					// now the RP should be inscribed, but might not be very large.  We'll try moving the
+					// center, and then expanding the box a bit.
+					Point3DFloat lastCtr = ctr;
+					float minCtrX, maxCtrX, minCtrY, maxCtrY, minCtrZ, maxCtrZ;
+					do {
+						ctr.x -= rad * 0.01;
+						curPrim.SetCtr(ctr);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+					ctr.x += rad * 0.01;
+					minCtrX = ctr.x;
+					ctr = lastCtr;
+					curPrim.SetCtr(lastCtr);
+					do {
+						ctr.x += rad * 0.01;
+						curPrim.SetCtr(ctr);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+					ctr.x -= rad * 0.01;
+					maxCtrX = ctr.x;
+					ctr = lastCtr;
+					curPrim.SetCtr(lastCtr);
 
-			ctr.x = (maxCtrX + minCtrX) / 2.0;
-			ctr.y = (maxCtrY + minCtrY) / 2.0;
-			ctr.z = (maxCtrZ + minCtrZ) / 2.0;
-			curPrim.SetCtr(ctr);
+					do {
+						ctr.y -= rad * 0.01;
+						curPrim.SetCtr(ctr);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+					ctr.y += rad * 0.01;
+					minCtrY = ctr.y;
+					ctr = lastCtr;
+					curPrim.SetCtr(lastCtr);
+					do {
+						ctr.y += rad * 0.01;
+						curPrim.SetCtr(ctr);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+					ctr.y -= rad * 0.01;
+					maxCtrY = ctr.y;
+					ctr = lastCtr;
+					curPrim.SetCtr(lastCtr);
+
+					do {
+						ctr.z -= ht * 0.01;
+						curPrim.SetCtr(ctr);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+					ctr.z += ht * 0.01;
+					minCtrZ = ctr.z;
+					ctr = lastCtr;
+					curPrim.SetCtr(lastCtr);
+					do {
+						ctr.z += ht * 0.01;
+						curPrim.SetCtr(ctr);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+					ctr.z -= ht * 0.01;
+					maxCtrZ = ctr.z;
+					curPrim.SetCtr(lastCtr);
+
+					ctr.x = (maxCtrX + minCtrX) / 2.0;
+					ctr.y = (maxCtrY + minCtrY) / 2.0;
+					ctr.z = (maxCtrZ + minCtrZ) / 2.0;
+					curPrim.SetCtr(ctr);
+					
+					do {
+						ht *= 1.01;
+						rad *= 1.01;
+						curPrim.SetDimensions(rad, ht);
+					} while (ioBBox->PrimitiveInBox(&curPrim));
+						// now the primitive is outside the box again, but not by much
+				}	// for tryNum
+
+				if (prefs->verbose) {
+					log("\tAdjusted the primitive.  It is now this:");
+					char logMsg[kStdStringSize];
+					ctr = curPrim.GetCtr();
+					rad  = curPrim.GetRadius();
+					ht = curPrim.GetHeight();
+					sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
+					log(logMsg);
+				}
+				
+				while (!ioBBox->PrimitiveInBox(&curPrim)) {	// reduce by very small increments, until
+						ht *= 0.999;						// it's inside the box
+						rad *= 0.999;
+					curPrim.SetDimensions(rad, ht);
+				}
+				// take this primitive we've made, and make the BBox that primitive
+				ioBBox->SetType(kCylBox);
+				ioBBox->SetCtr(ctr);
+				ioBBox->SetDimensions(rad, ht);
 			
-			do {
-				ht *= 1.01;
-				rad *= 1.01;
-				curPrim.SetDimensions(rad, ht);
-			} while (ioBBox->PrimitiveInBox(&curPrim));
-				// now the primitive is outside the box again, but not by much
-		}	// for tryNum
-
-		while (!ioBBox->PrimitiveInBox(&curPrim)) {	// reduce by very small increments, until
-				ht *= 0.999;						// it's inside the box
-				rad *= 0.999;
-			curPrim.SetDimensions(rad, ht);
-		}
-		// take this primitive we've made, and make the BBox that primitive
-		ioBBox->SetType(kCylBox);
-		ioBBox->SetCtr(ctr);
-		ioBBox->SetDimensions(rad, ht);
-	
-		// make the inscribed box this primitive, too
-		if (ioBBox->mInscribedBox == nil) {
-			ioBBox->mInscribedBox = new SideSet();
-		}
-		ioBBox->mInscribedBox->SetType(kCylBox);
-		ioBBox->mInscribedBox->SetCtr(ctr);
-		ioBBox->mInscribedBox->SetDimensions(rad, ht);
-
-	break;
-	case kSides: // if kSides is selected, then leave the BBox the way it is - a collection of sides
-	default:
-	break;
+				// make the inscribed box this primitive, too
+				if (ioBBox->mInscribedBox == nil) {
+					ioBBox->mInscribedBox = new SideSet();
+				}
+				ioBBox->mInscribedBox->SetType(kCylBox);
+				ioBBox->mInscribedBox->SetCtr(ctr);
+				ioBBox->mInscribedBox->SetDimensions(rad, ht);
+			}
+			break;
+		case kSides: // if kSides is selected, then leave the BBox the way it is - a collection of sides
+		default:
+			break;
 	}
+}
+
+// ---------------------------------------------------------------------------
+//		• FindBestExscRPPrimitive
+// ---------------------------------------------------------------------------
+void
+Calculator::FindBestExscRPPrimitive(BoundingBox *ioBBox)
+{
+	SideSet curPrim;
+	Point3DFloat ctr, beforeCtr, offset;
+	short tryNum;
+	short numtries = 100;
+	short numOffsetAttempts = 100;
+	short thisOffsetAttempt;
+	short startXls, nowXls;
+	float xDim, yDim, zDim;
+	float scale;
+	
+	ioBBox->PrepForHullOrPrimitive();
+	ctr = ioBBox->GetCtr();
+
+	xDim = (ioBBox->xMax.x - ioBBox->xMin.x) * 1.0001;
+	yDim = (ioBBox->yMax.y - ioBBox->yMin.y) * 1.0001;
+	zDim = (ioBBox->zMax.z - ioBBox->zMin.z) * 1.0001;
+	curPrim.SetType(kRPBox);
+	curPrim.SetCtr(ctr);
+	curPrim.SetDimensions(xDim, yDim, zDim);	// this Primitive is now roughly the exscribed RP
+
+	startXls = curPrim.NumPointsInBox(ioBBox->GetXls());
+	
+	setupProgress("Looking for best rectangular prism to fit around dataset...", nil, nil, nil, -1, 1, numtries, 1, false);
+	
+	if (prefs->verbose) {
+		log("\tFound starting primitive:");
+		char logMsg[kStdStringSize];
+		sprintf (logMsg, "\t\t center = (%f, %f, %f); dimensions = (%f, %f, %f)\n", ctr.x, ctr.y, ctr.z, xDim, yDim, zDim);
+		log(logMsg);
+	}
+	
+	for (tryNum = 1; tryNum <= numtries; tryNum++) {
+		progress(tryNum);
+		beforeCtr = ctr;
+		Boolean goodOffset = false;
+		for (thisOffsetAttempt = 1; !goodOffset && (thisOffsetAttempt <= numOffsetAttempts); thisOffsetAttempt++) {
+			scale = (numOffsetAttempts - thisOffsetAttempt + 1)/numOffsetAttempts;
+			offset.x = RandomDbl(-xDim * scale / 100.0, xDim * scale / 100.0);
+			offset.y = RandomDbl(-yDim * scale / 100.0, yDim * scale / 100.0);
+			offset.z = RandomDbl(-zDim * scale / 100.0, zDim * scale / 100.0);
+			ctr = beforeCtr + offset;
+			curPrim.SetCtr(ctr);
+			nowXls = curPrim.NumPointsInBox(ioBBox->GetXls());
+			if (nowXls == startXls) goodOffset = true;
+		}
+		if (goodOffset) {
+			float increment = xDim/1000.0;
+			do {
+				// reduce radius by tiny increments until we lose a crystal from the primitive
+				xDim -= increment;
+				curPrim.SetDimensions(xDim, yDim, zDim);
+				nowXls = curPrim.NumPointsInBox(ioBBox->GetXls());				
+			} while (nowXls == startXls);
+			xDim += increment;
+			curPrim.SetDimensions(xDim, yDim, zDim);
+
+			increment = yDim/1000.0;
+			do {
+				// reduce radius by tiny increments until we lose a crystal from the primitive
+				yDim -= increment;
+				curPrim.SetDimensions(xDim, yDim, zDim);
+				nowXls = curPrim.NumPointsInBox(ioBBox->GetXls());				
+			} while (nowXls == startXls);
+			yDim += increment;
+			curPrim.SetDimensions(xDim, yDim, zDim);
+
+			increment = zDim/1000.0;
+			do {
+				// reduce radius by tiny increments until we lose a crystal from the primitive
+				yDim -= increment;
+				curPrim.SetDimensions(xDim, yDim, zDim);
+				nowXls = curPrim.NumPointsInBox(ioBBox->GetXls());				
+			} while (nowXls == startXls);
+			zDim += increment;
+			curPrim.SetDimensions(xDim, yDim, zDim);
+		}
+	}	// for tryNum
+	
+	if (prefs->verbose) {
+		log("\tAdjusted the primitive.  It is now this:");
+		char logMsg[kStdStringSize];
+		ctr = curPrim.GetCtr();
+		xDim  = curPrim.GetXLen();
+		yDim  = curPrim.GetYLen();
+		zDim  = curPrim.GetZLen();
+		sprintf (logMsg, "\t\t center = (%f, %f, %f); dimensions = (%f, %f, %f)\n", ctr.x, ctr.y, ctr.z, xDim, yDim, zDim);
+		log(logMsg);
+	}
+	
+	xDim = xDim - prefs->shrinkExscribedPrimitive;
+	yDim = yDim - prefs->shrinkExscribedPrimitive;
+	zDim = zDim - prefs->shrinkExscribedPrimitive;
+	
+	// take this primitive we've made, and make the BBox that primitive
+	ioBBox->SetType(kRPBox);
+	ioBBox->SetCtr(ctr);
+	ioBBox->SetDimensions(xDim, yDim, zDim);
+	
+	// make the inscribed box this primitive, too
+	if (ioBBox->mInscribedBox == nil) {
+		ioBBox->mInscribedBox = new SideSet();
+	}
+	ioBBox->mInscribedBox->SetType(kRPBox);
+	ioBBox->mInscribedBox->SetCtr(ctr);
+	ioBBox->mInscribedBox->SetDimensions(xDim, yDim, zDim);	
+}
+
+// ---------------------------------------------------------------------------
+//		• FindBestExscCylPrimitive
+// ---------------------------------------------------------------------------
+/*	We'll do numtries iterations of this:
+	(1) Move the center a small random X-Y vector until doing do loses no crystals.
+		(a) if no moves are possible after 100 tries (getting smaller each try),
+			we'll assume we are done.
+	(2) Reduce the radius by small amounts until we lose a crystal, then expand 
+		it back a bit.
+	We then shrink the whole thing by the user-specified value.
+*/
+void
+Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
+{
+	SideSet curPrim;
+	Point3DFloat ctr, beforeCtr, offset;
+	short tryNum;
+	short numtries = 100;
+	short numOffsetAttempts = 100;
+	short thisOffsetAttempt;
+	short failedOffsets = 0;
+	short startXls, nowXls;
+	float ht, rad;
+	float scale;
+
+	ioBBox->PrepForHullOrPrimitive();
+	ctr = ioBBox->GetCtr();
+	rad = 1.25 * dmh_max(ioBBox->xMax.x - ioBBox->xMin.x, ioBBox->yMax.y - ioBBox->yMin.y) / 2.0;	// this is expanded (the 1.25) in order to be sure to accommodate all the crystals
+	ht = (ioBBox->zMax.z - ioBBox->zMin.z) * 1.0001;	// this doesn't need to be expanded much to capture all the crystals
+	curPrim.SetType(kCylBox);
+	curPrim.SetCtr(ctr);
+	curPrim.SetDimensions(rad, ht);	// this Primitive is now roughly the exscribed cylinder
+
+	startXls = curPrim.NumPointsInBox(ioBBox->GetXls());
+	
+	setupProgress("Looking for best cylinder to fit around dataset...", nil, nil, nil, -1, 1, numtries, 1, false);
+
+	if (prefs->verbose) {
+		log("\tFound starting primitive:");
+		char logMsg[kStdStringSize];
+		sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
+		log(logMsg);
+	}
+	
+	for (tryNum = 1; tryNum <= numtries; tryNum++) {
+		progress(tryNum);
+		beforeCtr = ctr;
+		Boolean goodOffset = false;
+		for (thisOffsetAttempt = 1; !goodOffset && (thisOffsetAttempt <= numOffsetAttempts); thisOffsetAttempt++) {
+			scale = (numOffsetAttempts - thisOffsetAttempt + 1.0) / numOffsetAttempts;
+			float XYOffsetRange = rad * 2 * scale / 100.0;
+			offset.x = RandomDbl(-XYOffsetRange, XYOffsetRange);
+			offset.y = RandomDbl(-XYOffsetRange, XYOffsetRange);
+			offset.z = 0;
+			ctr = beforeCtr + offset;
+			curPrim.SetCtr(ctr);
+			nowXls = curPrim.NumPointsInBox(ioBBox->GetXls());
+			if (nowXls == startXls) goodOffset = true;
+		}
+		if (goodOffset) {
+			float increment = rad/1000.0;
+			do {
+				// reduce radius by tiny increments until we lose a crystal from the cylinder
+				rad -= increment;
+				curPrim.SetDimensions(rad, ht);
+				nowXls = curPrim.NumPointsInBox(ioBBox->GetXls());				
+			} while (nowXls == startXls);
+			rad += increment;
+			curPrim.SetDimensions(rad, ht);
+		} else {
+			failedOffsets++;
+			curPrim.SetCtr(beforeCtr);
+		}
+	}	// for tryNum
+	
+	if (prefs->verbose) {
+		log("\tAdjusted the primitive.  It is now this:");
+		char logMsg[kStdStringSize];
+		ctr = curPrim.GetCtr();
+		rad  = curPrim.GetRadius();
+		ht = curPrim.GetHeight();
+		sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
+		log(logMsg);
+	}
+	
+	rad = rad - prefs->shrinkExscribedPrimitive / 2.0;
+	ht = ht - prefs->shrinkExscribedPrimitive;
+	
+	if (prefs->verbose) {
+		log("\tShrunk the primitive.  It is now this:");
+		char logMsg[kStdStringSize];
+		sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
+		log(logMsg);
+	}
+	// take this primitive we've made, and make the BBox that primitive
+	ioBBox->SetType(kCylBox);
+	ioBBox->SetCtr(ctr);
+	ioBBox->SetDimensions(rad, ht);
+	
+	// make the inscribed box this primitive, too
+	if (ioBBox->mInscribedBox == nil) {
+		ioBBox->mInscribedBox = new SideSet();
+	}
+	ioBBox->mInscribedBox->SetType(kCylBox);
+	ioBBox->mInscribedBox->SetCtr(ctr);
+	ioBBox->mInscribedBox->SetDimensions(rad, ht);	
 }
 
 // ---------------------------------------------------------------------------

@@ -71,6 +71,8 @@ public:
 protected:
 		// CalculatorComputation methods:
 	void					FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles);
+	void					FindBestExscRPPrimitive(BoundingBox *ioBBox);
+	void					FindBestExscCylPrimitive(BoundingBox *ioBBox);
 	void					NewFindBestRPPrimitive(SideSet &ioPrim, BoundingBox *inBBox, HoleSet *inHoles);
 	void					PutPrimInMiddle(SideSet &ioPrim, BoundingBox *inBBox, short tryNum = -1);
 	void					AdaptToPrimitiveBox(Stats *stats, BoundingBox *ioBBox);

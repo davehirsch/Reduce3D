@@ -88,6 +88,34 @@ Side::Area()
 }
 
 // ---------------------------------------------------------------------------
+//		¥ MinAngle
+// ---------------------------------------------------------------------------
+/* Returns the minimum angle of the triangle formed by points pt1,pt2 and pt3.*/
+float
+Side::MinAngle()
+{
+	float angle1, angle2, angle3;	// angles at points 1 2 and 3
+	Point3DFloat v12, v13, v23, v21, v31, v32;
+	v12 = pt2 - pt1;
+	v13 = pt3 - pt1;
+	v23 = pt3 - pt2;
+	v21 = pt1 - pt2;
+	v31 = pt1 - pt3;
+	v32 = pt2 - pt3;
+	angle1 = v12.Angle(v13);
+//	angle1 = fabs(angle1);
+	if (angle1 > M_PI/2.0)
+		angle1 = M_PI - angle1;
+	angle2 = v21.Angle(v23);
+	if (angle2 > M_PI/2.0)
+		angle2 = M_PI - angle2;
+	angle3 = v31.Angle(v32);
+	if (angle3 > M_PI/2.0)
+		angle3 = M_PI - angle3;
+	return myMin(angle1, angle2, angle3);	
+}
+
+// ---------------------------------------------------------------------------
 //		¥ PointOnSide
 // ---------------------------------------------------------------------------
 bool

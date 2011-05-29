@@ -411,6 +411,8 @@
 	thePrefs.numCFOffsetVolPts = [defaults integerForKey:@"numCFOffsetVolPts"];
 	thePrefs.EpanecnikovCVal = [defaults floatForKey:@"EpanecnikovCVal"];
 	thePrefs.sampleShape = [defaults integerForKey:@"sampleShape"];
+	thePrefs.exscribedPrimitive = [defaults boolForKey:@"exscribedPrimitive"];
+	thePrefs.shrinkExscribedPrimitive = [defaults floatForKey:@"shrinkExscribedPrimitive"];
 
 	thePrefs.numEnvelopeRuns = [defaults integerForKey:@"numEnvelopeRuns"];
 	thePrefs.matchVF = [defaults boolForKey:@"matchVF"];
@@ -718,6 +720,8 @@
 		[NSNumber numberWithInt:500],	@"numCFOffsetVolPts",
 		[NSNumber numberWithFloat:0.1],	@"EpanecnikovCVal",
 		[NSNumber numberWithInt:kRectPrism],	@"sampleShape",
+		@"YES",	@"exscribedPrimitive",
+		[NSNumber numberWithInt:0.01],	@"shrinkExscribedPrimitive",
 		
 		[NSNumber numberWithInt:100],	@"numEnvelopeRuns",
 		@"NO",	@"matchVF",

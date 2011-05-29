@@ -37,6 +37,7 @@ class	BoundingBox : public SideSet {
 		bool			PointInBox(Point3DFloat &inPt);
 		bool			XlTouchesBox(Crystal &inXl);
 		void			FindConvexHull();
+		void			PrepForHullOrPrimitive();
 		bool			CheckedAgainstBounds();
 		float			SurfaceArea();
 		float			GetMaxDimension();

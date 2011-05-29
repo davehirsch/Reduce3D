@@ -401,9 +401,10 @@ CrystalArray::ReadMergeHeader()
 				 sprintf(xlNumStr, "%d", curCrystal-1);
 				 err.briefDesc = "Unexpected End of File";
 				 char tempLongDesc[kStdStringSize];
+				 int lastGoodXl = curCrystal-1;
 				 sprintf(tempLongDesc, "Problem reading crystals from file: %s. Last crystal read and verified was: %d.",
 						 sfErr.filename, 
-						 curCrystal-1);	// This reported crystal number is the one from the file (1-based)
+						 lastGoodXl);	// This reported crystal number is the one from the file (1-based)
 				 err.longDesc = tempLongDesc;
 				 mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
 				 throw;	// toss it up the chain
@@ -610,18 +611,8 @@ CrystalArray::FilterForObservability()
 {
 	bool unobservable;
 	
-/*	myLFileStream *debugOutputFile;
-	std::string debugStr;
-	if (mPrefs->verbose) {
-		CReduceApp *theApp = (CReduceApp *) LCommander::GetTopCommander();
-		debugOutputFile = theApp->GetDebugFile();
-		debugOutputFile->OpenDataFork(fsRdWrPerm);
-		debugStr = "Beginning Observability Filter\n";
-		debugOutputFile->SetMarker(0, streamFrom_End);
-		debugOutputFile->putOneLine(debugStr);
-		debugOutputFile->CloseDataFork();
-	}
-*/	
+	if (mPrefs->verbose) mCalc->log("Beginning Observability Filter\n");
+	
 	Crystal *thisXl, *otherXl;
 	for (int i = 0; i <= GetNumXls()-1; i++) {
 		thisXl = (Crystal *) GetItemPtr(i);
@@ -666,11 +657,8 @@ CrystalArray::FilterForObservability()
 					float totalVol = smallVol + largeVol - largeCapVol - smallCapVol;
 					newXl.r = CubeRoot(0.75 * totalVol / pi);
 					
-/*					if (mPrefs->verbose) {
-						CReduceApp *theApp = (CReduceApp *) LCommander::GetTopCommander();
-						myLFileStream *debugOutputFile = theApp->GetDebugFile();
-						debugOutputFile->OpenDataFork(fsRdWrPerm);
-						debugStr = "Tossed out a pair dur to criterion #";
+					if (mPrefs->verbose) {
+						std::string debugStr ("Tossed out a pair dur to criterion #");
 						debugStr += (SInt32) unobservable;
 						debugStr += "; numbers were ";
 						debugStr += (SInt32) i;
@@ -679,11 +667,9 @@ CrystalArray::FilterForObservability()
 						debugStr += ", and added a new one, number ";
 						debugStr += (SInt32) GetNumXls() - 1;
 						debugStr += "\n";
-						debugOutputFile->SetMarker(0, streamFrom_End);
-						debugOutputFile->putOneLine(debugStr);
-						debugOutputFile->CloseDataFork();
+						mCalc->log(debugStr);
 					}
-*/
+
 					RemoveItem(j, false);
 					RemoveItem(i, false);
 					PushXl(newXl, false);
@@ -978,6 +964,12 @@ void
 CrystalArray::RemoveIllegalOverlaps()
 {
 	mCalc->setupProgress("Removing illegal crystals", nil, nil, nil, -1, 0, GetNumXls(), 0, false);
+	if (mPrefs->verbose) {
+		std::string logStr ("Removing illegal crystals: Started with ");
+		logStr += GetNumXls();
+		logStr += " crystals.\n";
+		mCalc->log(logStr);
+	}
 	Crystal *thisXl, *otherXl;
 	for (int i = 0; i <= GetNumXls() - 1; i++) {
 		thisXl = (Crystal *) GetItemPtr(i);
@@ -1010,6 +1002,11 @@ CrystalArray::RemoveIllegalOverlaps()
 				}
 			}
 		}
+	}
+	if (mPrefs->verbose) {
+		char logStr[kStdStringSize];
+		sprintf(logStr, "\tRemoving illegal crystals: Finished with %d crystals.\n", GetNumXls());
+		mCalc->log(logStr);
 	}
 	RebuildList();
 }
@@ -1047,7 +1044,7 @@ CrystalArray::RebuildList()
 bool
 CrystalArray::VerifyList()
 {
-	float lastLoc = FLT_MIN;
+	float lastLoc = -FLT_MAX;
 	float thisLoc;
 	Crystal *thisXl = nil;
 	int numXls = mList.size();

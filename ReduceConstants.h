@@ -2,9 +2,9 @@
 //	Reduce 3D Constants.h				
 // ===========================================================================
 
-#define	popup_RectPrism 0
-#define	popup_Cylinder	1
-#define	popup_Sides	2
+#define	popup_Sides	0
+#define	popup_RectPrism 1
+#define	popup_Cylinder	2
 #define kUserCanceledErr 101
 #define kProcessingError 102
 
@@ -15,7 +15,7 @@ const short		menuitem_Larger			= 1;
 			// this is as a fraction of the rough averaged dimension; it is compared
 			// to a dot product
 //const double	kDiscardPointsThreshold	= 0.001;	// smaller is more conservative
-const double	kCoplanarThreshold		= 0.000001;	// this is a theta value
+const double	kCoplanarThreshold		= 0.0001;	// this is a theta value
 const bool	kFinished				= true;
 const bool	kUnfinished				= false;
 const short		kPerspective			= 1;		/* 10 is strong perspective view */
@@ -50,7 +50,7 @@ enum fileTypes {kUndefined = 0, kReal = 0x01, kDiffSimulation = 0x02 | 0x04, kIn
 const short		kMaxNumBins				= 500;	// max number of bins for the quadrat test
 const short		kNumBinsNNCSD			= 50;
 const short		kNumBinsRegCSD			= 50;
-enum		primitiveTypes {kRectPrism = 0, kCylinder = 1, kSides = 2};
+enum		primitiveTypes {kSides = 0, kRectPrism = 1, kCylinder = 2};
 enum		criteriaRelations {kSmaller = 0, kLarger = 1};
 enum		directions {kFromMax = 0, kSymmetric = 1, kFromMin = 2};
 enum		xyzCoordinates {kX = 0, kY = 1, kZ = 2};
