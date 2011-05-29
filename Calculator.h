@@ -1,13 +1,13 @@
-/*
- *  Calculator.h
- *  Reduce3D
- *
- *  Created by David Hirsch on 12/2/07.
- *  Copyright 2007 David Hirsch. All rights reserved.
- *
- *  This class exists actually do the work.  Everything conceptually "below" this should be pure C++.  This header is
- *  This header is pure C++ so it can be included by .cp files, but the implementation mixes Obj-C (to work with the 
- *  Mediator) and C++ (to work with things like CrystalArray).
+// ===========================================================================
+//	Calculator.h
+//  Reduce3D
+//
+//  Created by David Hirsch on 12/1/07.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
+// ===========================================================================
+/*  This class exists actually do the work.  Everything conceptually "below" this should be pure C++.  This header is pure C++ so it can be included by .cp files, but the implementation mixes Obj-C (to work with the Mediator) and C++ (to work with things like CrystalArray).
  */
 
 #include <Carbon/Carbon.h>

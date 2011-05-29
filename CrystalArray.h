@@ -1,5 +1,11 @@
 // =================================================================================
 //	CrystalArray.h 					
+//  Reduce3D
+//
+//  Created by David Hirsch on 10/1/97.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 // =================================================================================
 
 #pragma once
@@ -58,6 +64,7 @@ class CrystalArray {
 		void				ReadMergeHeader();
 		void				ReadMergeFile();
 		inline std::string	&GetIntComment() {return mIntComment;};
+		inline std::string	&GetIntVersionStr() {return mIntVersion;};
 		inline fileTypes	GetFileType() {return mFileType;};
 		
 		// BOUNDS METHODS (Some input files have explicit bounds)
@@ -91,11 +98,15 @@ class CrystalArray {
 		double				CorrectedCrystalVolume(Crystal *inXl);
 		void				CorrectForImpingement();
 		void				RemoveIllegalOverlaps();
+		bool				inputHasExtendedVolume();
 
 	protected:
 		stringFile *		mFile;
 		fileTypes			mFileType;
+		int					crystallizeVersionPart1;
+		int					crystallizeVersionPart2;
 		std::string			mIntComment;
+		std::string			mIntVersion;	// first line of integrate input file
 		int					mNumCrystals;	// used in reading Merge Files.  Holds alleged number of crystals as stated in header.
 		double				mTotalVolume;
 		boundsTypes			mBounds;

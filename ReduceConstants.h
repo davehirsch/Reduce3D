@@ -1,5 +1,11 @@
 // ===========================================================================
-//	Reduce 3D Constants.h				
+//	ReduceConstants.h				
+//  Reduce3D
+//
+//  Created by David Hirsch on 12/1/02.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 // ===========================================================================
 
 #define	popup_Sides	0
@@ -46,8 +52,9 @@ enum quadTypes {kCube, kSphere};
 enum runTypes {kSingle, kBatch};
 enum openPanelTypes {kPrimaryInput, kHolesInput};
 enum CSDTypes {kMeanCumCSD, kMaxCumCSD, kLogCSD, kNNCSD, kRegCSD, kRedStats, kReduce, kIntegrate, kEnvelope};
-enum fileTypes {kUndefined = 0, kReal = 0x01, kDiffSimulation = 0x02 | 0x04, kIntSimulation = 0x02 | 0x08, kHFSimulation = 0x02 | 0x10};
+enum fileTypes {kUndefined = 0, kReal = 0x20, kDiffSimulation = 0x02 | 0x04, kIntSimulation = 0x02 | 0x08, kHFSimulation = 0x02 | 0x10, kNewCrystallizeSimulation = 0x02 | 0x20};
 #define isSim(A) ((A) & 0x02)
+#define hasExtendedVolume(A) ((A) & 0x20)
 
 const short		kMaxNumBins				= 500;	// max number of bins for the quadrat test
 const short		kNumBinsNNCSD			= 50;

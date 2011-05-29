@@ -1,15 +1,14 @@
-//
+// ===========================================================================
 //  stringFile.h
 //  Reduce3D
 //
 //  Created by David Hirsch on 11/29/07.
-//  Copyright 2007 David Hirsch. All rights reserved.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 //
-/*	There's a bunch of extra hassle here, due to the need to make this header be free of Objective-C and Cocoa
-		so that it can be included by C++ files.  Most of this uses the "toll-free bridging" of the NS and the CF classes.
-		The implementation uses a combination of CF functions and NS functions to do the actual work.  The methods
-		were tested with the NS versions and then altered to CF versions later.
-*/
+/*	There's a bunch of extra hassle here, due to the need to make this header be free of Objective-C and Cocoa so that it can be included by C++ files.  Most of this uses the "toll-free bridging" of the NS and the CF classes. The implementation uses a combination of CF functions and NS functions to do the actual work.  The methods were tested with the NS versions and then altered to CF versions later. */
+// ===========================================================================
 
 #import <string>
 #include <CoreFoundation/CoreFoundation.h>
@@ -32,6 +31,9 @@ public:
 	void setPath(char *inPath);
 	CFStringRef getPath();
 	std::string getName();
+	std::string getNameWithoutExtension();
+	void setName(CFStringRef inName);
+	void setName(char *inName);
 	void copyPath(stringFile *inStringFile);
 
 	// Text I/O methods

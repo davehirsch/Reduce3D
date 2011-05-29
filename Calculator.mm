@@ -1,11 +1,13 @@
-/*
- *  Calculator.mm
- *  Reduce3D
- *
- *  Created by David Hirsch on 12/2/07.
- *  Copyright 2007 David Hirsch. All rights reserved.
- *
- */
+// ===========================================================================
+//	Calculator.mm
+//  Reduce3D
+//
+//  Created by David Hirsch on 12/1/07.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
+// ===========================================================================
+
 
 #import "Calculator.h"
 #import "Mediator.h"
@@ -195,12 +197,27 @@ Calculator::shaveAndReduceData(std::string inputFilePath)
 			curBBox = new BoundingBox(*startBBox);
 			short shaveIteration=0;
 			char shaveStr[kStdStringSize];
+			stringFile *inputFile = theXls->GetFile();
+			std::string oldName = inputFile->getNameWithoutExtension();
+			short maxRootLength = 255 - 16;	// 255 is the maximum filename length for OSX (10.4), and 13 is the longest suffix
+			if (oldName.length() > maxRootLength) {
+				// then quietly truncate it
+				short extralength = oldName.length() - maxRootLength;
+				oldName.resize(oldName.length() - extralength);
+			}
+					
 			while (shaveData(startBBox, curBBox, shaveIteration)) {
 				sprintf(shaveStr, "Shave number %d", shaveIteration);
 				setShaveMessage(shaveStr);
 				if (prefs->ShaveSave) {
 					curBBox->saveShavedIntegrateFile(shaveIteration);
 				} else {
+					oldName.append("_");
+					char tempNumStr[10];
+					sprintf(tempNumStr, "%d", shaveIteration);
+					oldName+=tempNumStr;
+					oldName.append(".Int");
+					inputFile->setName((char *)oldName.c_str());
 					reduceOneDataset(curBBox, nil);
 					if ([cont shouldStopCalculating]) throw(kUserCanceledErr);
 				}
@@ -254,14 +271,16 @@ Calculator::reduceOneDataset(BoundingBox *ioBBox, HoleSet *inHoles)
 	AppController *cont = (AppController *)controller;
 	
 	try {
-		if (prefs->observabilityMethod == kSetFromData) {
-			(ioBBox->GetXls())->FindObservabilityValues(prefs->observabilityPercent, &(stats->observabilityCrit1value), &(stats->observabilityCrit2value));
-		} else {
-			stats->observabilityCrit1value = prefs->crit1Factor;
-			stats->observabilityCrit2value = prefs->crit2Factor;
-		}
-		if (prefs->applyObservabilityFilter) {
-			(ioBBox->GetXls())->FilterForObservability(prefs->crit1Factor, prefs->crit2Factor, &(stats->observabilityCrit1rejects), &(stats->observabilityCrit2rejects)); 
+		if (prefs->observabilityFilter) {
+			if (prefs->observabilityMethod == kSetFromData) {
+				(ioBBox->GetXls())->FindObservabilityValues(prefs->observabilityPercent, &(stats->observabilityCrit1value), &(stats->observabilityCrit2value));
+			} else {
+				stats->observabilityCrit1value = prefs->crit1Factor;
+				stats->observabilityCrit2value = prefs->crit2Factor;
+			}
+			if (prefs->applyObservabilityFilter) {
+				(ioBBox->GetXls())->FilterForObservability(prefs->crit1Factor, prefs->crit2Factor, &(stats->observabilityCrit1rejects), &(stats->observabilityCrit2rejects)); 
+			}
 		}
 		
 		/* Have the bounding box find the convex hull; it will also find 
@@ -651,7 +670,7 @@ Calculator::calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	ComputeVolumes(stats, inBBox, inHoles); 
 	if ([cont shouldStopCalculating]) throw(kUserCanceledErr);
 	
-	if (prefs->doImpingement && stats->fileType == kDiffSimulation) {
+	if (prefs->doImpingement && !theXls->inputHasExtendedVolume()) {
 		theXls->CorrectForImpingement();
 	}
 	if ([cont shouldStopCalculating]) throw(kUserCanceledErr);
@@ -3726,6 +3745,7 @@ Calculator::DoReduce3DFile(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, 
 	
 	thisLine = "Reduce3D v";
 	char tempStr[kStdStringSize];
+	std::string tempSTLStr;
 	bool result = CFStringGetCString (mVersionString, tempStr, (CFIndex) kStdStringSize, kCFStringEncodingUTF8);
 	(void) result;	// evade compiler error for unused variable
 	thisLine += tempStr;
@@ -3733,6 +3753,15 @@ Calculator::DoReduce3DFile(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, 
 	
 	// write incoming comment line
 	saveFile.putOneLine(&(theXls->GetIntComment()));
+
+	tempSTLStr = "Input Header:\t";
+	tempSTLStr += theXls->GetIntVersionStr();
+	if (theXls->inputHasExtendedVolume()) {
+		tempSTLStr += " (treated input data as extended radii)";
+	} else {
+		tempSTLStr += " (treated input data as actual radii, and extended them for impingement)";
+	}
+	saveFile.putOneLine(&tempSTLStr);
 	
 	// write our processing params
 	saveFile.putOneLine("============ Begin Processing Parameters ============");

@@ -1,0 +1,131 @@
+Clust_0500_1000_2.50.Int
+Reduce3D v3.30
+Run name:	Clust_0500_1000_2.50
+Input Header:	Integrate from Crystallize 1.2 (treated input data as actual radii, and adjusted for impingement)
+============ Begin Processing Parameters ============
+includeLogCSD: 0
+discardNegs: 1
+seed: 1234567
+deltaLRegCSD: 0.1
+maxValueMeanCSD: 3
+EpanecnikovCVal: 0.1
+playSoundWhenDone: 1
+quadratNumPlacings: 1000
+matchPDF: 0
+keepAspectRatios: 1
+shaveIncrement: 10
+outputReduce: 1
+numClassesLogCSD: 63
+doRandomPt: 1
+includeMeanCSD: 0
+doShave: 0
+impingementMeanErr: 0.1
+testDistanceInterval: 0.05
+RPNumReps: 10
+sampleShape: 1
+doLMcfPcf: 0
+matchVF: 0
+observabilityMethod: 1
+shaveSmLg: 0
+ShaveSave: 0
+VFPercent: 10
+doQuadrat: 1
+quadratNumReps: 10
+impingementMaxErr: 20
+outputCrystals: 0
+outputSigmas: 0
+MCReps: 5000
+includeMaxCSD: 0
+confidence: 96
+useRaeburn: 0
+minPopulation: 200
+doImpingement: 1
+shrinkExscribedPrimitive: 0
+verbose: 0
+minPercent: 10
+RPNumPlacings: 1000
+numCFOffsetVolPts: 500
+inflateBBox: 0
+doOthers: 1
+exscribedPrimitive: 1
+applyObservabilityFilter: 1
+maxAspectRatio: 1000
+outputHull: 0
+makeDCEnv: 0
+overlap: 50
+numClassesMaxCSD: 63
+includeRegCSD: 0
+numNNDist: 6
+specifyTestDistance: 0
+useVolume: 0
+shaveXYZ: 0
+crit1Factor: 0.85
+numEnvelopeRuns: 2
+observabilityPercent: 1
+crit2Factor: 3
+direction: 1
+observabilityFilter: 1
+numClassesMeanCSD: 63
+============ End Processing Parameters ============
+Holes File: none
+============ Begin Single-scale Statistics ============
+Number of crystals:	585
+Total Volume (cubic cm):	1.4264780E+01
+Surface Area (sq cm):	3.5290795E+01
+Surface to Volume Ratio:	2.4739811E+00
+Crystal Volume Fraction:	3.6594637E-01
+Crystal density:	4.1010096E+01
+Crystal intensity:	4.1010096E+01
+Crystal Intensity Sqd:	0.0000000E+00
+Crystal Volume Fraction (MC Method):	3.2100000E-01
+Minimum radius:	1.5640000E-02
+Maximum radius:	2.2652498E-01
+Mean radius:	1.1260214E-01
+Std deviation:	5.2248503E-02
+Skewness:	-4.5209107E-02
+Excess Kurtosis:	-1.1121716E+00
+Minimum ext volume:	1.6025030E-05
+Maximum ext volume:	4.8689677E-02
+Mean ext volume:	9.8096503E-03	Env Min:	9.6711342E-03	Env Max:	9.7121077E-03
+Std deviation:	1.0001301E-02
+Minimum act volume:	1.6025030E-05
+Maximum act volume:	4.7243717E-02
+Mean act volume:	8.9233237E-03
+Std deviation:	9.2293007E-03
+Num engulfed crystals:	0
+Minimum separation:	7.5000000E-02	Env Min:	2.8612714E-02	Env Max:	3.7181063E-02
+Maximum separation:	3.4095454E-01
+Mean separation:	1.8380003E-01	Env Min:	1.5912392E-01	Env Max:	1.6023064E-01
+Std deviation:	4.9655555E-02
+Num valid crystals:	323
+Ordering index:	1.1441055E+00	Env Min:	9.9050337E-01	Env Max:	9.9739244E-01
+Ordering index t-test:	8.3790260E+00
+Mean NN radius:	1.0775642E-01	Env Min:	1.0825596E-01	Env Max:	1.0949225E-01
+Esd NN radius:	5.2082285E-02
+Num valid pairs:	323
+Isolation index:	4.3034008E+00	Env Min:	1.9420584E+00	Env Max:	3.1924310E+00
+Isolation index t-test:	0.0000000E+00
+Quadrat stat mean:	not calculated
+Quadrat stat esd:	not calculated
+Spherical quad stat mean:	7.2800134E+01	Env Min:	2.5277167E+01	Env Max:	3.3251622E+01
+Spherical quad stat esd:	1.2673560E+01
+Quadrat stat d.o.f:	6
+Random point stat mean:	8.0335138E-01	Env Min:	7.8936209E-01	Env Max:	8.1388190E-01
+Random point std dev:	2.6178885E-02
+Avrami act vol:	3.6594637E-01
+Avrami ext vol:	4.0229470E-01
+Avrami ext vol rand:	4.5562173E-01
+Avrami ratio:	8.8295768E-01	Env Min:	9.6178066E-01	Env Max:	9.8476208E-01
+CSD shape stat 1 (skew):	3.7839844E-02
+CSD shape stat 2 (flat):	3.4528386E-01
+Decile#	Decile value
+1	3.8540000E-02
+2	6.1164554E-02
+3	7.5422590E-02
+4	9.4603868E-02
+5	1.1706000E-01
+6	1.3558286E-01
+7	1.4942831E-01
+8	1.6211012E-01
+9	1.7909031E-01
+============ End Single-scale Statistics ============

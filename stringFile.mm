@@ -1,15 +1,18 @@
-//
+// ===========================================================================
 //  stringFile.mm
 //  Reduce3D
 //
 //  Created by David Hirsch on 11/29/07.
-//  Copyright 2007 David Hirsch. All rights reserved.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 //
 //  This is intended to be a replacement for the PowerPlant-based myLFileStream.
 //	Although it will make extensive use of cocoa, the class itself is C++ so as to
 //	easily interface with the existing Reduce code.
 //	It will use an array of NSStrings (one per line) for its storage and write that to a file upon command,
 //	or read from a file into that array on command.  This will be cool.
+// ===========================================================================
 #import "stringFile.h"
 #import <Cocoa/Cocoa.h>
 
@@ -106,6 +109,22 @@ stringFile::setPath(char *inPath)
 	path = CFStringCreateWithCString(NULL, inPath, kCFStringEncodingUTF8);
 }
 
+void
+stringFile::setName(CFStringRef inName)
+{
+	NSString *nsPath = (NSString *)path;
+	NSString *nsParent = [nsPath stringByDeletingLastPathComponent];
+	NSString *nsNewPath = [nsParent stringByAppendingPathComponent:(NSString *)inName];
+	path = (CFStringRef)nsNewPath;
+
+}
+
+void
+stringFile::setName(char *inName)
+{
+	setName(CFStringCreateWithCString(NULL, inName, kCFStringEncodingUTF8));
+}
+
 CFStringRef
 stringFile::getPath()
 {
@@ -117,6 +136,15 @@ stringFile::getName()
 {
 	NSString *nsPath = (NSString *)path;
 	NSString *name = [nsPath lastPathComponent];
+	static std::string outName = [name UTF8String];
+	return outName;
+}
+
+std::string
+stringFile::getNameWithoutExtension()
+{
+	NSString *nsPath = (NSString *)path;
+	NSString *name = [[nsPath stringByDeletingPathExtension] lastPathComponent];
 	static std::string outName = [name UTF8String];
 	return outName;
 }

@@ -1,13 +1,13 @@
-//**************************************************************************************
-// Filename:	EnvelopeData.cpp
-// Copyright © 1997 <YourNameHere>. All rights reserved.
+// ===========================================================================
+//	EnvelopeData.cp
+//  Reduce3D
 //
-// Description:	
-//
-//**************************************************************************************
-// Revision History:
-// Wednesday, October 1, 1997 - Original
-//**************************************************************************************
+//  Created by David Hirsch on 10/1/97.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
+// ===========================================================================
+
 
 #import "EnvelopeData.h"
 #import "MathStuff.h"
@@ -16,10 +16,6 @@
 // Function:	Default Constructor
 //
 // Description: Builds the EnvelopeData class.
-//
-// Inputs:	none
-//		
-// Outputs:	none	
 //
 //**************************************************************************************
 EnvelopeData::EnvelopeData(short inEnvelopes, short inHPoints, bool inDoSigmas)

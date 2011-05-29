@@ -1,10 +1,12 @@
-//
-//  Mediator.h
+// ===========================================================================
+//	Mediator.h
 //  Reduce3D
 //
-//  Created by David Hirsch on 11/27/07.
-//  Copyright 2007 David Hirsch. All rights reserved.
-//
+//  Created by David Hirsch on 12/1/07.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
+// ===========================================================================
 
 #import <Cocoa/Cocoa.h>
 

@@ -1,3 +1,13 @@
+// ===========================================================================
+//	ReduceTypes.h				
+//  Reduce3D
+//
+//  Created by David Hirsch on 12/1/02.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
+// ===========================================================================
+
 typedef struct {
 	bool		includeMeanCSD;
 	bool		includeMaxCSD;

@@ -19,6 +19,7 @@
 		5566FADC0D1070740026F0EA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5566FADB0D1070740026F0EA /* Carbon.framework */; };
 		5566FB1C0D1076720026F0EA /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 5566FB1B0D1076720026F0EA /* Credits.rtf */; };
 		5566FB610D1099420026F0EA /* Reduce3DHelp in Resources */ = {isa = PBXBuildFile; fileRef = 5566FB4C0D1099420026F0EA /* Reduce3DHelp */; };
+		556C630313919CBA00D6EB5D /* COPYING in Resources */ = {isa = PBXBuildFile; fileRef = 556C630213919CBA00D6EB5D /* COPYING */; };
 		55D604510CF3AA570028A6D2 /* Reduce Int Doc.icns in Resources */ = {isa = PBXBuildFile; fileRef = 55D6044F0CF3AA570028A6D2 /* Reduce Int Doc.icns */; };
 		55D604520CF3AA570028A6D2 /* Reduce.icns in Resources */ = {isa = PBXBuildFile; fileRef = 55D604500CF3AA570028A6D2 /* Reduce.icns */; };
 		55D6045D0CF3ACB20028A6D2 /* AppController.mm in Sources */ = {isa = PBXBuildFile; fileRef = 55D6045C0CF3ACB20028A6D2 /* AppController.mm */; };
@@ -72,6 +73,7 @@
 		5566FADB0D1070740026F0EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		5566FB1B0D1076720026F0EA /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		5566FB4C0D1099420026F0EA /* Reduce3DHelp */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Reduce3DHelp; sourceTree = "<group>"; };
+		556C630213919CBA00D6EB5D /* COPYING */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = COPYING; sourceTree = "<group>"; };
 		55D6044F0CF3AA570028A6D2 /* Reduce Int Doc.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Reduce Int Doc.icns"; sourceTree = "<group>"; };
 		55D604500CF3AA570028A6D2 /* Reduce.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Reduce.icns; sourceTree = "<group>"; };
 		55D6045B0CF3ACB20028A6D2 /* AppController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AppController.h; sourceTree = "<group>"; };
@@ -173,6 +175,7 @@
 			isa = PBXGroup;
 			children = (
 				5504AC8D0D04A68900CE281B /* To Do & Misc */,
+				556C630213919CBA00D6EB5D /* COPYING */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -341,7 +344,14 @@
 			isa = PBXProject;
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Reduce3D" */;
 			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Reduce3D */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -364,6 +374,7 @@
 				5566FB1C0D1076720026F0EA /* Credits.rtf in Resources */,
 				5566FB610D1099420026F0EA /* Reduce3DHelp in Resources */,
 				5517771F0E9FE7B700ED23F2 /* Progress.nib in Resources */,
+				556C630313919CBA00D6EB5D /* COPYING in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

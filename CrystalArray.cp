@@ -1,5 +1,11 @@
 // =================================================================================
 //	CrystalArray.cp 						
+//  Reduce3D
+//
+//  Created by David Hirsch on 10/1/97.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 // =================================================================================
 
 #import "CrystalArray.h"
@@ -75,6 +81,7 @@ CrystalArray::Copy(CrystalArray *inXls)
 	Clear();
 	mFile = inXls->mFile;
 	mIntComment = inXls->mIntComment;
+	mIntVersion = inXls->mIntVersion;
 	mTotalVolume = inXls->mTotalVolume;
 	mBounds = inXls->mBounds;
 	mNegRadii = inXls->mNegRadii;
@@ -106,6 +113,7 @@ CrystalArray::InitXlArray(CrystalArray *inXls)
 {
 	mFile = inXls->mFile;
 	mIntComment = inXls->mIntComment;
+	mIntVersion = inXls->mIntVersion;
 	mTotalVolume = inXls->mTotalVolume;
 	mBounds = inXls->mBounds;
 	mNegRadii = inXls->mNegRadii;
@@ -251,6 +259,15 @@ ExtractDouble(const std::string inStr, short from, short to)
 }
 
 // ---------------------------------------------------------------------------
+//		¥ HasExtendedVolume
+// ---------------------------------------------------------------------------
+bool
+CrystalArray::inputHasExtendedVolume()
+{
+	return hasExtendedVolume(mFileType);
+}
+
+// ---------------------------------------------------------------------------
 //		¥ ReadMergeHeader
 // ---------------------------------------------------------------------------
 void
@@ -261,7 +278,25 @@ CrystalArray::ReadMergeHeader()
 	int sscanResult;
 	try {
 		// read header
-		tempStr = mFile->getOneLine();		// Throw away Integrate header line (gives the version of the file, but this isn't used much)
+		mIntVersion = mFile->getOneLine();		// Throw away Integrate header line (gives the version of the file, but this isn't used much)
+		mFileType = kUndefined;
+		if (mIntVersion.find("Crystallize") != std::string::npos) {
+			// Found "Crystallize" in first line
+			size_t lastDotLoc = mIntVersion.rfind(".");
+			if (lastDotLoc != std::string::npos) {
+				// found a "." and stored its location in lastDocLoc
+				std::string endOfLine1 = mIntVersion.substr(lastDotLoc-3, std::string::npos);
+				sscanResult = sscanf(endOfLine1.c_str(), "%*[^0123456789]%i.%i", &crystallizeVersionPart1, &crystallizeVersionPart2);
+				if (crystallizeVersionPart2 >=3 || crystallizeVersionPart1 >= 2) {
+					mFileType = kNewCrystallizeSimulation;
+				} else {
+					mFileType = kDiffSimulation;
+				}
+
+			}
+		}
+		
+		
 		mIntComment = mFile->getOneLine();		// Comment line, which for files made by Crystallize, contains run parameters
 		tempStr2 = mFile->peekLine();		// Probably the Number of crystals line, but some programs create a second comment line here.
 											//   we'll look for an "N" as the first character to detect a non - Number-of-crystals line here.
@@ -271,20 +306,23 @@ CrystalArray::ReadMergeHeader()
 			mIntComment += tempStr2;		// append secondary comment line to the comment variable
 		}
 		
-		// Figure out what produced the input file, based on what's in the comment line.
-		//	In order to detect Crystallize 2 files, it looks for the string ", Qd = ", which
-		//	is (at this point) unique to these simulations.  A hack, I know.  Otherwise, if
-		//	the key words "diffusion", "interface" or "heat flow" appear in the comment line,
-		//	the file is taken to be a Crystallize 1 simulation of the appropriate type.  If
-		//	none of these things hold true, it is assumed to be real data.
-		if ((mIntComment.find("Qd") != std::string::npos) || (mIntComment.find("diffusion") != std::string::npos))
-			mFileType = kDiffSimulation;
-		else if (mIntComment.find("interface") != std::string::npos)
-			mFileType = kIntSimulation;
-		else if (mIntComment.find("heat flow") != std::string::npos)
-			mFileType = kHFSimulation;
-		else
-			mFileType = kReal;
+		
+		if (mFileType == kUndefined) {
+			// Figure out what produced the input file, based on what's in the comment line.
+			//	In order to detect Crystallize 2 files, it looks for the string ", Qd = ", which
+			//	is (at this point) unique to these simulations.  A hack, I know.  Otherwise, if
+			//	the key words "diffusion", "interface" or "heat flow" appear in the comment line,
+			//	the file is taken to be a Crystallize 1 simulation of the appropriate type.  If
+			//	none of these things hold true, it is assumed to be real data.
+			if ((mIntComment.find("Qd") != std::string::npos) || (mIntComment.find("diffusion") != std::string::npos))
+				mFileType = kDiffSimulation;
+			else if (mIntComment.find("interface") != std::string::npos)
+				mFileType = kIntSimulation;
+			else if (mIntComment.find("heat flow") != std::string::npos)
+				mFileType = kHFSimulation;
+			else
+				mFileType = kReal;
+		}
 		
 		// parse comment for probability data
 		// is there a pdf?
@@ -337,20 +375,20 @@ CrystalArray::ReadMergeHeader()
 		
 		tempStr = mFile->getOneLine();		// Total volume line 
 		if (tempStr.find('\t') == std::string::npos)	// no tab present
-			sscanResult = sscanf(tempStr.c_str(), "%*25c%f", &mTotalVolume);
+			sscanResult = sscanf(tempStr.c_str(), "%*25c%lf", &mTotalVolume);
 		else
-			sscanResult = sscanf(tempStr.substr(tempStr.find('\t'), std::string::npos).c_str(), "%f", &mTotalVolume);
+			sscanResult = sscanf(tempStr.substr(tempStr.find('\t'), std::string::npos).c_str(), "%lf", &mTotalVolume);
 		if (sscanResult != 1) throw(MergeIOErr());
 		
 		tempStr = mFile->peekLine();		// Bounds line 
 		if (tempStr.find("Bound") != std::string::npos) {	// "Bound" present (RP)
 			tempStr = mFile->getOneLine();		// Bounds line (RP) 
-			sscanf(tempStr.c_str(), "Bounds:\t%f%f%f%f%f%f", &(mLower.x), &(mLower.y), &(mLower.z),
+			sscanf(tempStr.c_str(), "Bounds:\t%lf%lf%lf%lf%lf%lf", &(mLower.x), &(mLower.y), &(mLower.z),
 				   &(mUpper.x), &(mUpper.y), &(mUpper.z));
 			mBounds = kBoundsRP;
 		} else if (tempStr.find("Ctr/R/H") != std::string::npos) {
 			tempStr = mFile->getOneLine();		// Bounds line (Cyl)
-			sscanf(tempStr.c_str(), "Ctr/R/H:\t%f%f%f%f%f", &(mCtr.x), &(mCtr.y), &(mCtr.z),
+			sscanf(tempStr.c_str(), "Ctr/R/H:\t%lf%lf%lf%lf%lf", &(mCtr.x), &(mCtr.y), &(mCtr.z),
 				   &(mRadius), &(mHeight));
 			mBounds = kBoundsCyl;
 		} else if (isSim(mFileType)) {	// then it's a simulation with volume=mTotalVolume, so we know the bounds

@@ -1,7 +1,12 @@
 // ===========================================================================
 //	Side.cp
+//  Reduce3D
+//
+//  Created by David Hirsch on 10/1/97.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 // ===========================================================================
-//	
 #import "Side.h"
 #import "ReduceConstants.h"
 #import "MathStuff.h"

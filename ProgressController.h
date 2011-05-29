@@ -1,10 +1,12 @@
-//
+// ===========================================================================
 //  ProgressController.h
 //  Reduce3D
 //
 //  Created by David Hirsch on 11/25/07.
-//  Copyright 2007 David Hirsch. All rights reserved.
-//
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
+// ===========================================================================
 
 #import <Cocoa/Cocoa.h>
 

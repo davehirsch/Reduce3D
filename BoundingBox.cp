@@ -1,7 +1,13 @@
 // ===========================================================================
 //	BoundingBox.cp
+//  Reduce3D
+//
+//  Created by David Hirsch on 10/1/97.
+//  Copyright 2011 David Hirsch.
+//  Distributed under the terms of the GNU General Public License v3
+//	See file "COPYING for more info.
 // ===========================================================================
-//	
+
 #include "BoundingBox.h"
 #include "MathStuff.h"
 #import "Calculator.h"
@@ -35,6 +41,46 @@ BoundingBox::BoundingBox(Calculator *inCalc, stringFile *inFile)
 	theXls->SetFile(inFile);
 	theXls->ReadMergeFile();
 	mPrefs = mCalc->getPrefs();
+
+	// Temporarily set the box type from the Merge file header (stored in the CrystalArray)
+	//	If bounds were set in the input file, that should override any sample shape setting
+	//	by the user.
+	switch (theXls->GetBounds()) {
+		case kBoundsNone:
+			mType = kSidesBox;
+			break;
+		case kBoundsRP:
+			mType = kRPBox;
+			mPrefs->sampleShape = kRectPrism;
+			break;
+		case kBoundsCyl:
+			mType = kCylBox;
+			mPrefs->sampleShape = kCylinder;
+			break;
+	}
+	
+	if (((theXls->GetBounds() != kBoundsNone) && CheckedAgainstBounds()) 
+		&& !(mPrefs->discardNegs && theXls->GetNegRadii())) {
+		/* If:	1. The file had bounds stated
+		 2. CheckedAgainstBounds suggested we discard crystals outside the bounds (returned true)
+		 3. It is not the case that there are negative-radii crystals to be discarded
+		 Then: we should discard the crystals outside the bounds.  (Criterion 3 is important,
+		 because negative radii crystals will be near the edges.  If they are discarded, then the 
+		 bounds no longer really apply.)
+		 Note: by the time execution arrives here, the bounding box must have already been set as
+		 a bounds-bearing type (not a kSidesBox).*/
+		Crystal *thisXl;
+		for (int i=0; i <= theXls->GetNumXls() - 1; i++) {
+			thisXl = theXls->GetItemPtr(i);
+			if (!PointInBox(thisXl->ctr)) {
+				theXls->RemoveItem(i, false);
+				i--;
+			}
+		}
+		theXls->RebuildList();
+		BetterInscribedBox();	// shouldn't need this; but couldn't
+	}
+	
 
 	// This is now handled in Calculator::reduceOneDataset
 
@@ -202,12 +248,12 @@ BoundingBox::writeIntegrateFile(stringFile *saveFile, const char *firstLine, con
 	if ((mType == kRPBox) || (mType == kCubeBox)) {
 		Point3DFloat lower = theXls->LowerBound();
 		Point3DFloat upper = theXls->UpperBound();
-		sprintf(tempLine, "Bounds (RP):\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f",
+		sprintf(tempLine, "Bounds:\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f",
 				lower.x, lower.y, lower.z, upper.x, upper.y, upper.z);
 		saveFile->putOneLine(tempLine);
 	} else if (mType == kCylBox) {
 		Point3DFloat ctr = theXls->GetCtr();
-		sprintf(tempLine, "Bounds (Ctr/R/H):\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f",
+		sprintf(tempLine, "Ctr/R/H:\t%.3f\t%.3f\t%.3f\t%.3f\t%.3f",
 				ctr.x, ctr.y, ctr.z, theXls->GetRadius(), theXls->GetHeight());
 		saveFile->putOneLine(tempLine);
 	}
@@ -217,7 +263,7 @@ BoundingBox::writeIntegrateFile(stringFile *saveFile, const char *firstLine, con
 		mCalc->progress(i);
 		thisXl = theXls->GetItemPtr(i);
 		sprintf(tempLine, "%d\t%.5f\t%.5f\t%.5f\t%.5f\t%d\t%d",
-				i, thisXl->ctr.x, thisXl->ctr.y, thisXl->ctr.z, thisXl->r, thisXl->ctrSlice, thisXl->ctrID);
+				i+1, thisXl->ctr.x, thisXl->ctr.y, thisXl->ctr.z, thisXl->r, thisXl->ctrSlice, thisXl->ctrID);
 		saveFile->putOneLine(tempLine);
 	}
 }
@@ -494,109 +540,87 @@ BoundingBox::FindConvexHull()
 	short	sideNum=0, edgeNum=0;
 	std::string theStr;
 	
-	if (((theXls->GetBounds() != kBoundsNone) && CheckedAgainstBounds()) 
-		&& !(mPrefs->discardNegs && theXls->GetNegRadii())) {
-			/* If:	1. The file had bounds stated
-					2. CheckedAgainstBounds suggested we discard crystals outside the bounds (returned true)
-					3. It is not the case that there are negative-radii crystals to be discarded
-			   Then: we should discard the crystals outside the bounds.  (Criterion 3 is important, because
-				negative radii crystals will be near the edges.  If they are discarded, then the 
-				bounds no longer really apply.)
-			   Note: by the time execution arrives here, the bounding box must have already been set as
-				a bounds-bearing type (not a kSidesBox).*/
-		Crystal *thisXl;
-//		int numXls = theXls->GetNumXls();
-		for (int i=0; i <= theXls->GetNumXls() - 1; i++) {
-			thisXl = theXls->GetItemPtr(i);
-			if (!PointInBox(thisXl->ctr)) {
-				theXls->RemoveItem(i, false);
-				i--;
-			}
-		}
-		theXls->RebuildList();
-	} else {	// the three criteria did not all apply
-		if (mPrefs->verbose) mCalc->log("Finding Convex Hull.\n");
+	if (mPrefs->verbose) mCalc->log("Finding Convex Hull.\n");
 		
-		theXls->SetBounds(kBoundsNone);	// remove bounds from crystal array
-		mType = kSidesBox;	// we are going to be a Sides box (for now at least; if the user selected a different
-							// primitive, then that primitive will be adopted later
-		PrepForHullOrPrimitive();
-		
-		if (false) {
-			// use old algorithm
-			DiscardInteriorPoints();
+	theXls->SetBounds(kBoundsNone);	// remove bounds from crystal array
+	mType = kSidesBox;	// we are going to be a Sides box (for now at least; if the user selected a different
+						// primitive, then that primitive will be adopted later
+	PrepForHullOrPrimitive();
+	
+	if (false) {
+		// use old algorithm
+		DiscardInteriorPoints();
 
-			mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 0, 0, true);
-			char progMsg[200];
-			short numSides;
-			FindFirstSide();
-			while (FindNextEdge(sideNum, edgeNum)) {
-				FoldEdge(sideNum, edgeNum);
-				numSides = GetCount();
-				if ((numSides >= 10) && (numSides % 10 == 0)) {
-					sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", numSides);
-					if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
-					mCalc->setProgMessage(progMsg);
-				}
-			}
-			mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
-		} else {
-
-/*			//testing Angle()
-			Point3DFloat vect1(0,1,0);
-			Point3DFloat vect2(1,1,0);
-			double testAngle=vect1.Angle(vect2);
-			for (double i=0.11; i <=2.0; i+=0.1) {
-				Point3DFloat vect3(1, 1-i, 0);
-				testAngle=vect1.Angle(vect3);
-				double dotProd = (vect1 * vect3);
-				if ((dotProd < 0) && (testAngle > M_PI_2)) {
-					bool somethingFishy=true;
-					throw;
-				}
-			}
-*/			
-			char progMsg[200];
-			mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 100, 0, false);
-			FindInitialTetrahedron();	// make the first tetrahedron and discard all interior points
-			double lastVolume = Volume();
-//			ExportBoxData();
-
-			while (UnfacetedPointsExist()) {
-				FindNextVertexAndMakeFacets();
-				
-				double thisVolume = Volume();
-				if (thisVolume < lastVolume) {
-					ExportBoxData();
-					throw("Problem here");
-				}
-//				ExportBoxData();
-				lastVolume = thisVolume;
-				
-				sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", GetCount());
+		mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 0, 0, true);
+		char progMsg[200];
+		short numSides;
+		FindFirstSide();
+		while (FindNextEdge(sideNum, edgeNum)) {
+			FoldEdge(sideNum, edgeNum);
+			numSides = GetCount();
+			if ((numSides >= 10) && (numSides % 10 == 0)) {
+				sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", numSides);
 				if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
 				mCalc->setProgMessage(progMsg);
-				double fractionDone = 1.0 - ((double)mPtArray->GetCount() / (double)theXls->GetNumXls());
-				mCalc->progress(::trunc(100 * fractionDone));
 			}
-			mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
-			if (mPrefs->outputHull) {
+		}
+		mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
+	} else {
+
+/*			//testing Angle()
+		Point3DFloat vect1(0,1,0);
+		Point3DFloat vect2(1,1,0);
+		double testAngle=vect1.Angle(vect2);
+		for (double i=0.11; i <=2.0; i+=0.1) {
+			Point3DFloat vect3(1, 1-i, 0);
+			testAngle=vect1.Angle(vect3);
+			double dotProd = (vect1 * vect3);
+			if ((dotProd < 0) && (testAngle > M_PI_2)) {
+				bool somethingFishy=true;
+				throw;
+			}
+		}
+*/			
+		char progMsg[200];
+		mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 100, 0, false);
+		FindInitialTetrahedron();	// make the first tetrahedron and discard all interior points
+		double lastVolume = Volume();
+//			ExportBoxData();
+
+		while (UnfacetedPointsExist()) {
+			FindNextVertexAndMakeFacets();
+			
+			double thisVolume = Volume();
+			if (thisVolume < lastVolume) {
 				ExportBoxData();
+				throw("Problem here");
 			}
+//				ExportBoxData();
+			lastVolume = thisVolume;
+			
+			sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", GetCount());
+			if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
+			mCalc->setProgMessage(progMsg);
+			double fractionDone = 1.0 - ((double)mPtArray->GetCount() / (double)theXls->GetNumXls());
+			mCalc->progress(::trunc(100 * fractionDone));
 		}
-
-		MakeAllInVects();
-
-		// shouldn't need this, but there's some problem occasionally:
-		Side	*curSide;
-		short numSides = GetCount();
-		for (short i = 0; i <= numSides - 1; i++) {
-			curSide = GetItemPtr(i);
-			AlignSide(*curSide);
-			UpdateSide(i, *curSide);
+		mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
+		if (mPrefs->outputHull) {
+			ExportBoxData();
 		}
-		FindBetterCenter();
 	}
+
+	MakeAllInVects();
+
+	// shouldn't need this, but there's some problem occasionally:
+	Side	*curSide;
+	short numSides = GetCount();
+	for (short i = 0; i <= numSides - 1; i++) {
+		curSide = GetItemPtr(i);
+		AlignSide(*curSide);
+		UpdateSide(i, *curSide);
+	}
+	FindBetterCenter();
 	BetterInscribedBox();	// Now that we have a good convex hull, we want to optimize
 							// future Bounding-Box-related operations by creating a new inscribed box
 							// and an exscribed box, too (despite the name)
