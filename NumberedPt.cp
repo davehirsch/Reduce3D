@@ -16,7 +16,7 @@ NumberedPt::NumberedPt()
 // ---------------------------------------------------------------------------
 //		¥ NumberedPt
 // ---------------------------------------------------------------------------
-NumberedPt::NumberedPt(short inSeq, float inX, float inY, float inZ, bool inFlag)
+NumberedPt::NumberedPt(short inSeq, double inX, double inY, double inZ, bool inFlag)
 {
 	seq = inSeq;
 	x = inX;

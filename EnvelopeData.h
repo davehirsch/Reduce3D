@@ -28,16 +28,16 @@ class OneSet {	// holds the data for the CF's measured from one simulation
 		double	*MCF3;
 		double	*MCFgd;
 		double	*MCF3gd;
-		float		orderingIndex;
-		float		isolationIndex;
-		float		quadratStatMean;
-		float		circQuadratStatMean;
-		float		RPStatMean;
-		float		avramiRatio;
-		float		minSep;
-		float		meanSep;
-		float		meanNNRad;
-		float		meanExtV;
+		double		orderingIndex;
+		double		isolationIndex;
+		double		quadratStatMean;
+		double		circQuadratStatMean;
+		double		RPStatMean;
+		double		avramiRatio;
+		double		minSep;
+		double		meanSep;
+		double		meanNNRad;
+		double		meanExtV;
 };
 
 class EnvelopeData

@@ -33,50 +33,50 @@ class	SideSet{
 		Side				&operator[](short inSub);
 		Side *				GetItemPtr(short inSub);
 		void				UpdateSide(short index, Side &inSide);
-		bool				RawPointInBox(Point3DFloat &inPt, float tolerance=0);
+		bool				RawPointInBox(Point3DFloat &inPt, double tolerance=0);
 		inline void			SetType(short inType) {mType = inType;};
 		inline void			SetCtr(Point3DFloat inPt) {mCtr = inPt;};
 		Point3DFloat&		CalcCtr();
-		inline void			SetSideLen(float inLen) {mSideLen = inLen;};
-		float				Volume();
-		inline float		GetSideLen() {return mSideLen;};
+		inline void			SetSideLen(double inLen) {mSideLen = inLen;};
+		double				Volume();
+		inline double		GetSideLen() {return mSideLen;};
 		Point3DFloat&		GetSideLenPt();
 		inline Point3DFloat& GetCtr() {return mCtr;};
 		inline SideSet*		GetExscribedBox() {return (mType == kRPBox ? this : mExscribedBox);};
 		inline SideSet*		GetInscribedBox() {return (mType == kRPBox ? this : mInscribedBox);};
 		bool				AllPointsInBox(CrystalArray *theXls);
-		float				ToroidalDistance(Point3DFloat &inPt1, Point3DFloat &inPt2);
+		double				ToroidalDistance(Point3DFloat &inPt1, Point3DFloat &inPt2);
 		inline void			SetOffset(Point3DFloat &inPt) {mOffset = inPt;};
 		inline Point3DFloat	GetOffset() {return mOffset;};
 //		Point3DFloat		&RandPtInPrimitive();
 //		void				RandPtInPrimitive(Point3DFloat &ioPt);
 		Point3DFloat &		RandPtInPrimitive(nuclProbType *nuclProb = nil);
-		double				Calc1Probability(nuclProb1D &nuclProb, float inLoc);
+		double				Calc1Probability(nuclProb1D &nuclProb, double inLoc);
 		short				NumPointsInBox(CrystalArray *theXls);
-		void				SetDimensions(float inXLen, float inYLen, float inZLen);
-		void				SetDimensions(float inRadius, float inHeight);
+		void				SetDimensions(double inXLen, double inYLen, double inZLen);
+		void				SetDimensions(double inRadius, double inHeight);
 		void				SetDimensions(Point3DFloat inPt);
 		inline short		GetType(){return mType;};
-		inline float		GetRadius(){return mRadius;};
-		inline float		GetHeight(){return mHeight;};
-		inline float		GetXLen(){return mSideLenX;};
-		inline float		GetYLen(){return mSideLenY;};
-		inline float		GetZLen(){return mSideLenZ;};
+		inline double		GetRadius(){return mRadius;};
+		inline double		GetHeight(){return mHeight;};
+		inline double		GetXLen(){return mSideLenX;};
+		inline double		GetYLen(){return mSideLenY;};
+		inline double		GetZLen(){return mSideLenZ;};
 		void				AlignSide(Side &ioSide);
 		bool				PointOnBox(Point3DFloat &inPt);
 		void				MakeAllInVects();
-		float				AspectRatio();
+		double				AspectRatio();
 		inline short		GetCount() {return array.size();};
 
 	protected:
-		float		TetrahedronVolume (Point3DFloat &pt1, Point3DFloat &pt2,
+		double		TetrahedronVolume (Point3DFloat &pt1, Point3DFloat &pt2,
 								Point3DFloat &pt3, Point3DFloat &pt4);
 
 	protected:
 //		double			mDiscardThreshold;
 		short			mType;
 		NumberedPt		mCtr;
-		float			mSideLen, mSideLenX, mSideLenY, mSideLenZ, mHeight, mRadius;
+		double			mSideLen, mSideLenX, mSideLenY, mSideLenZ, mHeight, mRadius;
 		SideSet			*mInscribedBox;
 		SideSet			*mExscribedBox;
 		Point3DFloat	mOffset;

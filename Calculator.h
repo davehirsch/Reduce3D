@@ -61,12 +61,12 @@ public:
 							  const char *inTitle, 
 							  const char *inButtonStr, 
 							  short inDefault, 
-							  float inDismiss);
+							  double inDismiss);
 	bool			shouldStopCalculating();
 	void			calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles);
 	void			saveResults(Stats *inStats, BoundingBox *inBBox, HoleSet *inHoles, short shaveIteration);
 	void			DoEnvelopeSimulations(BoundingBox *ioBBox, Stats *ioStats, HoleSet *inHoles);
-	float			OffsetIntersectVol(BoundingBox *inBBox, Point3DFloat inPt1, Point3DFloat inPt2);
+	double			OffsetIntersectVol(BoundingBox *inBBox, Point3DFloat inPt1, Point3DFloat inPt2);
 	
 protected:
 		// CalculatorComputation methods:
@@ -87,14 +87,14 @@ protected:
 	void					ComputeQuadrat(Stats *ioStats, BoundingBox *inBBox, HoleSet *inHoles);
 	void					ComputeRandomPt(Stats *ioStats, BoundingBox *inBBox, HoleSet *inHoles);
 	void					ComputeCFs_Both(Stats *ioStats, BoundingBox *inBBox, HoleSet *inHoles);
-	float					FindSwissVolume(BoundingBox *inBBox, HoleSet *inHoles);
+	double					FindSwissVolume(BoundingBox *inBBox, HoleSet *inHoles);
 	Point3DFloat &			RandPtNearBox(Point3DFloat &inMinPoint, Point3DFloat &inMaxPoint);
 	bool					InBoxNotHole(BoundingBox *inBBox, HoleSet *inHoles, Point3DFloat &inPoint);
 	double					CorrectedXlVol(Stats *stats, CrystalArray *inXls, short curIndex, Crystal &currXl);
 	void					ExtractEnvData(Stats *inStats, OneSet *ioEnv);
 	Point3DFloat &			Get3DRandPt(BoundingBox *inBBox, HoleSet *inHoles);
-	Point3DFloat &			Get3DRandQuad(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, float quadSize);
-	Point3DFloat &			Get3DRandSphere(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, float quadSize);
+	Point3DFloat &			Get3DRandQuad(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, double quadSize);
+	Point3DFloat &			Get3DRandSphere(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, double quadSize);
 	double					NearestSideHoleDist(BoundingBox *inBBox, HoleSet *inHoles, Point3DFloat *inPt);
 	void					DoMeanCumCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration);
 	void					DoMaxCumCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration);
@@ -103,19 +103,21 @@ protected:
 	void					DoRegCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration);
 	void					DoReduce3DFile(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, short shaveIteration);
 	void					DoRedStatsFile(Stats *stats, BoundingBox *inBBox, short shaveIteration);
-	void					SaveCSD(BoundingBox *inBBox, Stats *stats, short shaveIteration, CFloatArray &inCSD, short inCSDKind, float binSize=0);
+	void					SaveCSD(BoundingBox *inBBox, Stats *stats, short shaveIteration, CFloatArray &inCSD, short inCSDKind, double binSize=0);
 	const char *			MakeCSDFilePath(BoundingBox *inBBox, short inCSDKind);
 	void					WritePrefsSettings(stringFile *saveFile);
-	void					WriteIntFile(short inEnvRun = -1, float inOldMeanR = -1.0, float inNewMeanR = -1.0);
-	short					FindInsertIndex(DistArrayElem *inArray, short inNumElems, float &inVal);
-	float					Epanecnikov(float h, float t);
-	float					FindIntensity(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles);
-	float					FindIntensitySquared(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles);
+	void					WriteIntFile(short inEnvRun = -1, double inOldMeanR = -1.0, double inNewMeanR = -1.0);
+	short					FindInsertIndex(DistArrayElem *inArray, short inNumElems, double &inVal);
+	double					Epanecnikov(double h, double t);
+	double					FindIntensity(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles);
+	double					FindIntensitySquared(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles);
 	void					EvaluateCFStats(Stats *stats, EnvelopeData &Envelopes, bool inDoSigmas, short inConfidence);
-	float					MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std::vector<double> &inRadiiList, float inVolFraction, bool inMatchingCTDataSet);
+	double					MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std::vector<double> &inRadiiList, double inVolFraction, bool inMatchingCTDataSet);
 	void					MakeShuffleArray(short *inArray);
 	bool					GoodCFVal(bool inDoSigmas, double inVal);
 	double					FlaggedCFVal(bool inDoSigmas, double inVal);
+	double					FlaggedCFEnvVal(bool inoutputSigmas, double inVal);
+
 		
 protected:
 	void *					mediator;	// the Mediator object, given here as a void * so we don't have to include the Obj-C Mediator header

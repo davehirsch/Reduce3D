@@ -16,8 +16,8 @@ class	Side {
 						Side();
 						Side(const Side &inSide);
 		virtual			~Side();
-		float			Area();
-		float			MinAngle();
+		double			Area();
+		double			MinAngle();
 		Point3DFloat	& AwayVect(Point3DFloat &inPt);
 		Point3DFloat	&Vect12to3();
 		void			MakeInVect(Point3DFloat &inCtr);

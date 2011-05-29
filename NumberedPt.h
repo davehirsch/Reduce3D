@@ -8,7 +8,7 @@
 class NumberedPt : public Point3DFloat {
 	public:
 						NumberedPt();
-						NumberedPt(short inSeq, float inX, float inY, float inZ, bool inFlag);
+						NumberedPt(short inSeq, double inX, double inY, double inZ, bool inFlag);
 						NumberedPt(const NumberedPt &inPt);
 						NumberedPt(const Point3DFloat &inPt);
 	NumberedPt	&operator= (NumberedPt &inPt);

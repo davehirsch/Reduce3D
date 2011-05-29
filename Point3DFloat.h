@@ -10,9 +10,11 @@ class Point3DFloat {
 		class		TrigErr{};
 
 							Point3DFloat();
-							Point3DFloat(float inX, float inY, float inZ);
+							Point3DFloat(double inX, double inY, double inZ);
 							Point3DFloat(const Point3DFloat &inPt);
-		inline void			Set(float inX, float inY, float inZ) {x = inX; y = inY; z = inZ;};
+		inline void			Set(double inX, double inY, double inZ) {x = inX; y = inY; z = inZ;};
+		inline void			Clear() {this->Set(0.0f,0.0f,0.0f);};
+
 		inline double	Magnitude() {return sqrt(x * x + y * y + z * z);};
 		inline Point3DFloat	&Unit() {return (*this)/(*this).Magnitude();};
 		inline double	Distance(Point3DFloat &inPoint) {return (inPoint - (*this)).Magnitude();};
@@ -40,7 +42,7 @@ class Point3DFloat {
 		inline void		operator+= (double inVal) {x += inVal;y += inVal;z += inVal;};
 
 				// Dot Product (*)
-		inline float	operator* (const Point3DFloat &inPt)
+		inline double	operator* (const Point3DFloat &inPt)
 								{return (x * inPt.x + y * inPt.y + z * inPt.z);};
 
 				// Cross Product (%)
@@ -63,7 +65,7 @@ class Point3DFloat {
 						
 	public:		// I'm making these public, in violation of good style,
 					// in order to keep function calls to a minimum
-		float	x;
-		float	y;
-		float	z;
+		double	x;
+		double	y;
+		double	z;
 };

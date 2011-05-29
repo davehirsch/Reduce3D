@@ -19,13 +19,13 @@ class Crystal {
 	public:		// I'm making these public, in violation of good style,
 					// in order to keep function calls to a minimum
 		Point3DFloat	ctr;		/* the coordinates of the center of the sphere */
-		float r;			/* The sphere's radius */
-		float actV;		// an adjusted volume to account for impingement.  If two crystals are impinged then their
+		double r;			/* The sphere's radius */
+		double actV;		// an adjusted volume to account for impingement.  If two crystals are impinged then their
 						// extV will be too high, because each has part of its volume reduced by its neighbor.
-		float extV;		// a simple volume calculation based on the radius
-		float ctcDist;
-		float polyV;
-		float diffV;
+		double extV;		// a simple volume calculation based on the radius
+		double ctcDist;
+		double polyV;
+		double diffV;
 		short neighbor;
 		short ctrSlice;	/* The slice in which the center of the sphere lies */
 		long ctrID;		/* The ID of the circle in which the center of the sphere lies */

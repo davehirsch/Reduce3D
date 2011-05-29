@@ -58,7 +58,7 @@
  			 title:(NSString *) inTitle
 		   buttons:(NSArray *) inButtons
 	 defaultButton:(short) inDefault
-		 dismissIn:(float) inDismiss;
+		 dismissIn:(double) inDismiss;
 - (oneway void)runEnded:(bool)goodRun;
 - (bool)shouldStopCalculating;
 - (NSArray *)getInputFiles;

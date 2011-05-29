@@ -1,14 +1,12 @@
 To Do:
 	
-Need to fix MCF problem; compare to old version
-
-Fix random crashing problem
-
 Add to help:  can hold down shift-option during envelope creation and envelope data will be saved to desktop.
 
-Display estimate of total time to envelope completion in progress
+**Add setting observabiity criteria based upon data set: exclude least-observable n% of dataset.  Need to also output what the observability criteria were set TO.
 
 Error Handling - need to add auto-removing window after set time
+
+Add Ketcham (05)-type observability graphs - make new file type
 
 Add better logging to log file
 
@@ -19,6 +17,7 @@ Be sure that we aren't doing any primitive fitting or hull stuff if bounds are p
 explicitly record format of versioned integrate files in docs.  Then use the version to do a better job of 
 parsing the input files.
 
+Document  the discincton between meanR and newMeanR
 
 for writing envelope int files:
 /*	} else {
@@ -57,3 +56,9 @@ SLOCCount comes with ABSOLUTELY NO WARRANTY, and you are welcome to
 redistribute it under certain conditions as specified by the GNU GPL license;
 see the documentation for details.
 Please credit this data as "generated using David A. Wheeler's 'SLOCCount'."
+
+
+
+
+
+

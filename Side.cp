@@ -76,10 +76,10 @@ Side::operator== (const Side &inSide)
 // ---------------------------------------------------------------------------
 /* Returns the area of the triangle formed by points pt1,pt2 and pt3.  Formula
 	obtained from CRC math tables, 25th edition, p.294 */
-float
+double
 Side::Area()
 {
-	float	det1, det2, det3;
+	double	det1, det2, det3;
 
 	det1 = pt1.y * pt2.z + pt1.z * pt3.y + pt2.y * pt3.z - pt1.y * pt3.z - pt1.z * pt2.y - pt2.z * pt3.y;
 	det2 = pt1.z * pt2.x + pt1.x * pt3.z + pt2.z * pt3.x - pt1.z * pt3.x - pt1.x * pt2.z - pt2.x * pt3.z;
@@ -91,10 +91,10 @@ Side::Area()
 //		¥ MinAngle
 // ---------------------------------------------------------------------------
 /* Returns the minimum angle of the triangle formed by points pt1,pt2 and pt3.*/
-float
+double
 Side::MinAngle()
 {
-	float angle1, angle2, angle3;	// angles at points 1 2 and 3
+	double angle1, angle2, angle3;	// angles at points 1 2 and 3
 	Point3DFloat v12, v13, v23, v21, v31, v32;
 	v12 = pt2 - pt1;
 	v13 = pt3 - pt1;
@@ -147,7 +147,7 @@ bool
 Side::IsWithout(Point3DFloat &inPt)
 {
 	Point3DFloat ptVector = inPt - pt1; // a vector from Pt1 to the inPt
-	float angle = inVect.Angle(ptVector);
+	double angle = inVect.Angle(ptVector);
 	if (angle > M_PI/2.0)
 		return true;
 	return false;
@@ -169,7 +169,7 @@ Side::AwayVect(Point3DFloat &inPt)
 	v12 = pt2 - pt1;
 	vCross = v13 % v12;
 	v1inPt = inPt - pt1;	// the vector from point1 to inPt
-	if (v1inPt.Angle(vCross) < M_PI / 2.0)	// if angle between cross vector and vector from pt1 to inPt is < 90¡
+	if (v1inPt.Angle(vCross) * 2.0 < M_PI)	// if angle between cross vector and vector from pt1 to inPt is < 90¡
 		outPt = -vCross;
 	else
 		outPt = vCross;

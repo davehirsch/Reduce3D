@@ -27,10 +27,10 @@ CFloatArray::~CFloatArray()
 // ---------------------------------------------------------------------------------
 //		¥ Pop
 // ---------------------------------------------------------------------------------
-float
+double
 CFloatArray::Pop()
 {
-	static float outNum;
+	static double outNum;
 	
 	if (array.size() > 0) {
 		outNum = array.back();
@@ -46,7 +46,7 @@ CFloatArray::Pop()
 //		¥ Push
 // ---------------------------------------------------------------------------------
 void
-CFloatArray::Push(float *inNum)
+CFloatArray::Push(double *inNum)
 {
 	array.push_back(*inNum);
 }
@@ -55,7 +55,7 @@ CFloatArray::Push(float *inNum)
 //		¥ Push
 // ---------------------------------------------------------------------------------
 void
-CFloatArray::Push(float inNum)
+CFloatArray::Push(double inNum)
 {
 	array.push_back(inNum);
 }
@@ -72,7 +72,7 @@ CFloatArray::Clear()
 // ---------------------------------------------------------------------------
 //		¥ operator[]
 // ---------------------------------------------------------------------------
-float
+double
 CFloatArray::operator[](int inSub)
 {
 	return array.at(inSub);
@@ -82,7 +82,7 @@ CFloatArray::operator[](int inSub)
 //		¥ Update
 // ---------------------------------------------------------------------------
 void
-CFloatArray::Update(int index, float inNum)
+CFloatArray::Update(int index, double inNum)
 {
 	if (index > 0 && index < array.size()){
 		array.at(index) = inNum;

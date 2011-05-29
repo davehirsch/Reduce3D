@@ -422,18 +422,20 @@
 	thePrefs.matchPDF = [defaults boolForKey:@"matchPDF"];
 	thePrefs.makeDCEnv = [defaults boolForKey:@"makeDCEnv"];
 	thePrefs.observabilityFilter = [defaults boolForKey:@"observabilityFilter"];
+	thePrefs.observabilityMethod = [defaults integerForKey:@"observabilityMethod"];
+	thePrefs.observabilityPercent = [defaults floatForKey:@"observabilityPercent"];
 	thePrefs.crit1Factor = [defaults floatForKey:@"crit1Factor"];
 	thePrefs.crit2Factor = [defaults floatForKey:@"crit2Factor"];
 	thePrefs.applyObservabilityFilter = [defaults boolForKey:@"applyObservabilityFilter"];
 
 	thePrefs.outputReduce = [defaults boolForKey:@"outputReduce"];
 	thePrefs.outputCrystals = [defaults boolForKey:@"outputCrystals"];
+	thePrefs.outputHull = [defaults boolForKey:@"outputHull"];
 	thePrefs.outputSigmas = [defaults boolForKey:@"outputSigmas"];
 	thePrefs.confidence = [defaults integerForKey:@"confidence"];
 
 	thePrefs.seed = [defaults integerForKey:@"seed"];
 	thePrefs.MCReps = [defaults integerForKey:@"MCReps"];
-	thePrefs.tidyUp = [defaults boolForKey:@"tidyUp"];
 	thePrefs.verbose = [defaults boolForKey:@"verbose"];	
 	thePrefs.playSoundWhenDone = [defaults boolForKey:@"playSoundWhenDone"];	
 
@@ -560,7 +562,7 @@
  			 title:(NSString *) inTitle
 		   buttons:(NSArray *) inButtons
 	 defaultButton:(short) inDefault
-		 dismissIn:(float) inDismiss
+		 dismissIn:(double) inDismiss
 {
 	NSAlert *alert = [[NSAlert alloc] init];
 	if (inButtons) {
@@ -627,7 +629,7 @@
 				// then the number is an integer
 				[defaults setInteger:[thisNum intValue] forKey:key];
 			} else {
-				// then the number is a float
+				// then the number is a double
 				[defaults setFloat:[thisNum floatValue] forKey:key];
 			}
 		} else {
@@ -693,74 +695,76 @@
 - (id)getDefaultValues
 {
 	NSDictionary *appDefaults = [NSDictionary dictionaryWithObjectsAndKeys:
-		@"NO",	@"includeMeanCSD",
-		[NSNumber numberWithInt:63],	@"numClassesMeanCSD",
-		[NSNumber numberWithFloat:3.00],	@"maxValueMeanCSD",
-		@"NO",	@"includeLogCSD",
-		[NSNumber numberWithInt:63],	@"numClassesLogCSD",
-		@"NO",	@"includeMaxCSD",
-		[NSNumber numberWithInt:63],	@"numClassesMaxCSD",
-		@"NO",	@"includeRegCSD",
-		[NSNumber numberWithFloat:0.10],	@"deltaLRegCSD",
-		
-		@"YES",	@"doQuadrat",
-		[NSNumber numberWithInt:1000],	@"quadratNumPlacings",
-		[NSNumber numberWithInt:10],	@"quadratNumReps",
-		@"YES",	@"doImpingement",
-		[NSNumber numberWithFloat:0.10],	@"impingementMeanErr",
-		[NSNumber numberWithFloat:20.00],	@"impingementMaxErr",
-		@"YES",	@"doOthers",
-		@"NO",	@"inflateBBox",
-		@"YES",	@"discardNegs",
-		@"NO",	@"useRaeburn",
-		@"NO",	@"useVolume",
-		@"YES",	@"doRandomPt",
-		[NSNumber numberWithInt:1000],	@"RPNumPlacings",
-		[NSNumber numberWithInt:10],	@"RPNumReps",
-		@"YES",	@"doLMcfPcf",
-		[NSNumber numberWithInt:6],	@"numNNDist",
-		[NSNumber numberWithInt:50],	@"overlap",
-		[NSNumber numberWithInt:500],	@"numCFOffsetVolPts",
-		@"NO",	@"specifyTestDistance",
-		[NSNumber numberWithFloat:0.05],	@"testDistanceInterval",
-		[NSNumber numberWithFloat:0.1],	@"EpanecnikovCVal",
-		[NSNumber numberWithInt:kRectPrism],	@"sampleShape",
-		@"YES",	@"exscribedPrimitive",
-		[NSNumber numberWithInt:0.01],	@"shrinkExscribedPrimitive",
-		
-		[NSNumber numberWithInt:100],	@"numEnvelopeRuns",
-		@"NO",	@"matchVF",
-		[NSNumber numberWithFloat:10.0],	@"VFPercent",
-		@"NO",	@"matchPDF",
-		@"NO",	@"makeDCEnv",
-		@"YES",	@"observabilityFilter",
-		[NSNumber numberWithFloat:0.85],	@"crit1Factor",
-		[NSNumber numberWithFloat:3.0],	@"crit2Factor",
-		@"NO",	@"applyObservabilityFilter",
-		
-		@"YES",	@"outputReduce",
-		@"NO",	@"outputCrystals",
-		@"NO",	@"outputSigmas",
-		[NSNumber numberWithInt:96],	@"confidence",
-		
-		[NSNumber numberWithInt:1234567],	@"seed",
-		[NSNumber numberWithInt:5000],	@"MCReps",
-		@"NO",	@"tidyUp",
-		@"NO",	@"verbose",
-		@"YES",	@"playSoundWhenDone",
-		
-		@"NO",	@"doShave",
-		@"YES",	@"keepAspectRatios",
-		[NSNumber numberWithInt:kX],	@"shaveXYZ",
-		[NSNumber numberWithFloat:10.0],	@"shaveIncrement",
-		[NSNumber numberWithInt:kSymmetric],	@"direction",
-		[NSNumber numberWithFloat:10.0],	@"minPercent",
-		[NSNumber numberWithInt:200],	@"minPopulation",
-		[NSNumber numberWithFloat:1000.0],	@"maxAspectRatio",
-		[NSNumber numberWithInt:kSmaller],	@"shaveSmLg",
-		@"NO",	@"ShaveSave",
-		nil];
-
+								 @"NO",	@"includeMeanCSD",
+								 [NSNumber numberWithInt:63],	@"numClassesMeanCSD",
+								 [NSNumber numberWithFloat:3.00],	@"maxValueMeanCSD",
+								 @"NO",	@"includeLogCSD",
+								 [NSNumber numberWithInt:63],	@"numClassesLogCSD",
+								 @"NO",	@"includeMaxCSD",
+								 [NSNumber numberWithInt:63],	@"numClassesMaxCSD",
+								 @"NO",	@"includeRegCSD",
+								 [NSNumber numberWithFloat:0.10],	@"deltaLRegCSD",
+								 
+								 @"YES",	@"doQuadrat",
+								 [NSNumber numberWithInt:1000],	@"quadratNumPlacings",
+								 [NSNumber numberWithInt:10],	@"quadratNumReps",
+								 @"YES",	@"doImpingement",
+								 [NSNumber numberWithFloat:0.10],	@"impingementMeanErr",
+								 [NSNumber numberWithFloat:20.00],	@"impingementMaxErr",
+								 @"YES",	@"doOthers",
+								 @"NO",	@"inflateBBox",
+								 @"YES",	@"discardNegs",
+								 @"NO",	@"useRaeburn",
+								 @"NO",	@"useVolume",
+								 @"YES",	@"doRandomPt",
+								 [NSNumber numberWithInt:1000],	@"RPNumPlacings",
+								 [NSNumber numberWithInt:10],	@"RPNumReps",
+								 @"YES",	@"doLMcfPcf",
+								 [NSNumber numberWithInt:6],	@"numNNDist",
+								 [NSNumber numberWithInt:50],	@"overlap",
+								 [NSNumber numberWithInt:500],	@"numCFOffsetVolPts",
+								 @"NO",	@"specifyTestDistance",
+								 [NSNumber numberWithFloat:0.05],	@"testDistanceInterval",
+								 [NSNumber numberWithFloat:0.1],	@"EpanecnikovCVal",
+								 [NSNumber numberWithInt:kRectPrism],	@"sampleShape",
+								 @"YES",	@"exscribedPrimitive",
+								 [NSNumber numberWithInt:0.01],	@"shrinkExscribedPrimitive",
+								 
+								 [NSNumber numberWithInt:100],	@"numEnvelopeRuns",
+								 @"NO",	@"matchVF",
+								 [NSNumber numberWithFloat:10.0],	@"VFPercent",
+								 @"NO",	@"matchPDF",
+								 @"NO",	@"makeDCEnv",
+								 @"YES",	@"observabilityFilter",
+								 [NSNumber numberWithInt:kSetFromData],	@"observabilityMethod",
+								 [NSNumber numberWithInt:1.0],	@"observabilityPercent",
+								 [NSNumber numberWithFloat:0.85],	@"crit1Factor",
+								 [NSNumber numberWithFloat:3.0],	@"crit2Factor",
+								 @"YES",	@"applyObservabilityFilter",
+								 
+								 @"YES",	@"outputReduce",
+								 @"NO",	@"outputCrystals",
+								  @"NO",	@"outputHull",
+								 @"NO",	@"outputSigmas",
+								 [NSNumber numberWithInt:96],	@"confidence",
+								 
+								 [NSNumber numberWithInt:1234567],	@"seed",
+								 [NSNumber numberWithInt:5000],	@"MCReps",
+								 @"NO",	@"verbose",
+								 @"YES",	@"playSoundWhenDone",
+								 
+								 @"NO",	@"doShave",
+								 @"YES",	@"keepAspectRatios",
+								 [NSNumber numberWithInt:kX],	@"shaveXYZ",
+								 [NSNumber numberWithFloat:10.0],	@"shaveIncrement",
+								 [NSNumber numberWithInt:kSymmetric],	@"direction",
+								 [NSNumber numberWithFloat:10.0],	@"minPercent",
+								 [NSNumber numberWithInt:200],	@"minPopulation",
+								 [NSNumber numberWithFloat:1000.0],	@"maxAspectRatio",
+								 [NSNumber numberWithInt:kSmaller],	@"shaveSmLg",
+								 @"NO",	@"ShaveSave",
+								 nil];
+	
 	return appDefaults;
 }
 

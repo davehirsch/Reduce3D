@@ -130,7 +130,6 @@
 				55D60A5C0CF9768B0028A6D2 /* Bounding Box */,
 				55D60A560CF976830028A6D2 /* Crystal */,
 				55D608E00CF962300028A6D2 /* Geometry */,
-				5504AC8D0D04A68900CE281B /* To Do & Misc */,
 				55D6045B0CF3ACB20028A6D2 /* AppController.h */,
 				55D6045C0CF3ACB20028A6D2 /* AppController.mm */,
 				5504A7D80D03785E00CE281B /* Mediator.h */,
@@ -173,6 +172,7 @@
 		29B97314FDCFA39411CA2CEA /* Reduce3D */ = {
 			isa = PBXGroup;
 			children = (
+				5504AC8D0D04A68900CE281B /* To Do & Misc */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -433,11 +433,13 @@
 		C01FCF4B08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_STYLE = Debug;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_VERSION = 4.0;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = Reduce3D;
@@ -453,8 +455,10 @@
 					ppc,
 					i386,
 				);
+				BUILD_STYLE = Release;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G5;
+				GCC_VERSION = 4.0;
 				INFOPLIST_FILE = Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				PRODUCT_NAME = Reduce3D;
@@ -465,6 +469,7 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_STYLE = Debug;
 				GCC_ALTIVEC_EXTENSIONS = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_MODEL_TUNING = G4;
@@ -479,6 +484,7 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUILD_STYLE = Release;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				GCC_MODEL_TUNING = G4;

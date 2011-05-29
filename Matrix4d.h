@@ -30,7 +30,7 @@ class	Matrix4d {
 									 Point3DFloat &pt3);
 		Matrix4d		TransformationMatrix (Point3DFloat &pt1, Point3DFloat &pt2,
 									 Point3DFloat &pt3);
-		Matrix4d		TranslationMatrix (float dx, float dy, float dz);
+		Matrix4d		TranslationMatrix (double dx, double dy, double dz);
 		Vector4d *		GetVector(short inSub);
 
 	public:

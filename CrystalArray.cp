@@ -5,6 +5,7 @@
 #import "CrystalArray.h"
 #import "SideSet.h"
 #import <string>
+#import <sstream>
 #import <algorithm>
 #import "stringFile.h"
 #import "Calculator.h"
@@ -264,7 +265,8 @@ CrystalArray::ReadMergeHeader()
 		mIntComment = mFile->getOneLine();		// Comment line, which for files made by Crystallize, contains run parameters
 		tempStr2 = mFile->peekLine();		// Probably the Number of crystals line, but some programs create a second comment line here.
 											//   we'll look for an "N" as the first character to detect a non - Number-of-crystals line here.
-		if (tempStr2[0] != 'N') {
+		if (tempStr2.compare(0,6,"Number") != 0) {
+			// "Number" was not found at the beginning of the string
 			tempStr2 = mFile->getOneLine();		// Secondary comment line 
 			mIntComment += tempStr2;		// append secondary comment line to the comment variable
 		}
@@ -354,7 +356,7 @@ CrystalArray::ReadMergeHeader()
 		} else if (isSim(mFileType)) {	// then it's a simulation with volume=mTotalVolume, so we know the bounds
 			mBounds = kBoundsRP;
 			mLower.Set(0,0,0);
-			float dimension = CubeRoot(mTotalVolume);
+			double dimension = CubeRoot(mTotalVolume);
 			mUpper.Set(dimension,dimension,dimension);
 		} else  {
 			mBounds = kBoundsNone;
@@ -362,9 +364,9 @@ CrystalArray::ReadMergeHeader()
 	} catch (stringFile::UnexpectedEOF sfErr) {
 		MergeIOErr err;
 		err.briefDesc = "Unexpected End of File";
-		char tempLongDesc[kStdStringSize];
-		sprintf(tempLongDesc, "Problem reading header data from file: %s.", sfErr.filename);
-		err.longDesc = tempLongDesc;
+//		char tempLongDesc[kStdStringSize];
+//		sprintf(tempLongDesc, "Problem reading header data from file: %s.", sfErr.filename);
+		err.longDesc = "Problem reading header data from file";
 		mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
 		throw;	// toss it up the chain
 	}
@@ -400,18 +402,18 @@ CrystalArray::ReadMergeHeader()
 				 char xlNumStr[15];
 				 sprintf(xlNumStr, "%d", curCrystal-1);
 				 err.briefDesc = "Unexpected End of File";
-				 char tempLongDesc[kStdStringSize];
-				 int lastGoodXl = curCrystal-1;
-				 sprintf(tempLongDesc, "Problem reading crystals from file: %s. Last crystal read and verified was: %d.",
-						 sfErr.filename, 
-						 lastGoodXl);	// This reported crystal number is the one from the file (1-based)
-				 err.longDesc = tempLongDesc;
+//				 char tempLongDesc[kStdStringSize];
+//				 int lastGoodXl = curCrystal-1;
+//				 sprintf(tempLongDesc, "Problem reading crystals from file: %s. Last crystal read and verified was: %d.",
+//						 sfErr.filename, 
+//						 lastGoodXl);	// This reported crystal number is the one from the file (1-based)
+				 err.longDesc = "Problem reading crystals from file.  Probably number of crystal header is wrong.";
 				 mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
 				 throw;	// toss it up the chain
 			 } // else: ignore the problem; we've got all the crystals we need
 		 }
 		 if (tempStr.find('\t') == std::string::npos) {	// no tab present
-			 sscanf(tempStr.c_str(), "%hi%f%f%f%f%hi%li", 
+			 sscanf(tempStr.c_str(), "%hi%lf%lf%lf%lf%hi%li", 
 					&checkCrystalNum,
 					&oneCrystal.ctr.x,
 					&oneCrystal.ctr.y,
@@ -420,7 +422,7 @@ CrystalArray::ReadMergeHeader()
 					&oneCrystal.ctrSlice,
 					&oneCrystal.ctrID);
 		 } else {
-			 sscanf(tempStr.c_str(), "%hi\t%f\t%f\t%f\t%f\t%hi\t%li", 
+			 sscanf(tempStr.c_str(), "%hi\t%lf\t%lf\t%lf\t%lf\t%hi\t%li", 
 					&checkCrystalNum,
 					&oneCrystal.ctr.x,
 					&oneCrystal.ctr.y,
@@ -469,9 +471,9 @@ CrystalArray::ReadMergeHeader()
 //				return true;
 
 short
-CrystalArray::CrystalIntersects(Crystal &thisXl, bool inMatchingCTDataSet, float inVolFraction, float betafactorfactor)
+CrystalArray::CrystalIntersects(Crystal &thisXl, bool inMatchingCTDataSet, double inVolFraction, double betafactorfactor)
 {
-	float separation;
+	double separation;
 	if (GetNumXls() == 0)
 		return false;
 
@@ -482,9 +484,9 @@ CrystalArray::CrystalIntersects(Crystal &thisXl, bool inMatchingCTDataSet, float
 		for (int i = 0; i <= numXls-1; i++) {
 			otherXl = (Crystal *) GetItemPtr(i);
 			separation = thisXl.ctr.Distance(otherXl->ctr);
-			float minOKDist;
+			double minOKDist;
 			if (mPrefs->makeDCEnv) {	// if we are making a "diffusion-controlled" envelope as in Chris Daniel's dissertation
-				float betaFactor = pow(inVolFraction, -1.0/3.0);
+				double betaFactor = pow(inVolFraction, -1.0/3.0);
 				minOKDist = betaFactor * fabs(otherXl->r - thisXl.r) * betafactorfactor;
 				if (minOKDist >= separation) {
 					return kIC_or_DCCriterion;
@@ -505,11 +507,11 @@ CrystalArray::CrystalIntersects(Crystal &thisXl, bool inMatchingCTDataSet, float
 						smaller = otherXl;
 						larger = &thisXl;
 					}
-					float IntPlaneDist = (sqr(larger->r) - sqr(smaller->r) + sqr(separation)) / (2 * separation);
+					double IntPlaneDist = (sqr(larger->r) - sqr(smaller->r) + sqr(separation)) / (2 * separation);
 					if (separation < mPrefs->crit1Factor * IntPlaneDist) {	// criterion (1)
 						return kObs1Criterion;
 					} else {
-						float totalLength = separation + larger->r + smaller->r;
+						double totalLength = separation + larger->r + smaller->r;
 						if (totalLength < mPrefs->crit2Factor * smaller->r) {	// criterion (2)
 							return kObs2Criterion;
 						}
@@ -522,9 +524,9 @@ CrystalArray::CrystalIntersects(Crystal &thisXl, bool inMatchingCTDataSet, float
 			otherXl = (Crystal *) GetItemPtr(i);
 			separation = thisXl.ctr.Distance(otherXl->ctr);
 			// this is the less obvious, but faster(?) version:
-			float minOKDist;
+			double minOKDist;
 			if (mPrefs->makeDCEnv) {
-				float betaFactor = pow(inVolFraction, -1.0/3.0);
+				double betaFactor = pow(inVolFraction, -1.0/3.0);
 				minOKDist = betaFactor * fabs(otherXl->r - thisXl.r) * betafactorfactor;
 			} else {
 				minOKDist = fabs(otherXl->r - thisXl.r);
@@ -592,6 +594,67 @@ CrystalArray::GetMeanRadius()
 	return rsum / numXls;
 }
 
+// ---------------------------------------------------------------------------
+//		¥ FindObservabilityValues
+// ---------------------------------------------------------------------------
+/*	This function measures the observability values of each pair of impinged crystals, and
+	determines the value of the observability criteria required to exclude inPercent of them.
+	It is designed to implement a Ketcham et al (2005)-type analysis.
+	 Criterion 1 is determined by the separation / IntPlaneDistance.
+	 Criterion 2 is determined by totalLength/r(smaller)
+*/
+void
+CrystalArray::FindObservabilityValues(double inPercent, double *ioCrit1value, double *ioCrit2value)
+{
+	std::vector<double> crit1Array;
+	std::vector<double> crit2Array;
+	
+	mCalc->setupProgress("Determining observability criteria", nil, nil, nil, -1, 0, GetNumXls(), 0, false);
+	Crystal *thisXl, *otherXl;
+	for (int i = 0; i <= GetNumXls()-1; i++) {
+		thisXl = (Crystal *) GetItemPtr(i);
+		mCalc->progress(i);
+		for (int j=i+1; j <= GetNumXls()-1; j++) {
+			otherXl = (Crystal *) GetItemPtr(j);
+			double separation = thisXl->ctr.Distance(otherXl->ctr);
+			if (separation < (thisXl->r + otherXl->r))	{	// if they overlap at all, then measure observability values:
+				Crystal *smaller, *larger;
+				if (thisXl->r < otherXl->r) {
+					smaller = thisXl;
+					larger = otherXl;
+				} else {
+					smaller = otherXl;
+					larger = thisXl;
+				}
+				double IntPlaneDist = (sqr(larger->r) - sqr(smaller->r) + sqr(separation)) / (2 * separation);
+				double totalLength = separation + larger->r + smaller->r;
+				double crit1 = separation / IntPlaneDist;
+				double crit2 = totalLength / smaller->r;
+				crit1Array.push_back(crit1);
+				crit2Array.push_back(crit2);
+			}
+		}
+	}
+	std::sort(crit1Array.begin(), crit1Array.end());
+	std::sort(crit2Array.begin(), crit2Array.end());
+	int numImpXls = crit1Array.size();
+	int position = trunc((double)numImpXls * inPercent * 0.01);
+	*ioCrit1value = crit1Array[position];
+	*ioCrit2value = crit2Array[position];
+	// Now we have arrays of all the observability values for impinged crystals
+	if (mPrefs->verbose) {
+		std::stringstream logStr;
+		logStr << ("Measured Observability Values for ");
+		logStr << numImpXls;
+		logStr << " impinged crystals.\n";
+		logStr << "Observability criteria used are: a1=";
+		logStr << *ioCrit1value;
+		logStr << ", and a2=";
+		logStr << *ioCrit2value;
+		logStr << ".\n";
+		mCalc->log((logStr.rdbuf())->str());
+	}
+}
 
 // ---------------------------------------------------------------------------
 //		¥ FilterForObservability
@@ -607,18 +670,26 @@ than is the plane of intersection of the sphere surfaces.
 ** Currently, clusters of >1 crystal are dealt with by examining the set pairwise
 */
 void
-CrystalArray::FilterForObservability(short *crit1rejecs, short *crit2rejects)
+CrystalArray::FilterForObservability(double crit1Factor, double crit2Factor, short *crit1rejecs, short *crit2rejects)
 {
 	bool unobservable;
 	
-	if (mPrefs->verbose) mCalc->log("Beginning Observability Filter\n");
+	mCalc->setupProgress("Removing unobservable crystals", nil, nil, nil, -1, 0, GetNumXls(), 0, false);
+	if (mPrefs->verbose) {
+		mCalc->log("Beginning Observability Filter\n");
+		std::stringstream logStr;
+		logStr << ("Removing illegal crystals: Started with ");
+		logStr << GetNumXls();
+		logStr << " crystals.\n";
+		mCalc->log((logStr.rdbuf())->str());
+	}
 	
 	Crystal *thisXl, *otherXl;
 	for (int i = 0; i <= GetNumXls()-1; i++) {
 		thisXl = (Crystal *) GetItemPtr(i);
 		for (int j=i+1; j <= GetNumXls()-1; j++) {
 			otherXl = (Crystal *) GetItemPtr(j);
-			float separation = thisXl->ctr.Distance(otherXl->ctr);
+			double separation = thisXl->ctr.Distance(otherXl->ctr);
 			if (separation < (thisXl->r + otherXl->r))	{	// if they overlap at all, then check for observability:
 															// is this pair observable?
 				unobservable = false;
@@ -630,13 +701,13 @@ CrystalArray::FilterForObservability(short *crit1rejecs, short *crit2rejects)
 					smaller = otherXl;
 					larger = thisXl;
 				}
-				float IntPlaneDist = (sqr(larger->r) - sqr(smaller->r) + sqr(separation)) / (2 * separation);
-				if (separation < mPrefs->crit1Factor * IntPlaneDist) {	// criterion (1)
+				double IntPlaneDist = (sqr(larger->r) - sqr(smaller->r) + sqr(separation)) / (2 * separation);
+				if (separation < crit1Factor * IntPlaneDist) {	// criterion (1)
 					unobservable = 1;
 					crit1rejecs++;
 				} else {
-					float totalLength = separation + larger->r + smaller->r;
-					if (totalLength < mPrefs->crit2Factor * smaller->r) {	// criterion (2)
+					double totalLength = separation + larger->r + smaller->r;
+					if (totalLength < crit2Factor * smaller->r) {	// criterion (2)
 						unobservable = 2;
 						crit2rejects++;
 					}
@@ -645,23 +716,23 @@ CrystalArray::FilterForObservability(short *crit1rejecs, short *crit2rejects)
 				if (unobservable) {	// then we need to combine them as a human would in fuzzy CT data
 					Crystal newXl;
 					// put center at combined center-of-mass
-					float smallVol = (4.0 * pi * pow(smaller->r, 3) / 3.0);
-					float largeVol = (4.0 * pi * pow(larger->r, 3) / 3.0);
+					double smallVol = (4.0 * pi * pow(smaller->r, 3) / 3.0);
+					double largeVol = (4.0 * pi * pow(larger->r, 3) / 3.0);
 					newXl.ctr = (larger->ctr * (largeVol/(largeVol + smallVol)));
 					newXl.ctr += (smaller->ctr * (smallVol/(largeVol + smallVol)));
 					// make volume (via radius) be combined volume: we need to add the two volumes, and subtract
 					// the spherical caps of each one that form the intersection volume (spherical cap
 					// volume formula is taken from pg. 314 of CRC Math Tables, 30th Ed.)
-					float h = larger->r - IntPlaneDist;
-					float largeCapVol = pi * sqr(h) * (3.0 * larger->r - h) / 3.0;
+					double h = larger->r - IntPlaneDist;
+					double largeCapVol = pi * sqr(h) * (3.0 * larger->r - h) / 3.0;
 					h = smaller->r - separation + IntPlaneDist;
-					float smallCapVol = pi * sqr(h) * (3.0 * smaller->r - h) / 3.0;
-					float totalVol = smallVol + largeVol - largeCapVol - smallCapVol;
+					double smallCapVol = pi * sqr(h) * (3.0 * smaller->r - h) / 3.0;
+					double totalVol = smallVol + largeVol - largeCapVol - smallCapVol;
 					newXl.r = CubeRoot(0.75 * totalVol / pi);
 					
 					if (mPrefs->verbose) {
 						char debugStr[255];
-						sprintf(debugStr, "Tossed out a pair dur to criterion #%d; numbers were %d and %d, and added a new one, number %d\n",
+						sprintf(debugStr, "Tossed out a pair due to criterion #%d; numbers were %d and %d, and added a new one, number %d\n",
 								unobservable, i, j, GetNumXls() - 1);
 						mCalc->log(debugStr);
 					}
@@ -697,7 +768,7 @@ CrystalArray::GetNuclProb()
 // ---------------------------------------------------------------------------------
 /*
 void
-CrystalArray::ChangeRadii(double *outRadiiList, float inDelta)
+CrystalArray::ChangeRadii(double *outRadiiList, double inDelta)
 {
 	Crystal *thisXl;
 	int numXls = GetNumXls();
@@ -756,7 +827,7 @@ CrystalArray::AdjustLocations()
 				// see if it now has too much overlap with any others
 				Crystal *thirdXl;
 				CrystalArray *overlapXls = nil;
-				float overlap = 0;
+				double overlap = 0;
 				for (short k=1; k <= GetNumXls(); k++) {
 					thirdXl = (Crystal *) GetItemPtr(k);
 					if ((moveXl->r - thirdXl->r - moveXl->ctr.Distance(thirdXl->ctr)) > 0) {
@@ -770,11 +841,11 @@ CrystalArray::AdjustLocations()
 				
 				if (overlap > 0) {	// if so, then negotiate the best location
 					Point3DFloat direction = (moveXl->ctr - holdXl->ctr).Unit();
-					float magnitude = (moveXl->ctr - holdXl->ctr).Magnitude();
-					float factor = 1.0;
+					double magnitude = (moveXl->ctr - holdXl->ctr).Magnitude();
+					double factor = 1.0;
 					bool done = false;
-					float lastOverlap = overlap;
-					float thisOverlap = 0;
+					double lastOverlap = overlap;
+					double thisOverlap = 0;
 					
 					do {
 						factor -= 0.1;
@@ -813,19 +884,19 @@ CrystalArray::AdjustLocations()
 	as determined by the spherical cap on the far side of the plane of intersection with another crystal. 
 	This is used by CorrectForImpingement to adjust the radius of crystals that are generated by Crystallize simulations.
 */
-float
+double
 CrystalArray::CorrectedCrystalVolume (Crystal *inXl)
 {
 	int i;
-	float volume;		// volume of the crystal -- total volume minus sectors belonging to other crystals
-	float dist;			// distance between two sphere centers
-	float sumRad;		// sum of two sphere radii
-	float cosAlpha;		// two spheres will intersect in a circle.  Alpha is the angle made by a line going from the center
+	double volume;		// volume of the crystal -- total volume minus sectors belonging to other crystals
+	double dist;			// distance between two sphere centers
+	double sumRad;		// sum of two sphere radii
+	double cosAlpha;		// two spheres will intersect in a circle.  Alpha is the angle made by a line going from the center
 						// the currently considered crystal (inXl) to the center of the other crystal (thisXl) to a point on
 						// the circle of intersection.  cosAlpha is the cosine of that angle.
-	float h;			// distance between the dividing plane and the edge of the sphere whose volume we want
-	float segmentVol;	// volume of the part of the sphere shaved off by the dividing plane
-	float absXlRad, absCurrRad;	// Since radii are sometimes negative here for flagging purposes, these store Abs(radius)
+	double h;			// distance between the dividing plane and the edge of the sphere whose volume we want
+	double segmentVol;	// volume of the part of the sphere shaved off by the dividing plane
+	double absXlRad, absCurrRad;	// Since radii are sometimes negative here for flagging purposes, these store Abs(radius)
 	Crystal *thisXl;
 	bool	dontbreak = true;
 	int numXls = GetNumXls();
@@ -894,7 +965,7 @@ CrystalArray::CorrectForImpingement()
 {
 	bool maxErrorSmallEnough, meanErrorSmallEnough, notConverging;
 	int	currXl, itNum, sign;
-	float	volumeDifference, currErr, maxErr, avgErr, oldAvgErr, maxTol, meanTol,
+	double	volumeDifference, currErr, maxErr, avgErr, oldAvgErr, maxTol, meanTol,
 		currVol;
 	Crystal *thisXl;
 	int numXls = GetNumXls();
@@ -972,7 +1043,7 @@ CrystalArray::RemoveIllegalOverlaps()
 		mCalc->progress(i);
 		for (int j=i+1; j <= GetNumXls() - 1; j++) {
 			otherXl = (Crystal *) GetItemPtr(j);
-			float separation = thisXl->ctr.Distance(otherXl->ctr);
+			double separation = thisXl->ctr.Distance(otherXl->ctr);
 			if (separation < (thisXl->r + otherXl->r))	{	// if they overlap at all, then check for observability:
 				Crystal *smaller, *larger;
 				if (thisXl->r < otherXl->r) {
@@ -1040,8 +1111,8 @@ CrystalArray::RebuildList()
 bool
 CrystalArray::VerifyList()
 {
-	float lastLoc = -FLT_MAX;
-	float thisLoc;
+	double lastLoc = -FLT_MAX;
+	double thisLoc;
 	Crystal *thisXl = nil;
 	int numXls = mList.size();
 	
@@ -1168,13 +1239,13 @@ CrystalArray::SortInternalList()
 	of inVal.  It also sets the lower and upper indices (within the sorted XList)
 	to values that represent the limits of the desired range */
 short
-CrystalArray::NearbyCount(float inVal, float inDistance,
+CrystalArray::NearbyCount(double inVal, double inDistance,
 						  int &outLowerIndex, int &outUpperIndex)
 {
 #define MmListSizeForSearchAlgorithm 30
 	
-	float lowerValue = inVal - inDistance;
-	float upperValue = inVal + inDistance;
+	double lowerValue = inVal - inDistance;
+	double upperValue = inVal + inDistance;
 	outLowerIndex = -1;
 	outUpperIndex = -1;
 	int numXls = mList.size();
@@ -1193,17 +1264,17 @@ CrystalArray::NearbyCount(float inVal, float inDistance,
 		}
 		return inCount;
 	} else {
-		float	frxn;
+		double	frxn;
 		long	curLoc;
 		short	direction;
 		short lowerIndex, upperIndex;
 		
 		// find lower element to include the nearby list - this will be the largest element that is smaller
 		// than inVal-inDistance
-		frxn = dmh_min(1.0, lowerValue / ((mList.at(numXls-1)).location - (mList.at(0)).location) - (mList.at(0)).location);
+		frxn = dmh_min(1.0, (lowerValue - (mList.at(0)).location) / ((mList.at(numXls-1)).location - (mList.at(0)).location));
 		curLoc = dmh_max(0, (numXls * frxn) - 1);	// start at approx location
 		direction = sign(lowerValue - (mList.at(curLoc)).location);
-		float curXVal = (mList.at(curLoc)).location;
+		double curXVal = (mList.at(curLoc)).location;
 		while ((curLoc >= 0) && (curLoc <= numXls-1) && 
 			   (lowerValue * direction > (mList.at(curLoc)).location * direction)) {
 			curXVal = (mList.at(curLoc)).location;
@@ -1229,7 +1300,7 @@ CrystalArray::NearbyCount(float inVal, float inDistance,
 		lowerIndex = curLoc;
 		
 		// find upper element to include in ioNearbyList
-		frxn = dmh_min(1.0, upperValue / ((mList.at(numXls-1)).location - (mList.at(0)).location) - (mList.at(0)).location);
+		frxn = dmh_min(1.0, (upperValue - (mList.at(0)).location) / ((mList.at(numXls-1)).location - (mList.at(0)).location));
 		curLoc = dmh_max(0, (numXls * frxn) - 1);	// start at approx location
 		curXVal = (mList.at(curLoc)).location;
 		direction = sign(upperValue - (mList.at(curLoc)).location);
@@ -1243,9 +1314,9 @@ CrystalArray::NearbyCount(float inVal, float inDistance,
 		curXVal = (mList.at(curLoc)).location;
 		
 		// need to account for series of values present in list that are equal to upperValue
-		while ((curLoc <= numXls-1) && (upperValue >= (mList.at(curLoc)).location)) {
+		while ((curLoc <= numXls-2) && (upperValue >= (mList.at(curLoc)).location)) {
 			curXVal = (mList.at(curLoc)).location;
-			curXVal = (mList.at(curLoc-1)).location;
+			curXVal = (mList.at(curLoc+1)).location;
 			curLoc++;
 		}
 		
@@ -1269,7 +1340,7 @@ CrystalArray::NearbyCount(float inVal, float inDistance,
 //	of crystals near a given crystal.
 // ---------------------------------------------------------------------------------
 std::vector<int>
-CrystalArray::NearbyXls(Point3DFloat inPt, float inDistance)
+CrystalArray::NearbyXls(Point3DFloat inPt, double inDistance)
 {
 	int lower, upper;
 	short listSize = NearbyCount(inPt.x, inDistance, lower, upper);
@@ -1305,7 +1376,7 @@ CrystalArray::NearbyXls(Point3DFloat inPt, float inDistance)
 //		¥ AddToList
 // ---------------------------------------------------------------------------------
 void
-CrystalArray::AddToList(XListElement *mList, float inVal, long inIndex, long *ioListSizeAlloc)
+CrystalArray::AddToList(XListElement *mList, double inVal, long inIndex, long *ioListSizeAlloc)
 {
 	if (numXls == 0) {
 		(mList.at(numXls)).index = inIndex;
@@ -1313,11 +1384,11 @@ CrystalArray::AddToList(XListElement *mList, float inVal, long inIndex, long *io
 	} else {
 		if (numXls+1 >= *ioListSizeAlloc) {
 			// need to re-allocate, larger
-			*ioListSizeAlloc = (float) *ioListSizeAlloc * 1.1;					// increase by 10%
+			*ioListSizeAlloc = (double) *ioListSizeAlloc * 1.1;					// increase by 10%
 			mList = ResizeList(mList, *ioListSizeAlloc);
 		}
 		// find insert location
-		float	frxn = min(1.0, inVal / ((mList.at(numXls-1)).location - (mList.at(0)).location) - (mList.at(0)).location);
+		double	frxn = min(1.0, inVal / ((mList.at(numXls-1)).location - (mList.at(0)).location) - (mList.at(0)).location);
 		long	curLoc = max(0, (numXls * frxn) - 1);	// start at approx location
 		short	direction = sign(inVal - (mList.at(curLoc)).location);
 		while ((curLoc >= 0) && (curLoc <= numXls-1) && 
@@ -1338,11 +1409,11 @@ CrystalArray::AddToList(XListElement *mList, float inVal, long inIndex, long *io
 //		¥ RemoveFromList
 // ---------------------------------------------------------------------------------
 bool
-CrystalArray::RemoveFromList(XListElement *mList, float inVal, long inIndex)
+CrystalArray::RemoveFromList(XListElement *mList, double inVal, long inIndex)
 {
 	if (numXls > 0) {
 		// find location
-		float	frxn = min(1.0, inVal / ((mList.at(numXls-1)).location - (mList.at(0)).location) - (mList.at(0)).location);
+		double	frxn = min(1.0, inVal / ((mList.at(numXls-1)).location - (mList.at(0)).location) - (mList.at(0)).location);
 		long	curLoc = (numXls-1) * frxn;	// start at approx location
 		short	direction = sign(inVal - (mList.at(curLoc)).location);
 		while ((curLoc >= 0) && (curLoc <= numXls-1) && 

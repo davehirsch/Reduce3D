@@ -34,21 +34,21 @@ class	BoundingBox : public SideSet {
 						BoundingBox(BoundingBox &inBBox);
 		virtual			~BoundingBox();
 		void			Copy(BoundingBox &inBBox);
-		bool			PointInBox(Point3DFloat &inPt, float tolerance=0);
+		bool			PointInBox(Point3DFloat &inPt, double tolerance=0);
 		bool			XlTouchesBox(Crystal &inXl);
 		void			FindConvexHull();
 		void			PrepForHullOrPrimitive();
 		bool			CheckedAgainstBounds();
-		float			SurfaceArea();
-		float			GetMaxDimension();
-		float			GetMinDimension();
-		float			VolumeMinusGuard(HoleSet *holes, float guardWidth);
-		float			GetXMax(){return xMax.x;};
-		float			GetYMax(){return yMax.y;};
-		float			GetZMax(){return zMax.z;};
+		double			SurfaceArea();
+		double			GetMaxDimension();
+		double			GetMinDimension();
+		double			VolumeMinusGuard(HoleSet *holes, double guardWidth);
+		double			GetXMax(){return xMax.x;};
+		double			GetYMax(){return yMax.y;};
+		double			GetZMax(){return zMax.z;};
 		CrystalArray *	GetXls() {return theXls;};
 		double			NearestSideDist(Point3DFloat &inPt);
-		float			GetPercentSphereInside(Point3DFloat inCtr, float inRadius, short inNumSpherePts);
+		double			GetPercentSphereInside(Point3DFloat inCtr, double inRadius, short inNumSpherePts);
 		void			Inflate();
 		void			SetOffset(Point3DFloat &inPt);
 		void			saveShavedIntegrateFile(short inShaveIteration);
@@ -67,7 +67,7 @@ class	BoundingBox : public SideSet {
 		NumberedPt		MinThetaPt(NumberedPt &inPt1, NumberedPt &inPt2,
 								NumberedPt &inPt3, Matrix4d &inMatrix,
 							    NumPtArray coplanars);
-		float			Theta(float x1, float y1, float x2, float y2);
+		double			Theta(double x1, double y1, double x2, double y2);
 		NumberedPt		&BendAroundSide (NumPtArray &coplanars, NumberedPt &pt1,
 								NumberedPt &pt2, NumberedPt &pt3);
 		void			FindCoplanars (NumPtArray &coplanars, Side &inSide);
@@ -78,16 +78,17 @@ class	BoundingBox : public SideSet {
 		void			FoldEdge (short nextSide, short nextEdge);
 		void			BetterInscribedBox();
 		void			FindBetterCenter();
-		void			ForceVolumeFraction(float inVolFraction);
-		void			FixVolumeFraction(float inVolFraction);
-		float			GetVolumeFraction(float inMaxRadius, long Tries = kPrefVal, HoleSet *inHoles = nil);
+		void			ForceVolumeFraction(double inVolFraction);
+		void			FixVolumeFraction(double inVolFraction);
+		double			GetVolumeFraction(double inMaxRadius, long Tries = kPrefVal, HoleSet *inHoles = nil);
 		void			RandPtInPrimitiveNotHole(Point3DFloat &outPt, HoleSet *inHoles = nil);
-		float			GetMCVolFracGranularity(short mode);
+		double			GetMCVolFracGranularity(short mode);
 		void			MakeRandomSimulation(std::vector<double> &inRadiiList, //double *inRadiiList,
 												bool inMatchingCTDataSet, 
-												float inVolFraction, 
+												double inVolFraction, 
 												HoleSet* inHoles=nil, 
-												float betafactorfactor=0);
+												double betafactorfactor=0);
+		void			ExportBoxData();
 
 	protected:
 		CrystalArray *		theXls;

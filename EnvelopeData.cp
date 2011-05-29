@@ -260,7 +260,7 @@ void
 EnvelopeData::GetMinAndMax(short inHNum, short inKind, short inConfidence,
 			double &outMin, double &outMax)
 {
-	float numToTossPart = mNumEnv * (1.0 - inConfidence / 100.0);
+	double numToTossPart = mNumEnv * (1.0 - inConfidence / 100.0);
 	short numToToss = numToTossPart / 2;
 	double *minHolders;
 	minHolders = new double[numToToss+1];

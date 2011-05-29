@@ -17,15 +17,15 @@ class	CFloatArray {
 
 					CFloatArray();
 					~CFloatArray();
-		float		Pop();
-		void		Push(float *inNum);
-		void		Push(float inNum);
+		double		Pop();
+		void		Push(double *inNum);
+		void		Push(double inNum);
 		void		Clear();
-		float		operator[](int inSub);
-		void		Update(int index, float inNum);
+		double		operator[](int inSub);
+		void		Update(int index, double inNum);
 		inline int		GetCount() {return array.size();};
 
 private:
-		std::vector<float> array;
+		std::vector<double> array;
 
 };

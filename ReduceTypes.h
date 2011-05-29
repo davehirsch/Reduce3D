@@ -8,6 +8,7 @@ typedef struct {
 	bool		doRandomPt;
 	bool		outputSigmas;
 	bool		outputCrystals;
+	bool		outputHull;
 	bool		outputReduce;
 	bool		doImpingement;
 	bool		doLMcfPcf;
@@ -18,7 +19,6 @@ typedef struct {
 	bool		ShaveSave;
 	bool		discardNegs;
 	bool		useRaeburn;
-	bool		tidyUp;
 	bool		useVolume;
 	bool		matchVF;
 	bool		makeDCEnv;
@@ -45,27 +45,29 @@ typedef struct {
 	short		confidence;
 	short		overlap;
 	short		shaveSmLg;
+	short		observabilityMethod;
 	long		seed;
 	long		MCReps;
-	float		maxValueMeanCSD;
-	float		deltaLRegCSD;
-	float		impingementMeanErr;
-	float		impingementMaxErr;
-	float		EpanecnikovCVal;
-	float		testDistanceInterval;
-	float		crit1Factor;
-	float		crit2Factor;
-	float		shaveIncrement;
-	float		minPercent;
-	float		maxAspectRatio;
-	float		VFPercent;
-	float		shrinkExscribedPrimitive;
+	double		maxValueMeanCSD;
+	double		deltaLRegCSD;
+	double		impingementMeanErr;
+	double		impingementMaxErr;
+	double		EpanecnikovCVal;
+	double		testDistanceInterval;
+	double		crit1Factor;
+	double		crit2Factor;
+	double		observabilityPercent;
+	double		shaveIncrement;
+	double		minPercent;
+	double		maxAspectRatio;
+	double		VFPercent;
+	double		shrinkExscribedPrimitive;
 } PrefStruct;
 
 typedef struct {
 	short	halfSines;
 	short	start;
-	float	minProb;
+	double	minProb;
 } nuclProb1D;
 
 typedef struct {
@@ -76,5 +78,5 @@ typedef struct {
 
 typedef struct DistArrayElem {
 	short	index;
-	float	dist;
+	double	dist;
 } DistArrayElem;

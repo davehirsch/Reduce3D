@@ -91,7 +91,7 @@ Calculator::reduceDataInFile(std::string inputFilePath, std::string holesFilePat
 		std::string message = "Reading data file: ";
 		message += inputFilePath.c_str();
 		setupProgress(message.c_str(), nil, nil, nil, -1, -1, -1, -1, true);
-		
+		message += "\n";
 		log(message.c_str());
 
 		// Create the input file object.  This will read the file's data into a buffer
@@ -139,6 +139,7 @@ Calculator::reduceDataInFile(std::string inputFilePath, std::string holesFilePat
 	} catch (const char *msgString) {
 		std::string logStr = "Calculator::reduceDataInFile Caught a thrown error: ";
 		logStr += msgString;
+		logStr += "\n";
 		log(msgString);
 		postError(msgString, "Reduce 3D Error", nil, -1, -1);
 
@@ -223,6 +224,7 @@ Calculator::shaveAndReduceData(std::string inputFilePath)
 	} catch (const char *msgString) {
 		std::string logStr = "Calculator::shaveAndReduceData Caught a thrown error: ";
 		logStr += msgString;
+		logStr += "\n";
 		log(msgString);
 		postError(msgString, "Reduce 3D Error", nil, -1, -1);
 		
@@ -252,18 +254,27 @@ Calculator::reduceOneDataset(BoundingBox *ioBBox, HoleSet *inHoles)
 	AppController *cont = (AppController *)controller;
 	
 	try {
-		(ioBBox->GetXls())->FilterForObservability(&(stats->observabilityCrit1), &(stats->observabilityCrit2)); 
+		if (prefs->observabilityMethod == kSetFromData) {
+			(ioBBox->GetXls())->FindObservabilityValues(prefs->observabilityPercent, &(stats->observabilityCrit1value), &(stats->observabilityCrit2value));
+		} else {
+			stats->observabilityCrit1value = prefs->crit1Factor;
+			stats->observabilityCrit2value = prefs->crit2Factor;
+		}
+		if (prefs->applyObservabilityFilter) {
+			(ioBBox->GetXls())->FilterForObservability(prefs->crit1Factor, prefs->crit2Factor, &(stats->observabilityCrit1rejects), &(stats->observabilityCrit2rejects)); 
+		}
+		
 		/* Have the bounding box find the convex hull; it will also find 
 		the appropriate primitive as part of this process (if Sides wasn't 
 		selected by the user), and adapt the crystal data set to that primitive */
-		if (!prefs->exscribedPrimitive)
+		if ((prefs->sampleShape == kSides) || (!prefs->exscribedPrimitive))
 			ioBBox->FindConvexHull();
 
 		if ([cont shouldStopCalculating]) throw(kUserCanceledErr);
 
 		FindBestPrimitive(ioBBox, inHoles);
 		AdaptToPrimitiveBox(stats, ioBBox);
-
+		
 		calcStats(stats, ioBBox, inHoles);	// This funtion no longer includes DoEnvelopeSimulations()
 		if ([cont shouldStopCalculating]) throw(kUserCanceledErr);
 
@@ -303,7 +314,7 @@ Calculator::shaveData(BoundingBox *mStartBBox, BoundingBox *ioBBox, short iterat
 {
 	CrystalArray *ioXls = ioBBox->GetXls();
 	short primType = ioBBox->GetType();	
-	float	incr = (prefs->shaveIncrement / 100.0);
+	double	incr = (prefs->shaveIncrement / 100.0);
 	// should only get here if the primitive is Cylinder or RP, and explicit bounds
 	//	were given in the input file.  The SideSet primitive should be the same type of bounds
 	//	as given in the input file.
@@ -380,9 +391,9 @@ Calculator::shaveData(BoundingBox *mStartBBox, BoundingBox *ioBBox, short iterat
 		Point3DFloat ctr;
 		Point3DFloat deltaH;
 		Point3DFloat stCtr = (mStartBBox->GetXls())->GetCtr();
-		float	stRad = (mStartBBox->GetXls())->GetRadius();
-		float	stHt = (mStartBBox->GetXls())->GetHeight();
-		float	rad, ht;
+		double	stRad = (mStartBBox->GetXls())->GetRadius();
+		double	stHt = (mStartBBox->GetXls())->GetHeight();
+		double	rad, ht;
 		if (prefs->keepAspectRatios) {
 			rad = stRad - (incr * iteration * stRad);
 			ht = stHt - (incr * iteration * stHt);
@@ -581,7 +592,7 @@ Calculator::postError(const char *inMessage,
 					  const char *inTitle, 
 					  const char *inButtonStr, 
 					  short inDefault,
-					  float inDismiss)
+					  double inDismiss)
 {
 	// cast the stored AppController pointer into an Obj-C object for making Obj-C calls
 	AppController *cont = (AppController *)controller;
@@ -630,7 +641,7 @@ Calculator::calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	
 	CrystalArray * theXls = inBBox->GetXls();
 	
-	if (prefs->tidyUp && inHoles) {
+	if (prefs->applyObservabilityFilter && inHoles) {
 		inHoles->TidyCrystalsUp(theXls);
 	}
 
@@ -680,7 +691,7 @@ Calculator::calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	if (prefs->doLMcfPcf) {
 		if (stats->forRealDataset) {	// for the envelope simulations, this is set in DoEnvelopeSimulations based
 							// on the real data params (intensity, mean NN dist, etc.)
-			float scaleIncrement, bandwidth;
+			double scaleIncrement, bandwidth;
 			if (prefs->specifyTestDistance) {
 				scaleIncrement = prefs->testDistanceInterval;
 				bandwidth = scaleIncrement / (1.0 - prefs->overlap * 0.01);
@@ -690,7 +701,7 @@ Calculator::calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 				scaleIncrement = bandwidth * (1.0 - prefs->overlap * 0.01);
 			}
 
-			float totScale = prefs->numNNDist * stats->meanSep;
+			double totScale = prefs->numNNDist * stats->meanSep;
 			short numScales = trunc(totScale / scaleIncrement) + 1;
 
 			stats->SetCFParams(numScales, prefs->outputSigmas);
@@ -751,8 +762,8 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 
 				for (tryNum = 1; tryNum <= numtries; tryNum++) {
 						// set shrinking factors; get finer-grained with later tries
-					float bigFactor = 1.0 - ((numtries - tryNum + 1) * 0.015);
-					float smFactor = 1.0 - ((numtries - tryNum + 1) * 0.03);
+					double bigFactor = 1.0 - ((numtries - tryNum + 1) * 0.015);
+					double smFactor = 1.0 - ((numtries - tryNum + 1) * 0.03);
 					// Shrink until primitive is inside box: try for each dimension, pick version with largest volume
 					// Try Shrinking X:
 					Point3DFloat beforeLengths = curPrim.GetSideLenPt();
@@ -1008,7 +1019,7 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 				FindBestExscCylPrimitive(ioBBox);
 			} else {
 				setupProgress("Looking for best primitive to fit in bounding box...", nil, nil, nil, -1, 1, numtries, 1, false);
-				float	ht, rad;
+				double	ht, rad;
 				ctr = ioBBox->GetCtr();
 				rad = dmh_max(ioBBox->xMax.x - ioBBox->xMin.x, ioBBox->yMax.y - ioBBox->yMin.y) / 2;
 				ht = ioBBox->zMax.z - ioBBox->zMin.z;
@@ -1034,7 +1045,7 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 					// now the RP should be inscribed, but might not be very large.  We'll try moving the
 					// center, and then expanding the box a bit.
 					Point3DFloat lastCtr = ctr;
-					float minCtrX, maxCtrX, minCtrY, maxCtrY, minCtrZ, maxCtrZ;
+					double minCtrX, maxCtrX, minCtrY, maxCtrY, minCtrZ, maxCtrZ;
 					do {
 						ctr.x -= rad * 0.01;
 						curPrim.SetCtr(ctr);
@@ -1099,7 +1110,7 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 				}	// for tryNum
 
 				if (prefs->verbose) {
-					log("\tAdjusted the primitive.  It is now this:");
+					log("\tAdjusted the primitive.  It is now this:\n");
 					char logMsg[kStdStringSize];
 					ctr = curPrim.GetCtr();
 					rad  = curPrim.GetRadius();
@@ -1114,7 +1125,7 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 					curPrim.SetDimensions(rad, ht);
 				}
 
-				log("\tFound Cyl primitive:");
+				log("\tFound Cyl primitive:\n");
 				char logMsg[kStdStringSize];
 				sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
 				log(logMsg);
@@ -1152,8 +1163,8 @@ Calculator::FindBestExscRPPrimitive(BoundingBox *ioBBox)
 	short numOffsetAttempts = 100;
 	short thisOffsetAttempt;
 	short startXls, nowXls;
-	float xDim, yDim, zDim;
-	float scale;
+	double xDim, yDim, zDim;
+	double scale;
 	
 	ioBBox->PrepForHullOrPrimitive();
 	ctr = ioBBox->GetCtr();
@@ -1170,7 +1181,7 @@ Calculator::FindBestExscRPPrimitive(BoundingBox *ioBBox)
 	setupProgress("Looking for best rectangular prism to fit around dataset...", nil, nil, nil, -1, 1, numtries, 1, false);
 	
 	if (prefs->verbose) {
-		log("\tFound starting primitive:");
+		log("\tFound starting primitive:\n");
 		char logMsg[kStdStringSize];
 		sprintf (logMsg, "\t\t center = (%f, %f, %f); dimensions = (%f, %f, %f)\n", ctr.x, ctr.y, ctr.z, xDim, yDim, zDim);
 		log(logMsg);
@@ -1191,7 +1202,7 @@ Calculator::FindBestExscRPPrimitive(BoundingBox *ioBBox)
 			if (nowXls == startXls) goodOffset = true;
 		}
 		if (goodOffset) {
-			float increment = xDim/1000.0;
+			double increment = xDim/1000.0;
 			do {
 				// reduce radius by tiny increments until we lose a crystal from the primitive
 				xDim -= increment;
@@ -1224,7 +1235,7 @@ Calculator::FindBestExscRPPrimitive(BoundingBox *ioBBox)
 	}	// for tryNum
 	
 	if (prefs->verbose) {
-		log("\tAdjusted the primitive.  It is now this:");
+		log("\tAdjusted the primitive.  It is now this:\n");
 		char logMsg[kStdStringSize];
 		ctr = curPrim.GetCtr();
 		xDim  = curPrim.GetXLen();
@@ -1274,8 +1285,8 @@ Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
 	short thisOffsetAttempt;
 	short failedOffsets = 0;
 	short startXls, nowXls;
-	float ht, rad;
-	float scale;
+	double ht, rad;
+	double scale;
 
 	ioBBox->PrepForHullOrPrimitive();
 	ctr = ioBBox->GetCtr();
@@ -1290,7 +1301,7 @@ Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
 	setupProgress("Looking for best cylinder to fit around dataset...", nil, nil, nil, -1, 1, numtries, 1, false);
 
 	if (prefs->verbose) {
-		log("\tFound starting primitive:");
+		log("\tFound starting primitive:\n");
 		char logMsg[kStdStringSize];
 		sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
 		log(logMsg);
@@ -1302,7 +1313,7 @@ Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
 		Boolean goodOffset = false;
 		for (thisOffsetAttempt = 1; !goodOffset && (thisOffsetAttempt <= numOffsetAttempts); thisOffsetAttempt++) {
 			scale = (numOffsetAttempts - thisOffsetAttempt + 1.0) / numOffsetAttempts;
-			float XYOffsetRange = rad * 2 * scale / 100.0;
+			double XYOffsetRange = rad * 2 * scale / 100.0;
 			offset.x = RandomDbl(-XYOffsetRange, XYOffsetRange);
 			offset.y = RandomDbl(-XYOffsetRange, XYOffsetRange);
 			offset.z = 0;
@@ -1312,7 +1323,7 @@ Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
 			if (nowXls == startXls) goodOffset = true;
 		}
 		if (goodOffset) {
-			float increment = rad/1000.0;
+			double increment = rad/1000.0;
 			do {
 				// reduce radius by tiny increments until we lose a crystal from the cylinder
 				rad -= increment;
@@ -1328,7 +1339,7 @@ Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
 	}	// for tryNum
 	
 	if (prefs->verbose) {
-		log("\tAdjusted the primitive.  It is now this:");
+		log("\tAdjusted the primitive.  It is now this:\n");
 		char logMsg[kStdStringSize];
 		ctr = curPrim.GetCtr();
 		rad  = curPrim.GetRadius();
@@ -1341,7 +1352,7 @@ Calculator::FindBestExscCylPrimitive(BoundingBox *ioBBox)
 	ht = ht - prefs->shrinkExscribedPrimitive;
 	
 	if (prefs->verbose) {
-		log("\tShrunk the primitive.  It is now this:");
+		log("\tShrunk the primitive.  It is now this:\n");
 		char logMsg[kStdStringSize];
 		sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
 		log(logMsg);
@@ -1532,8 +1543,9 @@ Calculator::AdaptToPrimitiveBox(Stats *stats, BoundingBox *inBBox)
 	stats->numXlsForL = theXls->GetNumXls();
 	for (thisXlNum = 0; thisXlNum <= stats->numXlsForL - 1; thisXlNum++) {	// for each Xl
 		thisXlPtr = (Crystal *) theXls->GetItemPtr(thisXlNum);
-		stats->newMeanR += thisXlPtr->r / stats->numXlsForL;
+		stats->newMeanR += thisXlPtr->r;
 	}
+	stats->newMeanR /=  stats->numXlsForL;
 	theXls->RebuildList();
 }
 
@@ -1560,11 +1572,11 @@ Calculator::DoInitialStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	}
 	stats->BBSides = inBBox->GetCount();
 	stats->numCrystals = theXls->GetNumXls();
-	log("Finding Intensity");
+	log("Finding Intensity\n");
 	stats->intensity = FindIntensity(stats, inBBox, inHoles);
 	
 	Crystal *thisXl;
-	float maxR = 0;
+	double maxR = 0;
 	for (short i=0; i <= theXls->GetNumXls() - 1; i++) {
 		thisXl = (Crystal *) theXls->GetItemPtr(i);
 		maxR = dmh_max(maxR, thisXl->r);
@@ -1572,7 +1584,7 @@ Calculator::DoInitialStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	stats->numXlsForL = theXls->GetNumXls();
 	stats->maxR = maxR;	// needed to compute Volume Frxn
 	
-	log("Getting Volume Fraction");
+	log("Getting Volume Fraction\n");
 	stats->volFrxn = inBBox->GetVolumeFraction(maxR, kPrefVal);	// calculates bulk VF even if holes are present (contrasts with VF calc for making env sims)
 	stats->totalPosXls = stats->numCrystals - stats->negRadii;
 
@@ -1600,7 +1612,7 @@ Calculator::ComputeVolumes(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	
 	setupProgress("Computing volumes...", nil, nil, nil, -1, 0, numXls-1, 0, false);
 
-		for (index = 0; index <= numXls-1; index++) {
+	for (index = 0; index <= numXls-1; index++) {
 		progress(index);
 		currXl = (Crystal *) theXls->GetItemPtr(index);
 		currXl->extV = fabs((4.0/3.0) * M_PI * pow((double)(fabs(currXl->r)), (double)(3)));	// here we set the extended volume from the radius given in the input file
@@ -1618,9 +1630,9 @@ Calculator::ComputeVolumes(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 void
 Calculator::ComputeRadiusStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
-	float	realNumPosXls;
-	float	esdPosDenom;
-	float	variance;
+	double	realNumPosXls;
+	double	esdPosDenom;
+	double	variance;
 	CrystalArray *theXls = inBBox->GetXls();
 	int		numXls = theXls->GetNumXls();
 	setupProgress("Calculating radius and volume stats...", nil, nil, nil, -1, 0, numXls - 1, 0, false);
@@ -1638,10 +1650,10 @@ Calculator::ComputeRadiusStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHol
 		extVolBounds.Update(thisXl->extV);
 		actVolBounds.Update(thisXl->actV);
 	}
-		stats->minR = radiusBounds.min;
+	stats->minR = radiusBounds.min;
 	stats->maxR = radiusBounds.max;
 	stats->meanR = radiusBounds.sum / stats->numCrystals;
-	if (!stats->newMeanR)
+	if (stats->newMeanR == 0.0)
 		stats->newMeanR = stats->meanR;
 	variance = (stats->numCrystals * radiusBounds.sumsq - sqr(radiusBounds.sum)) / esdPosDenom;
 	if (variance > 0)
@@ -1678,8 +1690,8 @@ void
 Calculator::ComputeNeighbors(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
 	Crystal	*currXl, *otherXl;
-	float	testDistSq, minDistSq, boundDist;
-	float	testDistEdge, minDistEdge;
+	double	testDistSq, minDistSq, boundDist;
+	double	testDistEdge, minDistEdge;
 	CrystalArray *theXls = inBBox->GetXls();
 	short numXls = theXls->GetNumXls();
 	Point3DFloat	pt1, pt2;
@@ -1726,9 +1738,9 @@ Calculator::ComputeRandomPt(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
 	CrystalArray *theXls = inBBox->GetXls();
 	int	i, currRep, currXl;
-	float	minDist, xlDist, sumCubDist;
-	float	*means = new float[prefs->RPNumReps + 1];
-	float	thisMean;
+	double	minDist, xlDist, sumCubDist;
+	double	*means = new double[prefs->RPNumReps + 1];
+	double	thisMean;
 	Point3DFloat	randPt, pt1, pt2;
 	Crystal *thisXl;
 	int numXls = theXls->GetNumXls();
@@ -1748,14 +1760,14 @@ Calculator::ComputeRandomPt(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 				if (xlDist < minDist)
 					minDist = xlDist;
 			}	// for currXl 
-			float sideDist = NearestSideHoleDist(inBBox, inHoles, &randPt);
+			double sideDist = NearestSideHoleDist(inBBox, inHoles, &randPt);
 			if (minDist > sideDist) {
 				i--;
 			} else {
 				sumCubDist += pow(minDist, 3);
 			}
 		} // for i
-		float intensity = stats->intensity; //(theXls->GetNumXls() / stats->BBVolume);
+		double intensity = stats->intensity; //(theXls->GetNumXls() / stats->BBVolume);
 //		thisMean = sumCubDist / prefs->RPNumPlacings;
 //		thisMean *= intensity;
 //		thisMean *= (8.0/3.0) * M_PI * prefs->RPNumPlacings;
@@ -1858,7 +1870,7 @@ void
 Calculator::ComputeNNStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
 	CrystalArray *theXls = inBBox->GetXls();
-//	float	uSum, uSumSq, uConst, u, q;
+//	double	uSum, uSumSq, uConst, u, q;
 //	short	uNum, currRad, currNNRad;
 	short	i;
 //	short numRad;
@@ -1998,7 +2010,7 @@ Calculator::ComputeAvramiTest(Stats *stats, BoundingBox *inBBox, HoleSet *inHole
 void
 Calculator::ComputeQuadrat(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
-	float			quadSize,	// for cube, this is the length of a side, for a sphere, it's
+	double			quadSize,	// for cube, this is the length of a side, for a sphere, it's
 									// the radius.  Either way, it's the size that should enclose 2
 									// crystals on average
 					quadSizeSq, avgDensity, diff, expected, cumExpectation;
@@ -2006,9 +2018,9 @@ Calculator::ComputeQuadrat(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 	short			currRep, i;
 	short			quadBin[kMaxNumBins];
 	CFloatArray		results;
-	float			thisResult;
+	double			thisResult;
 	Point3DFloat	thePt, minPt, maxPt, pt1, pt2;
-	float			minDim;
+	double			minDim;
 	Crystal			*thisXl;
 	CrystalArray *	theXls = inBBox->GetXls();
 	int				numXls = theXls->GetNumXls();
@@ -2143,15 +2155,15 @@ DMH: Note that this code is essentially duplicated in CrystalArray::CorrectedCry
 double
 Calculator::CorrectedXlVol(Stats *stats, CrystalArray *inXls, short curIndex, Crystal &currXl)
 {
-	float	vol;		// volume of the crystal - total volume minus sectors
+	double	vol;		// volume of the crystal - total volume minus sectors
 							// belonging to other xls 
-	float	dist;		// dist between 2 sphere ctrs 
-	float	sumRad;		// sum of two sphere radii 
-	float	cosAlpha;	// cos(angle between line connecting 2 xl ctrs &
+	double	dist;		// dist between 2 sphere ctrs 
+	double	sumRad;		// sum of two sphere radii 
+	double	cosAlpha;	// cos(angle between line connecting 2 xl ctrs &
 							// the bdry of their intersxn) 
-	float	h;			// distance between dividing plane and the edge of
+	double	h;			// distance between dividing plane and the edge of
 							// the sphere whose volume we want 
-	float	segmentVol;	// volume of the part of the sphere shaved
+	double	segmentVol;	// volume of the part of the sphere shaved
 							// off by the dividing plane 
 	Crystal	*thisXl;
 	short numXls = inXls->GetNumXls();
@@ -2196,7 +2208,7 @@ Calculator::CorrectedXlVol(Stats *stats, CrystalArray *inXls, short curIndex, Cr
 /*	Can't just subtract sum of volumes of holes, because there will be overlap.
 	Ironing that issue out would be difficult, and very CPU-time-consuming for
 	large numbers of hole crystals, so we'll just Monte Carlo it.  */
-float
+double
 Calculator::FindSwissVolume(BoundingBox *inBBox, HoleSet *inHoles)
 {
 	Point3DFloat minPoint, maxPoint, tryPoint;
@@ -2282,7 +2294,7 @@ Calculator::NearestSideHoleDist(BoundingBox *inBBox, HoleSet *inHoles, Point3DFl
 //		• Get3DRandQuad
 // ---------------------------------------------------------------------------
 Point3DFloat &
-Calculator::Get3DRandQuad(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, float quadSize)
+Calculator::Get3DRandQuad(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, double quadSize)
 {
 	Point3DFloat 		savePt;
 	static Point3DFloat	outPt,		// this represents the low-coordinate corner of the quadrat cube
@@ -2341,7 +2353,7 @@ Calculator::Get3DRandQuad(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, f
 //		• Get3DRandSphere
 // ---------------------------------------------------------------------------
 Point3DFloat &
-Calculator::Get3DRandSphere(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, float quadSize)
+Calculator::Get3DRandSphere(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, double quadSize)
 {
 	static Point3DFloat	outPt,		// this represents the center of the quadrat sphere
 						maxPt, minPt;
@@ -2376,8 +2388,8 @@ Calculator::Get3DRandSphere(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles,
 /* Although there are probably more elegant ways to do this, we'll use a Monte Carlo
 	to minimize programming time.  We get even sampling over a sphere by randomizing
 	an azimuth in the x-y plane, and then randomizing a normalized inclination. 
-float
-Calculator::GetPercentSphereInsideBoxNotHoles(Point3DFloat inCtr, float inRadius, short inNumSpherePts)
+double
+Calculator::GetPercentSphereInsideBoxNotHoles(Point3DFloat inCtr, double inRadius, short inNumSpherePts)
 {
 
 	long	numInBox = 0;
@@ -2397,7 +2409,7 @@ Calculator::GetPercentSphereInsideBoxNotHoles(Point3DFloat inCtr, float inRadius
 			numInBox++;
 	}
 
-	return ((float) numInBox / (float) inNumSpherePts);
+	return ((double) numInBox / (double) inNumSpherePts);
 }
 */
 
@@ -2437,7 +2449,7 @@ Calculator::ComputeCFs_Both(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
 	CrystalArray *	theXls = inBBox->GetXls();
 	long numPts = stats->numLPoints;
-	float EpBandwidth = prefs->EpanecnikovCVal / CubeRoot(stats->intensity);
+	double EpBandwidth = prefs->EpanecnikovCVal / CubeRoot(stats->intensity);
 	
 	setupProgress("Calculating L, PCF, MCF...", nil, nil, nil, -1, 0,  stats->numXlsForL,  0, false);
 
@@ -2501,8 +2513,8 @@ Calculator::ComputeCFs_Both(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 
 						if (tempPCF > 0) {
 							stats->PCF[thisHNum] += 2.0 * tempPCF / OIV;
-							float thisV = (4.0 / 3.0) * M_PI * pow(thisXl->r,3);
-							float otherV = (4.0 / 3.0) * M_PI * pow(otherXl->r,3);
+							double thisV = thisXl->extV;
+							double otherV = otherXl->extV;
 							if (prefs->useVolume) {
 								stats->MCF[thisHNum] += 2.0 * thisV * otherV * tempPCF / OIV;
 								stats->MCF3[thisHNum] += 0.5 * (thisV + otherV);
@@ -2547,13 +2559,27 @@ Calculator::ComputeCFs_Both(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 			) / M_PI), (double)(1.0/3.0)) - stats->hDistances[thisHNum];
 		stats->PCF[thisHNum] = stats->PCF[thisHNum] / stats->intensitySqd;
 		if (prefs->useVolume) {
-			stats->MCF[thisHNum] = stats->MCF[thisHNum] / (stats->intensitySqd * sqr(stats->meanActV));
-			stats->MCF[thisHNum] = stats->MCF[thisHNum] / stats->PCF[thisHNum];
-			stats->MCF3[thisHNum] = stats->MCF3[thisHNum] / (numMCFXlsUsed[thisHNum] * stats->meanActV);
+			stats->MCF[thisHNum] = stats->MCF[thisHNum] / (stats->intensitySqd * sqr(stats->meanExtV));
+			if (stats->PCF[thisHNum] != 0) {
+				stats->MCF[thisHNum] = stats->MCF[thisHNum] / stats->PCF[thisHNum];
+			} else {
+				// PCF is zero, so
+				stats->MCF[thisHNum] = 0;
+			}
+			if (numMCFXlsUsed[thisHNum] != 0) {
+				stats->MCF3[thisHNum] = stats->MCF3[thisHNum] / (numMCFXlsUsed[thisHNum] * stats->meanExtV);
+			}
 		} else {
 			stats->MCF[thisHNum] = stats->MCF[thisHNum] / (stats->intensitySqd * sqr(stats->newMeanR));
-			stats->MCF[thisHNum] = stats->MCF[thisHNum] / stats->PCF[thisHNum];
-			stats->MCF3[thisHNum] = stats->MCF3[thisHNum] / (numMCFXlsUsed[thisHNum] * stats->newMeanR);
+			if (stats->PCF[thisHNum] != 0) {
+				stats->MCF[thisHNum] = stats->MCF[thisHNum] / stats->PCF[thisHNum];
+			} else {
+				// PCF is zero, so
+				stats->MCF[thisHNum] = 0;
+			}
+			if (numMCFXlsUsed[thisHNum] != 0) {
+				stats->MCF3[thisHNum] = stats->MCF3[thisHNum] / (numMCFXlsUsed[thisHNum] * stats->newMeanR);
+			}
 		}
 
 		if (numXlsUsed[thisHNum] > 0) {
@@ -2562,13 +2588,25 @@ Calculator::ComputeCFs_Both(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 		}
 		stats->PCFgd[thisHNum] = (stats->PCFgd[thisHNum] / (stats->intensity * numXlsUsed[thisHNum]));
 		if (prefs->useVolume) {
-			stats->MCFgd[thisHNum] = (stats->MCFgd[thisHNum] / (stats->intensity * sqr(stats->meanActV) * numXlsUsed[thisHNum]));
-			stats->MCFgd[thisHNum] = stats->MCFgd[thisHNum] / stats->PCFgd[thisHNum];
-			stats->MCF3gd[thisHNum] = (stats->MCF3gd[thisHNum] / (numMCFgdXlsUsed[thisHNum] * stats->meanActV));
+			stats->MCFgd[thisHNum] = (stats->MCFgd[thisHNum] / (stats->intensity * sqr(stats->meanExtV) * numXlsUsed[thisHNum]));
+			if (stats->PCFgd[thisHNum] != 0) {
+				stats->MCFgd[thisHNum] = stats->MCFgd[thisHNum] / stats->PCFgd[thisHNum];
+			} else {
+				stats->MCFgd[thisHNum] = 0;
+			}
+			if (numMCFgdXlsUsed[thisHNum] != 0) {
+				stats->MCF3gd[thisHNum] = (stats->MCF3gd[thisHNum] / (numMCFgdXlsUsed[thisHNum] * stats->meanExtV));
+			}
 		} else {
 			stats->MCFgd[thisHNum] = (stats->MCFgd[thisHNum] / (stats->intensity * sqr(stats->newMeanR) * numXlsUsed[thisHNum]));
-			stats->MCFgd[thisHNum] = stats->MCFgd[thisHNum] / stats->PCFgd[thisHNum];
-			stats->MCF3gd[thisHNum] = (stats->MCF3gd[thisHNum] / (numMCFgdXlsUsed[thisHNum] * stats->newMeanR));
+			if (stats->PCFgd[thisHNum] != 0) {
+				stats->MCFgd[thisHNum] = stats->MCFgd[thisHNum] / stats->PCFgd[thisHNum];
+			} else {
+				stats->MCFgd[thisHNum] = 0;
+			}
+			if (numMCFgdXlsUsed[thisHNum] != 0) {
+				stats->MCF3gd[thisHNum] = (stats->MCF3gd[thisHNum] / (numMCFgdXlsUsed[thisHNum] * stats->newMeanR));
+			}
 		}
 	}
 	delete[] numXlsUsed;
@@ -2579,8 +2617,8 @@ Calculator::ComputeCFs_Both(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 // ---------------------------------------------------------------------------
 //		• Epanecnikov
 // ---------------------------------------------------------------------------
-float
-Calculator::Epanecnikov(float bandwidth, float t)
+double
+Calculator::Epanecnikov(double bandwidth, double t)
 {
 	if (::fabs(t) > bandwidth)
 		return 0;
@@ -2591,7 +2629,7 @@ Calculator::Epanecnikov(float bandwidth, float t)
 // ---------------------------------------------------------------------------
 //		• OffsetIntersectVol
 // ---------------------------------------------------------------------------
-float
+double
 Calculator::OffsetIntersectVol(BoundingBox *inBBox, Point3DFloat inPt1, Point3DFloat inPt2)
 {
 	Point3DFloat offSet = inPt1-inPt2;
@@ -2619,7 +2657,7 @@ Calculator::OffsetIntersectVol(BoundingBox *inBBox, Point3DFloat inPt1, Point3DF
 		break;
 		case kCylBox:
 			// formula from Stoyan & Stoyan, appendix K; (version r=R)
-			float t, r, h;
+			double t, r, h;
 			t = sqrt(sqr(offSet.x) + sqr(offSet.y));
 			h = inBBox->GetHeight() - ::fabs(offSet.z);	// Was in error - called getZLen here!  Fixed 8/8/07
 			r = inBBox->GetRadius();
@@ -2666,11 +2704,11 @@ Calculator::OffsetIntersectVol(BoundingBox *inBBox, Point3DFloat inPt1, Point3DF
 	Since using the bounding box will overestimate the intensity, we'll use the
 	inscribed box's volume and number of crystals.  If we've got Holes, then
 	we'll do Monte Carlo to get the non-hole volume of the inscribed box. */
-float
+double
 Calculator::FindIntensitySquared(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
 	CrystalArray * theXls = inBBox->GetXls();
-	float intensity = 0;
+	double intensity = 0;
 	if (inHoles){
 		SideSet *mIB = inBBox->GetInscribedBox();
 		short n = mIB->NumPointsInBox(theXls);
@@ -2685,7 +2723,7 @@ Calculator::FindIntensitySquared(Stats *stats, BoundingBox *inBBox, HoleSet *inH
 			if (mIB->RawPointInBox(tryPoint) && !inHoles->PointInHole(tryPoint))
 				inPoints++;
 		}
-		float vol = mEC->Volume() * MCTries / inPoints;
+		double vol = mEC->Volume() * MCTries / inPoints;
 		if (stats->forRealDataset) {
 			intensity = n * (n-1) / sqr(vol);
 		} else {
@@ -2711,11 +2749,11 @@ Calculator::FindIntensitySquared(Stats *stats, BoundingBox *inBBox, HoleSet *inH
 /* Since using the bounding box will overestimate the intensity, we'll use the
 	inscribed box's volume and number of crystals.  If we've got Holes, then
 	we'll do Monte Carlo to get the non-hole volume of the inscribed box. */
-float
+double
 Calculator::FindIntensity(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 {
 	CrystalArray * theXls = inBBox->GetXls();
-	float intensity = 0;
+	double intensity = 0;
 
 	if (inHoles){
 		SideSet *mIB = inBBox->GetInscribedBox();
@@ -2731,7 +2769,7 @@ Calculator::FindIntensity(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 			if (mIB->RawPointInBox(tryPoint) && !inHoles->PointInHole(tryPoint))
 				inPoints++;
 		}
-		float vol = mEC->Volume() * MCTries / inPoints;
+		double vol = mEC->Volume() * MCTries / inPoints;
 		if (stats->forRealDataset) {
 			intensity = n / vol;
 		} else {
@@ -2767,7 +2805,7 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 	int numXls = theXls->GetNumXls();
 
 	setupProgress("Making and reducing IC simulations...", nil, "Preparing for Envelopes", "Calculating Envelope Simulations", -1, 1, prefs->numEnvelopeRuns, 0, false);
-	log("Starting DoEnvelopeSimulations");
+	log("Starting DoEnvelopeSimulations\n");
 
 	// This line uses the comment string to look for Crystallize stuff.  That ought to be refined
 	//	somehow, but for now, it will have to do.
@@ -2800,14 +2838,31 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 	EnvelopeData Envelopes(numEnv, numPts, outputSigmas);
 	
 	try {
+		time_t startTime = time(NULL);
 		for (short thisEnvRun = 1; thisEnvRun <= numEnv; thisEnvRun++) {
-			char logStr[kStdStringSize];
-			sprintf(logStr, "\t\t\t\t\tBeginning Envelope #%d", thisEnvRun);
-			log(logStr);
-			char envStr[kStdStringSize];
-			sprintf(envStr, "Env. simulation #%d/%d", thisEnvRun, numEnv);
-			setEnvMessage(envStr);
-			
+			if (thisEnvRun > 1) {
+				double fractionCompleted = ((double)thisEnvRun-1.0f) / numEnv;
+				time_t	now = time(NULL);
+				double timeSoFar = difftime(now, startTime);	// in seconds
+				double totalTime = timeSoFar / fractionCompleted;
+				double totalSecsToFinish = totalTime - timeSoFar;	// in seconds
+				short hrsToFinish = totalSecsToFinish / 3600.0;
+				short minsToFinish = fmod((double_t)(totalSecsToFinish), (double_t)(3600.0)) / 60;
+				short secsToFinish = totalSecsToFinish - 60*minsToFinish - 3600*hrsToFinish;
+				char logStr[kStdStringSize];
+				sprintf(logStr, "\t\t\t\t\tBeginning Envelope #%d\n", thisEnvRun);
+				log(logStr);
+				char envStr[kStdStringSize];
+				sprintf(envStr, "Env. simulation #%d/%d. (ETC:%02d:%02d:%02d)", thisEnvRun, numEnv, hrsToFinish, minsToFinish,secsToFinish);
+				setEnvMessage(envStr);
+			} else {
+				char logStr[kStdStringSize];
+				sprintf(logStr, "\t\t\t\t\tBeginning Envelope #%d\n", thisEnvRun);
+				log(logStr);
+				char envStr[kStdStringSize];
+				sprintf(envStr, "Env. simulation #%d/%d", thisEnvRun, numEnv);
+				setEnvMessage(envStr);
+			}			
 			// copy basic data from stats for real dataset; needed for calculations
 			thisSistats->Clear();
 			thisSistats->numXlsForL = stats->numXlsForL;
@@ -2829,7 +2884,7 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 // and a pseudo-DC (a la Daniel & Spear) envelope simulation created here (uncommon).
 			thisXls->InitXlArray(theXls);	//copy basic data for CrystalArray
 			thisXls->Clear();
-			float newMeanR = MakeGoodRandomSimulation(thisSimBBox, inHoles, radiiList, stats->volFrxn, matchingCTDataSet);
+			double newMeanR = MakeGoodRandomSimulation(thisSimBBox, inHoles, radiiList, stats->volFrxn, matchingCTDataSet);
 
 			// really just for debugging purposes: holding down shift-option at the end of making the envelope
 			// will save the envelope simulation to a suitably-named integrate file that can then be rendered,
@@ -2884,6 +2939,7 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 
 	delete thisSimBBox;
 	delete thisSistats;
+	log("Finished doing envelope simulations\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -2897,20 +2953,20 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 									Crystallize or MakeSimulation
 */
 
-float
-Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std::vector<double> &inRadiiList, float inVolFraction, bool inMatchingCTDataSet)
+double
+Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std::vector<double> &inRadiiList, double inVolFraction, bool inMatchingCTDataSet)
 {
 	char logStr[kStdStringSize];
 	double neededRadiusEachXl;
 	CrystalArray *theXls = inBBox->GetXls();
-	float roughTolerance = inVolFraction * prefs->VFPercent * 5.0 / 100.0;	// first-cut VF should be within 5 * x % of target VF
-	float tolerance = inVolFraction * prefs->VFPercent / 100.0;
+	double roughTolerance = inVolFraction * prefs->VFPercent * 5.0 / 100.0;	// first-cut VF should be within 5 * x % of target VF
+	double tolerance = inVolFraction * prefs->VFPercent / 100.0;
 	long numXls = inRadiiList.size();
 	bool goodSim = false;
 	short direction, lastDirection;
-	float BBVol = inBBox->Volume();
-	static float roughGranularity = inBBox->GetMCVolFracGranularity(kPrefValRough);
-	float meanR = 0;
+	double BBVol = inBBox->Volume();
+	static double roughGranularity = inBBox->GetMCVolFracGranularity(kPrefValRough);
+	double meanR = 0;
 	
 
 	// copy inRadiiList to a working list that can be changed
@@ -2919,13 +2975,13 @@ Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std:
 		meanR += inRadiiList[i];
 	}
 	meanR /= numXls;
-	float startingMeanRadius = meanR;
-	float factor = (meanR > 2) ? 1 : 32;
+	double startingMeanRadius = meanR;
+	double factor = (meanR > 2) ? 1 : 32;
 
 	setupProgress("Making Envelope Simulation", nil, nil, nil, -1, 0, 0, 0, true);
 	
 	short initialTries = (prefs->makeDCEnv) ? kNumSimMakerRestarts*10 : 1;
-	float betafactorfactor = 1.0;
+	double betafactorfactor = 1.0;
 	bool goodFirstSim = false;
 
 	long tryNum=1;
@@ -2933,7 +2989,7 @@ Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std:
 		try {
 			inBBox->MakeRandomSimulation(workingList, inMatchingCTDataSet, inVolFraction, inHoles, betafactorfactor);	// make random simulation with unchanged radii list, put into inBBox
 			goodFirstSim = true;	// we didn't throw an error, so this is a good first try (able to place all radii)
-			sprintf(logStr, "Made a good first, possibly DC simulation with betafactorfactor of\t%.3f\t and a VF of\t%.3f", betafactorfactor, inVolFraction);
+			sprintf(logStr, "Made a good first, possibly DC simulation with betafactorfactor of\t%.3f\t and a VF of\t%.3f\n", betafactorfactor, inVolFraction);
 			log(logStr);
 			progress(1);
 		} catch (BoundingBox::SimulationErr theSimErr) {
@@ -2949,7 +3005,7 @@ Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std:
 	} while (!goodFirstSim);
 
 	if (prefs->matchVF) {	// This is deprecated because it is unwise, but the code should work
-		float curVolFrac = inBBox->GetVolumeFraction(workingList[0], kPrefVal, inHoles);	// do one high-precision test - maybe we don't need to change anything!
+		double curVolFrac = inBBox->GetVolumeFraction(workingList[0], kPrefVal, inHoles);	// do one high-precision test - maybe we don't need to change anything!
 		goodSim = (::fabs(curVolFrac - inVolFraction) <= tolerance);
 		if (!goodSim) {
 			try {
@@ -3029,7 +3085,7 @@ Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std:
 				lastDirection = direction;
 			}
 		}
-		sprintf(logStr, "Got Good Sim.  Target VF:\t%.3f\tTarget MeanR:\t%.3f\tEnv VF:\t%.3f\tEnv MeanR:\t%.3f",
+		sprintf(logStr, "Got Good Sim.  Target VF:\t%.3f\tTarget MeanR:\t%.3f\tEnv VF:\t%.3f\tEnv MeanR:\t%.3f\n",
 			inVolFraction, startingMeanRadius, curVolFrac, meanR);
 		log(logStr);
 	}
@@ -3044,10 +3100,12 @@ Calculator::MakeGoodRandomSimulation(BoundingBox *inBBox, HoleSet *inHoles, std:
 void
 Calculator::EvaluateCFStats(Stats *stats, EnvelopeData &Envelopes, bool inoutputSigmas, short inConfidence)
 {
+	log("Starting to Evaluate the CF Stats\n");
 	if (inoutputSigmas) {
 		double tempMean, tempSD;
 		short numPts = stats->numLPoints;
 		
+		log("Starting to Measure Means and SDs\n");
 		Envelopes.GetMeanAndSD(0, OIKind, tempMean, tempSD);
 		stats->OIEnvMean = tempMean;
 		stats->OIEnvStdDev = tempSD;
@@ -3111,6 +3169,7 @@ Calculator::EvaluateCFStats(Stats *stats, EnvelopeData &Envelopes, bool inoutput
 		double tempMin, tempMax;
 		short numPts = stats->numLPoints;
 		
+		log("Starting to Measure Confidence Intervals\n");
 		Envelopes.GetMinAndMax(0, OIKind, inConfidence, tempMin, tempMax);
 		stats->OIEnvMin = tempMin;
 		stats->OIEnvMax = tempMax;
@@ -3171,6 +3230,7 @@ Calculator::EvaluateCFStats(Stats *stats, EnvelopeData &Envelopes, bool inoutput
 			progress(thisHNum);
 		}
 	}
+	log("Finished Evaluating CF Stats\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -3215,7 +3275,7 @@ void
 Calculator::saveResults(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, short shaveIteration)
 {
 	setupProgress("Writing Output Files...", nil, nil, nil, 6, 0, 6, 0, false);
-	log("Starting saveResults");
+	log("Starting saveResults\n");
 
 	if (prefs->includeMeanCSD)
 		DoMeanCumCSD(stats, inBBox, shaveIteration);
@@ -3249,14 +3309,14 @@ void
 Calculator::DoMeanCumCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration)
 {
 	CrystalArray *	theXls = inBBox->GetXls();
-	float		rad;
+	double		rad;
 	CFloatArray	meanCSD;
-	float		thisCSDVal;
+	double		thisCSDVal;
 	short		i, index;
 	long		numXls=0;
 
 	// Zero out the CSD array data
-	float temp = 0.0;
+	double temp = 0.0;
 	for (i = 0; i <= prefs->numClassesMeanCSD - 1; i++) {
 		meanCSD.Push(&temp);
 	}
@@ -3289,9 +3349,9 @@ void
 Calculator::DoMaxCumCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration)
 {
 	CrystalArray *	theXls = inBBox->GetXls();
-	float		rad, maxRad;
+	double		rad, maxRad;
 	CFloatArray	maxCSD;
-	float		thisCSDVal;
+	double		thisCSDVal;
 	short		i, index;
 	
 	rad = 0.0;	// temp use of rad
@@ -3330,10 +3390,10 @@ void
 Calculator::DoLogCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration)
 {
 	CrystalArray *	theXls = inBBox->GetXls();
-	float	rad, maxRad;
+	double	rad, maxRad;
 	CFloatArray	logCSD, tempCSD;
 	short	i, index;
-	float	binWidth, avgSlope, slope1, slope2;
+	double	binWidth, avgSlope, slope1, slope2;
 	
 	rad = 0.0;	// temp use of rad
 	for (i = 0; i <= prefs->numClassesLogCSD - 1; i++) {
@@ -3409,10 +3469,10 @@ Calculator::DoNNCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration)
 	
 	overstepCSD = false;
 	
-	float maxNNRad = stats->maxNNRad;
-	float binSize = maxNNRad / kNumBinsNNCSD;
+	double maxNNRad = stats->maxNNRad;
+	double binSize = maxNNRad / kNumBinsNNCSD;
 	
-	float dummy = 0.0;
+	double dummy = 0.0;
 	for (i=0; i<=kNumBinsNNCSD-1; i++) {
 		NNCSD.Push(&dummy);
 	}
@@ -3454,12 +3514,12 @@ Calculator::DoRegCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration)
 	
 	overstepCSD = false;
 	
-	float dummy = 0.0;
+	double dummy = 0.0;
 	for (i=0; i<=kNumBinsRegCSD-1; i++) {
 		regCSD.Push(&dummy);
 	}
-	float maxRad = stats->maxR;
-	float binSize = maxRad / kNumBinsRegCSD;
+	double maxRad = stats->maxR;
+	double binSize = maxRad / kNumBinsRegCSD;
 	
 	
 	for (i=0; i <= theXls->GetNumXls() - 1; i++) {
@@ -3489,7 +3549,7 @@ Calculator::DoRegCSD(Stats *stats, BoundingBox *inBBox, short shaveIteration)
 //		• SaveCSD
 // ---------------------------------------------------------------------------------
 void
-Calculator::SaveCSD(BoundingBox *inBBox, Stats *stats, short shaveIteration, CFloatArray &inCSD, short inCSDKind, float binSize)
+Calculator::SaveCSD(BoundingBox *inBBox, Stats *stats, short shaveIteration, CFloatArray &inCSD, short inCSDKind, double binSize)
 {
 	const char * csdPath = MakeCSDFilePath(inBBox, inCSDKind);
 	
@@ -3499,7 +3559,7 @@ Calculator::SaveCSD(BoundingBox *inBBox, Stats *stats, short shaveIteration, CFl
 	char	theStr[kStdStringSize];
 	char	theTitleStr[kStdStringSize];
 	short	numBins;
-	float	cumPct;
+	double	cumPct;
 	short	i;
 	
 	CFBundleRef mainBundle = CFBundleGetMainBundle();
@@ -3706,8 +3766,10 @@ Calculator::DoReduce3DFile(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, 
 	sprintf(tempStr, "Crystal Intensity Sqd:\t%.7E", stats->intensitySqd); saveFile.putOneLine(tempStr);
 	sprintf(tempStr, "Crystal Volume Fraction (MC Method):\t%.7E", stats->volFrxn); saveFile.putOneLine(tempStr);
 
-	sprintf(tempStr, "Observability criterion 1 rejects:\t%d", stats->observabilityCrit1);
-	sprintf(tempStr, "Observability criterion 2 rejects:\t%d", stats->observabilityCrit2);
+	sprintf(tempStr, "Observability criterion 1 setting:\t%d", stats->observabilityCrit1value);
+	sprintf(tempStr, "Observability criterion 2 setting:\t%d", stats->observabilityCrit2value);
+	sprintf(tempStr, "Observability criterion 1 rejects:\t%d", stats->observabilityCrit1rejects);
+	sprintf(tempStr, "Observability criterion 2 rejects:\t%d", stats->observabilityCrit2rejects);
 	
 // write min, max, mean and esd for radius
 	sprintf(tempStr, "Minimum radius:\t%.7E", stats->minR); saveFile.putOneLine(tempStr);
@@ -3848,7 +3910,7 @@ if ((stats->fileType != kDiffSimulation) || prefs->doImpingement) {
 		saveFile.putOneLine("============ Begin Correlation Functions ============");
 		sprintf(tempStr, "NumXlsUsed in L/PCF/MCF:\t%d", (prefs->doLMcfPcf ? stats->numXlsForL : -1));
 		saveFile.putOneLine(tempStr);
-		sprintf(tempStr, "Mean R of Xls used in L/PCF/MCF:\t%d", (prefs->doLMcfPcf ? stats->newMeanR : -1.0));
+		sprintf(tempStr, "Mean R of Xls used in L/PCF/MCF:\t%f", (prefs->doLMcfPcf ? stats->newMeanR : -1.0));
 		saveFile.putOneLine(tempStr);
 		
 		if (prefs->outputSigmas) {
@@ -3874,56 +3936,56 @@ if ((stats->fileType != kDiffSimulation) || prefs->doImpingement) {
 					sprintf(tempStr, "%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t",
 							stats->hDistances[i],
 							FlaggedCFVal(true, stats->LValues[i]),
-							FlaggedCFVal(true, stats->LValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->LValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->LValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->LValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->LgdValues[i]),
-							FlaggedCFVal(true, stats->LgdValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->LgdValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->LgdValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->LgdValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->PCF[i]),
-							FlaggedCFVal(true, stats->PCFValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->PCFValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->PCFValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->PCFValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->PCFgd[i]),
-							FlaggedCFVal(true, stats->PCFgdValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->PCFgdValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->PCFgdValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->PCFgdValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->MCF[i]),
-							FlaggedCFVal(true, stats->MCFValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->MCFValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->MCFValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->MCFValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->MCFgd[i]),
-							FlaggedCFVal(true, stats->MCFgdValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->MCFgdValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->MCFgdValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->MCFgdValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->MCF3[i]),
-							FlaggedCFVal(true, stats->MCF3ValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->MCF3ValuesEnvStdDev[i]),
+							FlaggedCFEnvVal(true, stats->MCF3ValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->MCF3ValuesEnvStdDev[i]),
 							FlaggedCFVal(true, stats->MCF3gd[i]),
-							FlaggedCFVal(true, stats->MCF3gdValuesEnvMean[i]),
-							FlaggedCFVal(true, stats->MCF3gdValuesEnvStdDev[i]));
+							FlaggedCFEnvVal(true, stats->MCF3gdValuesEnvMean[i]),
+							FlaggedCFEnvVal(true, stats->MCF3gdValuesEnvStdDev[i]));
 				} else {
 					sprintf(tempStr, "%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t",
 							stats->hDistances[i],
 							FlaggedCFVal(false, stats->LValues[i]),
-							FlaggedCFVal(false, stats->LValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->LValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->LValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->LValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->LgdValues[i]),
-							FlaggedCFVal(false, stats->LgdValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->LgdValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->LgdValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->LgdValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->PCF[i]),
-							FlaggedCFVal(false, stats->PCFValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->PCFValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->PCFValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->PCFValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->PCFgd[i]),
-							FlaggedCFVal(false, stats->PCFgdValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->PCFgdValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->PCFgdValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->PCFgdValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->MCF[i]),
-							FlaggedCFVal(false, stats->MCFValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->MCFValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->MCFValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->MCFValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->MCFgd[i]),
-							FlaggedCFVal(false, stats->MCFgdValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->MCFgdValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->MCFgdValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->MCFgdValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->MCF3[i]),
-							FlaggedCFVal(false, stats->MCF3ValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->MCF3ValuesEnvMax[i]),
+							FlaggedCFEnvVal(false, stats->MCF3ValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->MCF3ValuesEnvMax[i]),
 							FlaggedCFVal(false, stats->MCF3gd[i]),
-							FlaggedCFVal(false, stats->MCF3gdValuesEnvMin[i]),
-							FlaggedCFVal(false, stats->MCF3gdValuesEnvMax[i]));
+							FlaggedCFEnvVal(false, stats->MCF3gdValuesEnvMin[i]),
+							FlaggedCFEnvVal(false, stats->MCF3gdValuesEnvMax[i]));
 				}
 				saveFile.putOneLine(tempStr);
 			}
@@ -4002,13 +4064,25 @@ Calculator::GoodCFVal(bool inoutputSigmas, double inVal)
 double
 Calculator::FlaggedCFVal(bool inoutputSigmas, double inVal)
 {
+	if (inVal == -(DBL_MAX-1) || inVal == DBL_MAX || isnan(inVal)) {
+		return NAN;
+	}
+	return inVal;
+}
+
+// ---------------------------------------------------------------------------
+//		• FlaggedCFEnvVal
+// ---------------------------------------------------------------------------
+double
+Calculator::FlaggedCFEnvVal(bool inoutputSigmas, double inVal)
+{
 	if (inoutputSigmas) {
 		if (inVal == 0)	// neither the mean nor the standard deviation will be exactly zero
-						// if the data were good
-			return -1;
+			// if the data were good
+			return NAN;
 	} else {
 		if (inVal == -(DBL_MAX-1) || inVal == DBL_MAX || isnan(inVal))
-			return -1;
+			return NAN;
 	}
 	return inVal;
 }

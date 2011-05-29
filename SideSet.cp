@@ -6,6 +6,7 @@
 #import	"Matrix4d.h"
 #import "CrystalArray.h"
 #import "CoreFoundation/CoreFoundation.h"
+#import "NumPtArray.h"
 
 // ---------------------------------------------------------------------------
 //		¥ SideSet
@@ -49,10 +50,14 @@ SideSet::SideSet(SideSet &inSideSet)
 	if (inSideSet.mInscribedBox != nil) {
 		mInscribedBox = new SideSet();
 		mInscribedBox->Copy(*(inSideSet.mInscribedBox));
+	} else {
+		mInscribedBox = nil;
 	}
 	if (inSideSet.mExscribedBox) {
 		mExscribedBox = new SideSet();
 		mExscribedBox->Copy(*(inSideSet.mExscribedBox));
+	} else {
+		mExscribedBox = nil;
 	}
 }
 
@@ -174,10 +179,10 @@ SideSet::GetItemPtr(short inSub)
 // ---------------------------------------------------------------------------
 // Returns the volume of the bounding box.  Note that if there are overlapping
 //	triangles on planes, the value will be too high
-float
+double
 SideSet::Volume()
 {
-	float	vol = 0.0;
+	double	vol = 0.0;
 	Side	curSide;
 	int		numSides = array.size();
 	switch (mType) {
@@ -207,11 +212,11 @@ SideSet::Volume()
 // ---------------------------------------------------------------------------
 // Returns the volume of the tetrahedron formed by points pt1,pt2,pt3,pt4.
 // Formula obtained from CRC math tables, 25th edition, p.295
-float
+double
 SideSet::TetrahedronVolume (Point3DFloat &pt1, Point3DFloat &pt2,
 								Point3DFloat &pt3, Point3DFloat &pt4)
 {
-	float vol;
+	double vol;
 
 		vol =  pt1.x * (pt2.y * pt3.z + pt2.z * pt4.y + pt3.y * pt4.z - pt3.z
 							* pt4.y - pt2.z * pt3.y - pt2.y * pt4.z);
@@ -228,7 +233,7 @@ SideSet::TetrahedronVolume (Point3DFloat &pt1, Point3DFloat &pt2,
 //		¥ SetDimensions
 // ---------------------------------------------------------------------------
 void
-SideSet::SetDimensions(float inXLen, float inYLen, float inZLen)
+SideSet::SetDimensions(double inXLen, double inYLen, double inZLen)
 {
 	mSideLenX = inXLen;
 	mSideLenY = inYLen;
@@ -249,7 +254,7 @@ SideSet::SetDimensions(Point3DFloat inPt)
 //		¥ SetDimensions
 // ---------------------------------------------------------------------------
 void
-SideSet::SetDimensions(float inRadius, float inHeight)
+SideSet::SetDimensions(double inRadius, double inHeight)
 {
 	mRadius = inRadius;
 	mHeight = inHeight;
@@ -337,7 +342,7 @@ SideSet::MakeAllInVects()
 // ---------------------------------------------------------------------------
 //
 bool
-SideSet::RawPointInBox(Point3DFloat &inPt, float tolerance)
+SideSet::RawPointInBox(Point3DFloat &inPt, double tolerance)
 {
 	Side *thisSide;
 	Point3DFloat	vect1, vect2, xP, tempVect, testpt;
@@ -384,7 +389,7 @@ SideSet::RawPointInBox(Point3DFloat &inPt, float tolerance)
 //		¥ AspectRatio
 // ---------------------------------------------------------------------------
 //
-float
+double
 SideSet::AspectRatio()
 {
 	switch (mType) {
@@ -447,10 +452,10 @@ SideSet::NumPointsInBox(CrystalArray *theXls)
 // ---------------------------------------------------------------------------
 //		¥ ToroidalDistance
 // ---------------------------------------------------------------------------
-float
+double
 SideSet::ToroidalDistance(Point3DFloat &inPt1, Point3DFloat &inPt2)
 {
-	float xDist, yDist, zDist;
+	double xDist, yDist, zDist;
 
 	switch (mType) {
 		case kCubeBox:
@@ -492,15 +497,40 @@ SideSet::ToroidalDistance(Point3DFloat &inPt1, Point3DFloat &inPt2)
 Point3DFloat &
 SideSet::CalcCtr()
 {
-	static Point3DFloat outPt;
+	NumPtArray vertexPts;
+	static Point3DFloat average;
 	
+	average.Clear();
+
+	short numSides = array.size();
+	for (short i=0; i < numSides; i++) {
+		Side *thisSide = GetItemPtr(i);
+		if (!vertexPts.PointInArray(thisSide->pt1)) {
+			vertexPts.PushPt(thisSide->pt1);
+			average += thisSide->pt1;
+		}
+		if (!vertexPts.PointInArray(thisSide->pt2)) {
+			vertexPts.PushPt(thisSide->pt2);
+			average += thisSide->pt2;
+		}
+		if (!vertexPts.PointInArray(thisSide->pt3)) {
+			vertexPts.PushPt(thisSide->pt3);
+			average += thisSide->pt3;
+		}
+	}
+	int numPts = vertexPts.GetCount();
+	average /= numPts*1.0f;
+	
+	return average;
+/*	static Point3DFloat outPt;
 	short numSides = array.size();
 	for (short i=0; i < numSides; i++) {
 		Side *thisSide = GetItemPtr(i);
 		outPt += thisSide->CenterOfMass();
 	}
-	outPt /= (float)numSides;
+	outPt /= (double)numSides;
 	return outPt;
+*/
 }
 
 // ---------------------------------------------------------------------------
@@ -599,7 +629,7 @@ Point3DFloat &
 SideSet::RandPtInPrimitive(nuclProbType	*nuclProb)
 {
 	static Point3DFloat outPt;
-	float likelihood, actual;
+	double likelihood, actual;
 	if (nuclProb != nil) {
 		switch (mType) {
 			case kCubeBox:
@@ -679,7 +709,7 @@ SideSet::RandPtInPrimitive(nuclProbType	*nuclProb)
 	inLoc:			The value, passed in as a fraction in the interval [0,1]. 
 */
 double
-SideSet::Calc1Probability(nuclProb1D &nuclProb, float inLoc)
+SideSet::Calc1Probability(nuclProb1D &nuclProb, double inLoc)
 {
 	double ScaleFactor = (1.0 - nuclProb.minProb) / 2.0;
 	double StartRad = (nuclProb.start / 180.0) * M_PI;

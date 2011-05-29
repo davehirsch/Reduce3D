@@ -174,7 +174,7 @@ Matrix4d::TransformationMatrix (Point3DFloat &pt1, Point3DFloat &pt2, Point3DFlo
 /* This routine creates a transformation matrix which translates a coordinate
 	system by dx, dy and dz */
 Matrix4d
-Matrix4d::TranslationMatrix (float dx, float dy, float dz)
+Matrix4d::TranslationMatrix (double dx, double dy, double dz)
 {
 	static Matrix4d outMat;
 	outMat[1][4] = dx;

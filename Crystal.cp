@@ -85,7 +85,7 @@ Crystal::operator== (Crystal &inXl)
 // ---------------------------------------------------------------------------
 // Formula for the intersection volume is the two spherical caps done separately.
 //	Formula is given in CRC Math Tables & Formula, 30th Ed, pg. 314.
-float
+double
 Crystal::IntersectionVolume(Crystal &inXl)
 {
 	double d = ctr.Distance(inXl.ctr);
@@ -126,8 +126,8 @@ RadXlComp::Compare(
 				   UInt32			// inSizeOne ,
 				   UInt32			// inSizeTwo ) const
 {
-	float numOne = ((Crystal*)inItemOne)->r;
-	float numTwo = ((Crystal*)inItemTwo)->r;
+	double numOne = ((Crystal*)inItemOne)->r;
+	double numTwo = ((Crystal*)inItemTwo)->r;
 	if (numOne > numTwo)
 		return -1;
 	else if (numTwo > numOne)

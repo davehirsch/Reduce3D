@@ -35,9 +35,13 @@ BoundingBox::BoundingBox(Calculator *inCalc, stringFile *inFile)
 	theXls->SetFile(inFile);
 	theXls->ReadMergeFile();
 	mPrefs = mCalc->getPrefs();
-	if (mPrefs->tidyUp) {
+
+	// This is now handled in Calculator::reduceOneDataset
+
+	/*	if (mPrefs->applyObservabilityFilter) {
 		theXls->RemoveIllegalOverlaps();
 	}
+*/
 }
 
 // ---------------------------------------------------------------------------
@@ -541,30 +545,44 @@ BoundingBox::FindConvexHull()
 /*			//testing Angle()
 			Point3DFloat vect1(0,1,0);
 			Point3DFloat vect2(1,1,0);
-			float testAngle=vect1.Angle(vect2);
-			for (float i=0.11; i <=2.0; i+=0.1) {
+			double testAngle=vect1.Angle(vect2);
+			for (double i=0.11; i <=2.0; i+=0.1) {
 				Point3DFloat vect3(1, 1-i, 0);
 				testAngle=vect1.Angle(vect3);
-				float dotProd = (vect1 * vect3);
+				double dotProd = (vect1 * vect3);
 				if ((dotProd < 0) && (testAngle > M_PI_2)) {
 					bool somethingFishy=true;
 					throw;
 				}
 			}
 */			
-		
 			char progMsg[200];
 			mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 100, 0, false);
 			FindInitialTetrahedron();	// make the first tetrahedron and discard all interior points
+			double lastVolume = Volume();
+//			ExportBoxData();
+
 			while (UnfacetedPointsExist()) {
 				FindNextVertexAndMakeFacets();
+				
+				double thisVolume = Volume();
+				if (thisVolume < lastVolume) {
+					ExportBoxData();
+					throw("Problem here");
+				}
+//				ExportBoxData();
+				lastVolume = thisVolume;
+				
 				sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", GetCount());
 				if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
 				mCalc->setProgMessage(progMsg);
-				float fractionDone = 1.0 - ((float)mPtArray->GetCount() / (float)theXls->GetNumXls());
+				double fractionDone = 1.0 - ((double)mPtArray->GetCount() / (double)theXls->GetNumXls());
 				mCalc->progress(::trunc(100 * fractionDone));
 			}
 			mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
+			if (mPrefs->outputHull) {
+				ExportBoxData();
+			}
 		}
 
 		MakeAllInVects();
@@ -590,6 +608,7 @@ void
 BoundingBox::FindNextVertexAndMakeFacets()
 {
 	Point3DFloat tempCtr = CalcCtr();
+	this->SetCtr(tempCtr);	// need to set this to make the Volume funciton work correctly
 	char logMsg[255];
 	sprintf (logMsg, "\t Found temporary center: (%f, %f, %f)\n", tempCtr.x, tempCtr.y, tempCtr.z);
 	mCalc->log(logMsg);
@@ -609,6 +628,8 @@ BoundingBox::FindNextVertexAndMakeFacets()
 	// figure out what facets this point can "see"
 	SideSet visibleSides;
 	Side *thisSide;
+
+//    !!!	something's wrong here - the set of sides can somehow dwindle to none!
 	
 	for (int i = 0 ; i <= array.size() - 1 ; i ++) {
 		thisSide = &(array.at(i));
@@ -657,9 +678,13 @@ BoundingBox::FindNextVertexAndMakeFacets()
 			if (foundShared) {
 				// we found a shared edge, and marked the right one for the otherSide->
 				// we can look for the unshared point on thisSide->  The other two must be shared.
-				if (!otherSide->PointOnSide(thisSide->pt1)) thisSide->edge1 = true;
-				if (!otherSide->PointOnSide(thisSide->pt2)) thisSide->edge2 = true;
-				if (!otherSide->PointOnSide(thisSide->pt3)) thisSide->edge3 = true;
+				if (!otherSide->PointOnSide(thisSide->pt1)) {
+					thisSide->edge1 = true;
+				} else if (!otherSide->PointOnSide(thisSide->pt2)) {
+					thisSide->edge2 = true;
+				} else if (!otherSide->PointOnSide(thisSide->pt3)) {
+					thisSide->edge3 = true;
+				}
 				numSharedPairs++;
 			}				
 		}
@@ -675,7 +700,7 @@ BoundingBox::FindNextVertexAndMakeFacets()
 			newSide.pt1=newVertex;
 			newSide.pt2=thisSide->pt2;
 			newSide.pt3=thisSide->pt3;
-			newSide.MakeInVect(tempCtr);	// we know that thisSide's pt1 is interior of the new facet
+			newSide.MakeInVect(thisSide->pt1);	// we know that thisSide's pt1 is interior of the new facet
 			PushSide(newSide);
 			char logMsg[255];
 			sprintf (logMsg, "\t Made a new side: (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", 
@@ -690,7 +715,7 @@ BoundingBox::FindNextVertexAndMakeFacets()
 			newSide.pt1=newVertex;
 			newSide.pt2=thisSide->pt1;
 			newSide.pt3=thisSide->pt3;
-			newSide.MakeInVect(tempCtr);	// we know that thisSide's pt2 is interior of the new facet
+			newSide.MakeInVect(thisSide->pt2);	// we know that thisSide's pt2 is interior of the new facet
 			PushSide(newSide);
 			char logMsg[255];
 			sprintf (logMsg, "\t Made a new side: (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", 
@@ -704,7 +729,7 @@ BoundingBox::FindNextVertexAndMakeFacets()
 			newSide.pt1=newVertex;
 			newSide.pt2=thisSide->pt1;
 			newSide.pt3=thisSide->pt2;
-			newSide.MakeInVect(tempCtr);	// we know that thisSide's pt3 is interior of the new facet
+			newSide.MakeInVect(thisSide->pt3);	// we know that thisSide's pt3 is interior of the new facet
 			PushSide(newSide);
 			char logMsg[255];
 			sprintf (logMsg, "\t Made a new side: (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", 
@@ -775,6 +800,7 @@ BoundingBox::FindInitialTetrahedron()
 	}
 	
 	Point3DFloat tetCtr = average / 4.0;
+	this->SetCtr(tetCtr);	// need this to make the Volume Calculations work right
 	
 	// Now tetPts has four random points
 	// Make a set of Sides and push them onto me
@@ -922,7 +948,7 @@ BoundingBox::SideifyCoplanars (Side &ioSide, NumPtArray &coplanars)
 		
 		// find an extreme point, by picking the furthest point from a randomly chosen one (ioSide.pt1).
 		// This point must be along an edge.
-		float curDist, farDist = 0;
+		double curDist, farDist = 0;
 		NumberedPt	thisPt, farPt;
 		short	farPtNum = -1;
 		for (i = 0; i <= planarArray.GetCount() - 1; i++) {
@@ -1265,7 +1291,7 @@ BoundingBox::CheckSides (Point3DFloat inPt1, Point3DFloat inPt2)
 // ---------------------------------------------------------------------------
 //
 bool
-BoundingBox::PointInBox(Point3DFloat &inPt, float tolerance)
+BoundingBox::PointInBox(Point3DFloat &inPt, double tolerance)
 {
 	if (mType == kSidesBox) {
 		// if it's inside the inscribed box, which we hope is a cube, then return true
@@ -1307,7 +1333,7 @@ BoundingBox::BetterInscribedBox()
 		if (mPrefs->verbose) mCalc->log("\tThis box is a SidesBox.\n");
 		
 		NumberedPt			xMin, xMax, yMin, yMax, zMin, zMax;
-		float					increment;
+		double					increment;
 		increment = GetMinDimension() / 100.0;
 		
 		// Push each point out from the center in the six orthogonal directions, by 1% increments,
@@ -1417,7 +1443,7 @@ BoundingBox::BetterInscribedBox()
 		OctahedronBox->MakeAllInVects();
 		
 		// We make the inscribed cube, the cube that just fits inside the box
-		float nearDist = NearestSideDist(mCtr) / sqrt(3.0);
+		double nearDist = NearestSideDist(mCtr) / sqrt(3.0);
 		//	we divide by sqrt(3) because we're setting a perpendicular length, but the
 		//	nearest side could be as far off as that of the (1 1 1) face.
 		// If the distance were to the (1 1 1) face, then dividing by sqrt(3) would
@@ -1430,7 +1456,7 @@ BoundingBox::BetterInscribedBox()
 		CubeBox->SetType(kCubeBox);
 		CubeBox->SetSideLen(nearDist);
 		
-		float tempLen;
+		double tempLen;
 		// we expand the inscribed cube until one of it's corners is outside the BBox
 		while (PrimitiveInBox(CubeBox)) {
 			tempLen = CubeBox->GetSideLen();
@@ -1452,7 +1478,7 @@ BoundingBox::BetterInscribedBox()
 		// We test the incsribed cube to see how much volume it has relative to the octahedron.
 		// If the cube is much smaller (by 50%), then we don't use the cube.
 		// We give the cube an advantage since it is so much faster to calculate.	
-		float CubeVolume = pow(CubeBox->GetSideLen(), 3);
+		double CubeVolume = pow(CubeBox->GetSideLen(), 3);
 		if (OctahedronBox->Volume() < (CubeVolume * 1.5)) {
 			if (mPrefs->verbose) mCalc->log("\t Chose CubeBox.\n");
 			delete OctahedronBox;
@@ -1464,9 +1490,9 @@ BoundingBox::BetterInscribedBox()
 		}
 		
 		// We make the exscribed cube, the cube that just fits around the whole box
-		float farXlDist = 0;
+		double farXlDist = 0;
 		Point3DFloat farDistPt;
-		float thisDist;
+		double thisDist;
 		Crystal *thisXl;
 		for (short i = 0; i <= theXls->GetNumXls() - 1; i++) {
 			thisXl = (Crystal *) theXls->GetItemPtr(i);
@@ -1516,7 +1542,7 @@ BoundingBox::PrimitiveInBox(SideSet *inPrim)
 {
 	Point3DFloat thisPt;
 	Point3DFloat theCtr = inPrim->GetCtr();
-	float theSide;
+	double theSide;
 	
 	switch (inPrim->GetType()) {
 		case kCubeBox:
@@ -1595,12 +1621,12 @@ BoundingBox::PrimitiveInBox(SideSet *inPrim)
 			//	from the circle center to each point in the positive 45 degree octant, and then use symmetry to find the other points
 			for (short i = 1; i <= kNumOctantPoints; i++) {
 				// theta is the angle in radians that corresponds to the i / numOctantPoints fraction of 45 degrees (pi/4)
-				float theta = (M_PI / 4.0) * (float) i / (float) kNumOctantPoints;
+				double theta = (M_PI / 4.0) * (double) i / (double) kNumOctantPoints;
 				// xOffset and yOffset are the components of a vector from the center of the circle to the point on the 
 				//	circle theta radians clockwise from North
-				float xOffset = inPrim->GetRadius() * sin(theta);
-				float yOffset = inPrim->GetRadius() * cos(theta);
-				float zOffset = inPrim->GetHeight() / 2.0;
+				double xOffset = inPrim->GetRadius() * sin(theta);
+				double yOffset = inPrim->GetRadius() * cos(theta);
+				double zOffset = inPrim->GetHeight() / 2.0;
 				
 				// For each theta value, find 16 points that use the same X&Y offset values (some switched)				
 				for (short xSign = -1; xSign <= 1; xSign += 2) {
@@ -1630,10 +1656,10 @@ BoundingBox::PrimitiveInBox(SideSet *inPrim)
 // ---------------------------------------------------------------------------
 //		¥ GetMinDimension
 // ---------------------------------------------------------------------------
-float
+double
 BoundingBox::GetMinDimension()
 {
-	float outMin;
+	double outMin;
 	
 	switch (mType) {
 		case kCubeBox:
@@ -1704,7 +1730,7 @@ BoundingBox::Inflate()
 // ---------------------------------------------------------------------------------
 //		¥ GetMCVolFracGranularity
 // ---------------------------------------------------------------------------------
-float
+double
 BoundingBox::GetMCVolFracGranularity(short mode)
 {
 	long numTries;
@@ -1726,8 +1752,8 @@ BoundingBox::GetMCVolFracGranularity(short mode)
 // ---------------------------------------------------------------------------------
 /* Since we can't do this accurately enough going crystal-by-crystal, due to possibly
 	many multiply-intersecting crystals, we'll use a monte carlo method. */
-float
-BoundingBox::GetVolumeFraction(float inMaxRadius, long Tries, HoleSet *inHoles)
+double
+BoundingBox::GetVolumeFraction(double inMaxRadius, long Tries, HoleSet *inHoles)
 {
 	long numInside1=0, numInside=0;
 	Point3DFloat boxPt;
@@ -1749,7 +1775,7 @@ BoundingBox::GetVolumeFraction(float inMaxRadius, long Tries, HoleSet *inHoles)
 	if (numTries >= 20)
 		numTries = 20 * (numTries / 20);	// makes it divisible by 20;
 	
-	mCalc->log("Calculating Volume Fraction");
+	mCalc->log("Calculating Volume Fraction\n");
 	mCalc->setupProgress("Determining volume fraction using monte carlo method.", nil, nil, "Reducing", -1, 1, numTries/20, 1, false);
 
 //	this will give you the exact same "random" simulation every time
@@ -1814,10 +1840,10 @@ BoundingBox::GetVolumeFraction(float inMaxRadius, long Tries, HoleSet *inHoles)
 // ---------------------------------------------------------------------------
 /* Returns the volume of the bounding box.  Note that if there are overlapping
 triangles on planes, the value will be too high */
-float
-BoundingBox::VolumeMinusGuard(HoleSet *holes, float guardWidth)
+double
+BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 {
-	float outVol;
+	double outVol;
 	long numBoxPts = 0;
 	long goodPts = 0;
 	Point3DFloat tryPoint;
@@ -1907,7 +1933,7 @@ box. From CRC Handbook, 25th edition, p.297 */
 double
 BoundingBox::NearestSideDist(Point3DFloat &inPt)
 {
-	float xDist, yDist, zDist;
+	double xDist, yDist, zDist;
 	Point3DFloat pt1, pt2, pt3;
 	Side thisSide;
 	
@@ -1925,7 +1951,7 @@ BoundingBox::NearestSideDist(Point3DFloat &inPt)
 			return myMin(xDist, yDist, zDist);
 			break;
 		case kCylBox:
-			float rDist;
+			double rDist;
 			rDist = mRadius - sqrt(sqr(inPt.x - (mCtr.x + mOffset.x)) +
 								   sqr(inPt.y - (mCtr.y + mOffset.y)));
 			zDist = (mHeight / 2.0) - ::fabs(inPt.z - (mCtr.z + mOffset.z));
@@ -1933,7 +1959,7 @@ BoundingBox::NearestSideDist(Point3DFloat &inPt)
 			break;
 		case kSidesBox:
 			double	minDist, thisDist;
-			float	a, b, c, d;		// coefficients of the plane equation
+			double	a, b, c, d;		// coefficients of the plane equation
 			short	numSides;
 			numSides = GetCount();
 			
@@ -2026,7 +2052,7 @@ BoundingBox::AdjustToBounds()
 bool
 BoundingBox::XlTouchesBox(Crystal &inXl)
 {
-	float d = NearestSideDist(inXl.ctr);
+	double d = NearestSideDist(inXl.ctr);
 	return (d <= inXl.r);
 }
 
@@ -2041,8 +2067,8 @@ a number between 0 and 360 which has the same ordering properties as the true
 angle between the line defined by the points and horizontal. This is used
 instead of an arctan function because it's faster (fewer special cases, no
 												   calls to trig functions). */
-float
-BoundingBox::Theta (float x1, float y1, float x2, float y2)
+double
+BoundingBox::Theta (double x1, double y1, double x2, double y2)
 {
 	double	dx, dy, ax, ay, t;
 	
@@ -2066,10 +2092,10 @@ BoundingBox::Theta (float x1, float y1, float x2, float y2)
 // ---------------------------------------------------------------------------
 //		¥ SurfaceArea
 // ---------------------------------------------------------------------------
-float
+double
 BoundingBox::SurfaceArea()
 {
-	float	area = 0.0;
+	double	area = 0.0;
 	switch (mType) {
 		case kCubeBox:
 			area = GetSideLen() * GetSideLen() * 6.0;
@@ -2105,10 +2131,10 @@ BoundingBox::SurfaceArea()
 void
 BoundingBox::MakeRandomSimulation(
 								  std::vector<double> &inRadiiList, // this is an array of radii found in the actual crystal data set, sorted by decreasing size
-								  bool inMatchingDataSetVF, // should we match the VF of the actual data set?
-								  float inVolFraction, // the VF of the actual crystal data set
+								  bool inMatchingCTDataSet, // should we match the VF of the actual data set?
+								  double inVolFraction, // the VF of the actual crystal data set
 								  HoleSet* inHoles, // holes to avoid
-								  float betafactorfactor	// a factor involved in a sort of "diffusion-controlled" simulation.
+								  double betafactorfactor	// a factor involved in a sort of "diffusion-controlled" simulation.
 															// Only used when making D.C. envelopes.  Defaults to zero.
 								  )
 {
@@ -2155,7 +2181,7 @@ BoundingBox::MakeRandomSimulation(
 				// criteria.
 				
 				thisXl.ctr = RandPtInPrimitive(nuclProb);	// note that nuclProb may be nil
-				short intersects = theXls->CrystalIntersects(thisXl, inMatchingDataSetVF, inVolFraction, betafactorfactor);
+				short intersects = theXls->CrystalIntersects(thisXl, inMatchingCTDataSet, inVolFraction, betafactorfactor);
 				if (intersects == kObs1Criterion)
 					obs1++;
 				if (intersects == kObs2Criterion)
@@ -2196,7 +2222,7 @@ BoundingBox::MakeRandomSimulation(
 	theXls->RebuildList();
 
 	char logMsg[kStdStringSize];
-	sprintf(logMsg, "Failed to place\t%d\tcrystals due to criterion 1, and\t%d\tcrystals due to criterion 2.", obs1, obs2);
+	sprintf(logMsg, "Failed to place\t%d\tcrystals due to criterion 1, and\t%d\tcrystals due to criterion 2.\n", obs1, obs2);
 	mCalc->log(logMsg);
 
 	if (!goodSimulation) {
@@ -2206,6 +2232,53 @@ BoundingBox::MakeRandomSimulation(
 							 "Bad Simulation", nil, -1, 3);
 		}
 		throw SimulationErr();
+	}
+}
+
+void
+BoundingBox::ExportBoxData() {
+	CFStringRef inFileCFPath = (theXls->GetFile())->getPath();
+	char inFileCString[kStdStringSize];
+	CFStringGetCString (inFileCFPath, inFileCString, (CFIndex) kStdStringSize, kCFStringEncodingUTF8);
+	std::string inFilePath (inFileCString);
+	int lastPeriod = inFilePath.find('.');
+	std::string boxFilePath = inFilePath.erase(lastPeriod);	// erase everything after the last period
+	boxFilePath += "_bbox.txt";
+	
+	stringFile boxFile(true, boxFilePath.c_str());
+	
+	char tempLine[kStdStringSize];
+	sprintf(tempLine, "Bounding Box Export for:\t%s", inFilePath.c_str());
+	boxFile.putOneLine(tempLine);
+	
+	Point3DFloat tempCtr = CalcCtr();
+	sprintf(tempLine, "Current Center:\t%f\t%f\t%f", tempCtr.x, tempCtr.y, tempCtr.z );
+	boxFile.putOneLine(tempLine);
+	
+	switch (mType) {
+		case kCubeBox:
+			
+			break;
+		case kRPBox:
+			
+			break;
+		case kCylBox:
+			
+			break;
+		case kSidesBox:
+			short	i;
+			Side	curSide;
+			
+			for (i = 0; i <= GetCount() - 1; i++) {
+				curSide = (*this)[i];
+				sprintf(tempLine, "%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f",
+						curSide.pt1.x, curSide.pt1.y, curSide.pt1.z,
+						curSide.pt2.x, curSide.pt2.y, curSide.pt2.z,
+						curSide.pt3.x, curSide.pt3.y, curSide.pt3.z,
+						curSide.inVect.x, curSide.inVect.y, curSide.inVect.z);
+				boxFile.putOneLine(tempLine);
+			}
+			break;
 	}
 }
 

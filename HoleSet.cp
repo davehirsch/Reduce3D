@@ -78,7 +78,7 @@ HoleSet::TidyCrystalsUp(CrystalArray *inXls)
 		mCalc->progress(i);
 		for (int j = 0; j <= inXls->GetNumXls()-1; j++) {
 			otherXl = (Crystal *) inXls->GetItemPtr(j);
-			float separation = thisHole->ctr.Distance(otherXl->ctr);
+			double separation = thisHole->ctr.Distance(otherXl->ctr);
 			if (separation < thisHole->r)	{	// if the crystal center is inside the hole
 				inXls->RemoveItem(j, false);
 				j--;	// redo this j, since we've removed an element

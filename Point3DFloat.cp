@@ -14,7 +14,7 @@ Point3DFloat::Point3DFloat()
 // ---------------------------------------------------------------------------
 //		¥ Point3DFloat
 // ---------------------------------------------------------------------------
-Point3DFloat::Point3DFloat(float inX, float inY, float inZ)
+Point3DFloat::Point3DFloat(double inX, double inY, double inZ)
 {
 	x = inX;
 	y = inY;
@@ -30,6 +30,10 @@ Point3DFloat::Point3DFloat(const Point3DFloat &inPt)
 	y = inPt.y;
 	z = inPt.z;
 }
+
+// ---------------------------------------------------------------------------
+//		¥ Clear  --> inlined
+// ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
 //		¥ operator -

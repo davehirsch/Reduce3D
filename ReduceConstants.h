@@ -19,8 +19,8 @@ const double	kCoplanarThreshold		= 0.0001;	// this is a theta value
 const bool	kFinished				= true;
 const bool	kUnfinished				= false;
 const short		kPerspective			= 1;		/* 10 is strong perspective view */
-const float	kScale					= 6000;	/* scaling for 3DBB plot */
-//const float	kScale					= 6000/kPerspective;	/* scaling for 3DBB plot */
+const double	kScale					= 6000;	/* scaling for 3DBB plot */
+//const double	kScale					= 6000/kPerspective;	/* scaling for 3DBB plot */
 const short		kPicSize				= 300;		/* approximate desired pic size, in pixels, for the BB */
 
 enum Models {kNone, kBBox, kXls, kHoles};
@@ -34,8 +34,8 @@ const long		kNumTriesToPlaceXl = 10000;
 const short		kNumSimMakerRestarts = 6;
 const short		kNumOctantPoints = 25;	// number of points to use (*16) for BoundingBox::PrimitiveInBox
 const short		kRoughMCReductionFactor = 10;
-const float		kTimeIntervalBetweenProgressSpins = 0.05;
-const float		kSleepTimeForProgressUpdate = 0.01;
+const double		kTimeIntervalBetweenProgressSpins = 0.05;
+const double		kSleepTimeForProgressUpdate = 0.01;
 const long		myOptionKey = 0x00000004;
 const long		myShiftKey = 0x00000001;
 
@@ -53,6 +53,7 @@ const short		kMaxNumBins				= 500;	// max number of bins for the quadrat test
 const short		kNumBinsNNCSD			= 50;
 const short		kNumBinsRegCSD			= 50;
 enum		primitiveTypes {kSides = 0, kRectPrism = 1, kCylinder = 2};
+enum obvservabilityMethods {kSetDirectly = 0, kSetFromData = 1};
 enum		criteriaRelations {kSmaller = 0, kLarger = 1};
 enum		directions {kFromMax = 0, kSymmetric = 1, kFromMin = 2};
 enum		xyzCoordinates {kX = 0, kY = 1, kZ = 2};

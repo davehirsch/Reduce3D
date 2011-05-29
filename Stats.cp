@@ -71,7 +71,7 @@ Stats::SetCFParams(short inNumKPoints, bool inSigma)
 	mSigmas = inSigma;
 	numLPoints = inNumKPoints;
 	
-	hDistances = new float[numLPoints + 1];
+	hDistances = new double[numLPoints + 1];
 	LValues = new double[numLPoints + 1];
 	LgdValues = new double[numLPoints + 1];
 	PCF = new double[numLPoints + 1];
@@ -303,8 +303,10 @@ Stats::Clear()
 	short i;
 	
 	actualVol = 0;
-	observabilityCrit1 = 0;
-	observabilityCrit2 = 0;
+	observabilityCrit1rejects = 0;
+	observabilityCrit2rejects = 0;
+	observabilityCrit1value = 0.0;
+	observabilityCrit2value = 0.0;
 	AREnvMax = FLT_MIN;
 	AREnvMean = 0;
 	AREnvMin = FLT_MAX;

@@ -70,23 +70,25 @@ class CrystalArray {
 		inline void			SetLower (Point3DFloat inLower) {mLower = inLower;};
 		inline void			SetUpper (Point3DFloat inUpper) {mUpper = inUpper;};
 		inline Point3DFloat	&	GetCtr () {return mCtr;};
-		inline float		GetRadius () {return mRadius;};
-		inline float		GetHeight () {return mHeight;};
+		inline double		GetRadius () {return mRadius;};
+		inline double		GetHeight () {return mHeight;};
 		inline void			SetCtr (Point3DFloat inCtr) {mCtr = inCtr;};
-		inline void			SetRadius (float inRadius) {mRadius = inRadius;};
-		inline void			SetHeight (float inHeight) {mHeight = inHeight;};
+		inline void			SetRadius (double inRadius) {mRadius = inRadius;};
+		inline void			SetHeight (double inHeight) {mHeight = inHeight;};
 
 		// TEXTURAL MEASURING METHODS
-		short				CrystalIntersects(Crystal &inXl, bool inMatchingCTDataSet, float inVolFraction=0, float betafactorfactor=0);
+		short				CrystalIntersects(Crystal &inXl, bool inMatchingCTDataSet, double inVolFraction=0, double betafactorfactor=0);
 		bool				FindCrystalAt(Point3DFloat inPt, Crystal *thisXl);
 		Point3DFloat &		Average();
 		double				GetMeanRadius();
 		inline short		GetNegRadii() {return mNegRadii;};
-		void				FilterForObservability(short *crit1rejecs, short *crit2rejects);
+		void				FilterForObservability(double crit1Factor, double crit2Factor, short *crit1rejecs, short *crit2rejects);
+	void				FindObservabilityValues(double inPercent, double *ioCrit1value, double *ioCrit2value);
+
 		nuclProbType*		GetNuclProb();
-		void				ChangeRadii(double *outRadiiList, float inDelta);
+		void				ChangeRadii(double *outRadiiList, double inDelta);
 		bool				AdjustLocations();
-		float				CorrectedCrystalVolume(Crystal *inXl);
+		double				CorrectedCrystalVolume(Crystal *inXl);
 		void				CorrectForImpingement();
 		void				RemoveIllegalOverlaps();
 
@@ -95,11 +97,11 @@ class CrystalArray {
 		fileTypes			mFileType;
 		std::string			mIntComment;
 		int					mNumCrystals;	// used in reading Merge Files.  Holds alleged number of crystals as stated in header.
-		float				mTotalVolume;
+		double				mTotalVolume;
 		boundsTypes			mBounds;
 		Point3DFloat		mLower, mUpper;
 		Point3DFloat		mCtr;
-		float				mRadius, mHeight;
+		double				mRadius, mHeight;
 		int					mNegRadii;
 		nuclProbType		*mNuclProb;
 		PrefStruct *		mPrefs;
@@ -120,14 +122,14 @@ class CrystalArray {
 */
 	public:
 		void				RebuildList();
-		std::vector<int>	NearbyXls(Point3DFloat inPt, float inDistance);
+		std::vector<int>	NearbyXls(Point3DFloat inPt, double inDistance);
 		bool				VerifyList();
 
 protected:
-//		void				AddToList(XListElement *inList, float inVal, long inIndex, long *ioListSizeAlloc);
-//		bool				RemoveFromList(XListElement *inList, float inVal, long inIndex);
+//		void				AddToList(XListElement *inList, double inVal, long inIndex, long *ioListSizeAlloc);
+//		bool				RemoveFromList(XListElement *inList, double inVal, long inIndex);
 		void				SortInternalList();
-		short				NearbyCount(float inVal, float inDistance,
+		short				NearbyCount(double inVal, double inDistance,
 										int &outLowerIndex, int &outUpperIndex);
 
 		
@@ -147,7 +149,7 @@ class XListElement {
 		static inline bool CompareListElement (XListElement inA, XListElement inB) { return inA.location < inB.location; };	
 	protected:
 		int		index;
-		float	location;
+		double	location;
 };
 
 // I cannot get operator< to work with the STL sort, so here's a function to do the job instead
