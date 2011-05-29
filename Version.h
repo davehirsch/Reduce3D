@@ -1,1 +1,1 @@
-#include <MacTypes.r>#define	MainVersionNum	2#define	SubVersionNum	57#define	ReleaseType		beta#define	ShortVersionStr	"2.57"#define	LongVersionStr	"Version 2.57, ©David Hirsch, 2000"
+#define	MainVersionNum	2#define	SubVersionNum	7#define	ReleaseType		beta#define	ShortVersionStr	"2.7.0"#define	LongVersionStr	"Version 2.7.0, ©David Hirsch, 2007"
