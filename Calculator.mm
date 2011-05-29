@@ -972,8 +972,13 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 		ioBBox->SetDimensions(curPrim.GetSideLenPt());
 		
 		// make the inscribed box this primitive, too
-		(ioBBox->GetInscribedBox())->Copy(curPrim);
-	break;
+		if (ioBBox->mInscribedBox == nil) {
+			ioBBox->mInscribedBox = new SideSet();
+		}
+		ioBBox->mInscribedBox->SetType(kRPBox);
+		ioBBox->mInscribedBox->SetCtr(curPrim.GetCtr());
+		ioBBox->mInscribedBox->SetDimensions(curPrim.GetSideLenPt());
+		break;
 	case kCylinder:
 		float	ht, rad;
 		ctr = ioBBox->GetCtr();

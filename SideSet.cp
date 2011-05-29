@@ -44,8 +44,16 @@ SideSet::SideSet(SideSet &inSideSet)
 	mRadius = inSideSet.mRadius;
 	mOffset = inSideSet.mOffset;
 	array = inSideSet.array;
-	mInscribedBox = (inSideSet.mInscribedBox == nil ? nil : new SideSet(*(inSideSet.mInscribedBox)));
-	mExscribedBox = (inSideSet.mExscribedBox == nil ? nil : new SideSet(*(inSideSet.mExscribedBox)));
+//	mInscribedBox = (inSideSet.mInscribedBox == nil ? nil : new SideSet(*(inSideSet.mInscribedBox)));
+//	mExscribedBox = (inSideSet.mExscribedBox == nil ? nil : new SideSet(*(inSideSet.mExscribedBox)));
+	if (inSideSet.mInscribedBox != nil) {
+		mInscribedBox = new SideSet();
+		mInscribedBox->Copy(*(inSideSet.mInscribedBox));
+	}
+	if (inSideSet.mExscribedBox) {
+		mExscribedBox = new SideSet();
+		mExscribedBox->Copy(*(inSideSet.mExscribedBox));
+	}
 }
 
 // ---------------------------------------------------------------------------
