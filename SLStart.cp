@@ -1,0 +1,1 @@
+#include "SpotlightAPI.h"pascal void __start(void);void SLStart(void){	SLInit();	__start();}
