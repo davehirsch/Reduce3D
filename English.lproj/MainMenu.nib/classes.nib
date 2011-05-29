@@ -7,19 +7,6 @@
 		<dict>
 			<key>ACTIONS</key>
 			<dict>
-				<key></key>
-				<string>id</string>
-			</dict>
-			<key>CLASS</key>
-			<string>FirstResponder</string>
-			<key>LANGUAGE</key>
-			<string>ObjC</string>
-			<key>SUPERCLASS</key>
-			<string>NSObject</string>
-		</dict>
-		<dict>
-			<key>ACTIONS</key>
-			<dict>
 				<key>adjustShaveUISettings</key>
 				<string>id</string>
 				<key>beginAnalysis</key>
@@ -54,6 +41,19 @@
 				<key>xyzButton</key>
 				<string>NSPopUpButton</string>
 			</dict>
+			<key>SUPERCLASS</key>
+			<string>NSObject</string>
+		</dict>
+		<dict>
+			<key>ACTIONS</key>
+			<dict>
+				<key></key>
+				<string>id</string>
+			</dict>
+			<key>CLASS</key>
+			<string>FirstResponder</string>
+			<key>LANGUAGE</key>
+			<string>ObjC</string>
 			<key>SUPERCLASS</key>
 			<string>NSObject</string>
 		</dict>

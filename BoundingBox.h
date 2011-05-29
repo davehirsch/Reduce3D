@@ -34,7 +34,7 @@ class	BoundingBox : public SideSet {
 						BoundingBox(BoundingBox &inBBox);
 		virtual			~BoundingBox();
 		void			Copy(BoundingBox &inBBox);
-		bool			PointInBox(Point3DFloat &inPt);
+		bool			PointInBox(Point3DFloat &inPt, float tolerance=0);
 		bool			XlTouchesBox(Crystal &inXl);
 		void			FindConvexHull();
 		void			PrepForHullOrPrimitive();
@@ -60,6 +60,9 @@ class	BoundingBox : public SideSet {
 		void			FindBoundPoints();
 		void			FindCenter();
 		void			DiscardInteriorPoints();
+		void			FindInitialTetrahedron();
+		bool			UnfacetedPointsExist();
+		void			FindNextVertexAndMakeFacets();
 		void			FindFirstSide();
 		NumberedPt		MinThetaPt(NumberedPt &inPt1, NumberedPt &inPt2,
 								NumberedPt &inPt3, Matrix4d &inMatrix,

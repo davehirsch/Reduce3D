@@ -18,39 +18,72 @@ stringFile::stringFile()
 	mLines = nil;
 	path = nil;
 	mCurLine = 0;
+	mWriteAsap = false;
 }
 
-stringFile::stringFile(bool inForOutput, CFStringRef inPath)
+stringFile::stringFile(bool inForOutput, CFStringRef inPath, bool inWriteAsap)
 {
 	mForOutput = inForOutput;
 	mLines = nil;
+	mFileHandle = nil;
 	setPath(inPath);
 	if (!inForOutput) {
 		mCurLine = 0;
 		readFromFile();
+	} else {
+		mWriteAsap = inWriteAsap;
+		if (mWriteAsap) {
+			[[NSFileManager defaultManager] 
+				createFileAtPath:(NSString *)inPath 
+				contents:nil
+				attributes:nil ];
+			mFileHandle = (void *) [NSFileHandle fileHandleForWritingAtPath: (NSString *)inPath]; //telling aFilehandle what file write to
+			NSFileHandle *tempHandle = (NSFileHandle *)mFileHandle;
+			[tempHandle truncateFileAtOffset:[tempHandle seekToEndOfFile]]; //setting aFileHandle to write at the end of the file (probably redundant here)
+			[tempHandle retain];
+		}
 	}
 }
 
-stringFile::stringFile(bool inForOutput, const char *inPath)
+stringFile::stringFile(bool inForOutput, const char *inPath, bool inWriteAsap)
 {
 	CFStringRef temp = CFStringCreateWithCString(NULL, inPath, kCFStringEncodingUTF8);
 	mForOutput = inForOutput;
 	mLines = nil;
+	mFileHandle = nil;
 	setPath(temp);
 	if (!inForOutput) {
 		mCurLine = 0;
 		readFromFile();
-	}
+	} else {
+		mWriteAsap = inWriteAsap;
+		if (mWriteAsap) {
+			[[NSFileManager defaultManager] 
+				 createFileAtPath:(NSString *)inPath 
+				 contents:nil
+				 attributes:nil ];
+			mFileHandle = (void *) [NSFileHandle fileHandleForWritingAtPath: (NSString *)inPath]; //telling aFilehandle what file write to
+			NSFileHandle *tempHandle = (NSFileHandle *)mFileHandle;
+			[tempHandle truncateFileAtOffset:[tempHandle seekToEndOfFile]]; //setting aFileHandle to write at the end of the file (probably redundant here)
+			[tempHandle retain];
+		}
+	}	
 }
 
 stringFile::~stringFile()
 {
-	if (mForOutput)
+	if (mForOutput && !mWriteAsap)
 		writeToFile();
 	if (mLines)
 		CFRelease(mLines);
 	if (path)
 		CFRelease(path);
+	if (mWriteAsap) {
+		NSFileHandle *tempHandle = (NSFileHandle *)mFileHandle;
+		[tempHandle closeFile];
+		[tempHandle release];
+	}
+		
 }
 
 #pragma mark File manipulation methods
@@ -99,7 +132,7 @@ stringFile::copyPath(stringFile *inStringFile)
 bool
 stringFile::syncWithFile()
 {
-	if (mForOutput)
+	if (mForOutput && !mWriteAsap)
 		return writeToFile();
 	else
 		return readFromFile();
@@ -140,14 +173,18 @@ stringFile::readFromFile()
 bool
 stringFile::writeToFile()
 {
-	NSLock *theLock = [NSLock new];
-	[theLock lock];
-	return [[(NSArray *)mLines componentsJoinedByString:@"\n"] writeToFile: (NSString *)path
-					atomically:YES
-					  encoding:NSUTF8StringEncoding
-						 error:NULL];
-	[theLock unlock];
-	[theLock release];
+	if (!mWriteAsap) {
+		NSLock *theLock = [NSLock new];
+		[theLock lock];
+		return [[(NSArray *)mLines componentsJoinedByString:@"\n"] writeToFile: (NSString *)path
+						atomically:YES
+						  encoding:NSUTF8StringEncoding
+							 error:NULL];
+		[theLock unlock];
+		[theLock release];
+	} else {
+		return true;
+	}
 }
 
 std::string
@@ -194,20 +231,32 @@ stringFile::putOneLine(const char *inStr)
 void	
 stringFile::putOneLine(CFStringRef inStr)
 {
-	// temporarily make a Mutable copy
-	NSMutableArray *mutArray = nil;
-	NSLock *theLock = [NSLock new];
-	[theLock lock];
-	if ((NSArray *) mLines == nil) {
-		mutArray = [NSMutableArray array];
+	if (!mWriteAsap) {
+		// temporarily make a Mutable copy
+		NSMutableArray *mutArray = nil;
+		NSLock *theLock = [NSLock new];
+		[theLock lock];
+		if ((NSArray *) mLines == nil) {
+			mutArray = [NSMutableArray array];
+		} else {
+			mutArray = [NSMutableArray arrayWithArray:(NSArray *)mLines];
+		}
+		[mutArray addObject:(NSString *)inStr];
+		if (mLines != nil) [(NSArray *)mLines release];
+		mLines = (CFArrayRef) [NSArray arrayWithArray:mutArray];
+		[(NSArray *)mLines retain];
+		[theLock unlock];
+		[theLock release];
 	} else {
-		mutArray = [NSMutableArray arrayWithArray:(NSArray *)mLines];
+		NSLock *theLock = [NSLock new];
+		[theLock lock];
+
+		NSFileHandle *tempHandle = (NSFileHandle *)mFileHandle;
+		[tempHandle writeData:[(NSString *)inStr dataUsingEncoding:NSUTF8StringEncoding]]; //actually write the data
+		
+		[theLock unlock];
+		[theLock release];
+		
 	}
-	[mutArray addObject:(NSString *)inStr];
-	if (mLines != nil) [(NSArray *)mLines release];
-	mLines = (CFArrayRef) [NSArray arrayWithArray:mutArray];
-	[(NSArray *)mLines retain];
-	[theLock unlock];
-	[theLock release];
 }
 

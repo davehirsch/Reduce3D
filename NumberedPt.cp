@@ -10,17 +10,19 @@ NumberedPt::NumberedPt()
 {
 	x = y = z = 0.0;
 	seq = 0;
+	flag = false;
 }
 
 // ---------------------------------------------------------------------------
 //		¥ NumberedPt
 // ---------------------------------------------------------------------------
-NumberedPt::NumberedPt(short inSeq, float inX, float inY, float inZ)
+NumberedPt::NumberedPt(short inSeq, float inX, float inY, float inZ, bool inFlag)
 {
 	seq = inSeq;
 	x = inX;
 	y = inY;
 	z = inZ;
+	flag = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -32,6 +34,7 @@ NumberedPt::NumberedPt(const NumberedPt &inPt)
 	x = inPt.x;
 	y = inPt.y;
 	z = inPt.z;
+	flag = inPt.flag;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,6 +46,7 @@ NumberedPt::NumberedPt(const Point3DFloat &inPt)
 	x = inPt.x;
 	y = inPt.y;
 	z = inPt.z;
+	flag = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,12 +60,15 @@ NumberedPt::operator= (NumberedPt &inPt)
 	y = inPt.y;
 	z = inPt.z;
 	seq = inPt.seq;
+	flag = inPt.flag;
 	outPt.x = inPt.x;
 	outPt.y = inPt.y;
 	outPt.z = inPt.z;
 	outPt.seq = inPt.seq;
+	outPt.flag = inPt.flag;
 	return outPt;
 }
+
 
 // ---------------------------------------------------------------------------
 //		¥ operator= (Point3DFloat)
@@ -73,9 +80,11 @@ NumberedPt::operator= (Point3DFloat &inPt)
 	x = inPt.x;
 	y = inPt.y;
 	z = inPt.z;
+	seq = -1;
 	outPt.x = inPt.x;
 	outPt.y = inPt.y;
 	outPt.z = inPt.z;
+	outPt.seq = -1;
 	return outPt;
 }
 

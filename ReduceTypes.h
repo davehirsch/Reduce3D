@@ -26,6 +26,8 @@ typedef struct {
 	bool		playSoundWhenDone;
 	bool		matchPDF;
 	bool		exscribedPrimitive;
+	bool		specifyTestDistance;
+	bool		applyObservabilityFilter;
 	short		numClassesMeanCSD;
 	short		numClassesMaxCSD;
 	short		numClassesLogCSD;
@@ -50,6 +52,7 @@ typedef struct {
 	float		impingementMeanErr;
 	float		impingementMaxErr;
 	float		EpanecnikovCVal;
+	float		testDistanceInterval;
 	float		crit1Factor;
 	float		crit2Factor;
 	float		shaveIncrement;

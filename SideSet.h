@@ -27,14 +27,16 @@ class	SideSet{
 							~SideSet();
 		void				Copy(SideSet &inSideSet);
 		Side				PopSide();
+		void				RemoveSide(int inAtIndex);
 		void				PushSide(Side &inSide);
 		void				Clear();
 		Side				&operator[](short inSub);
 		Side *				GetItemPtr(short inSub);
 		void				UpdateSide(short index, Side &inSide);
-		bool				RawPointInBox(Point3DFloat &inPt);
+		bool				RawPointInBox(Point3DFloat &inPt, float tolerance=0);
 		inline void			SetType(short inType) {mType = inType;};
 		inline void			SetCtr(Point3DFloat inPt) {mCtr = inPt;};
+		Point3DFloat&		CalcCtr();
 		inline void			SetSideLen(float inLen) {mSideLen = inLen;};
 		float				Volume();
 		inline float		GetSideLen() {return mSideLen;};

@@ -24,6 +24,9 @@ class	Stats {
 		bool	forRealDataset;
 		bool	mSigmas;
 		float	*hDistances;
+		
+		short	observabilityCrit1;
+		short	observabilityCrit2;
 
 		float	actualVol;			
 		float	AREnvMax;			

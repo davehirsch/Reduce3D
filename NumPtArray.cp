@@ -8,6 +8,7 @@
 #import "NumberedPt.h"
 #import <algorithm>
 #import "CrystalArray.h"
+#import "ShuffleArray.h"
 
 // ---------------------------------------------------------------------------
 //		¥ NumPtArray
@@ -142,3 +143,16 @@ NumPtArray::AreEqual(const NumberedPt &inItem1, const NumberedPt &inItem2)
 	return (inItem1.seq == inItem2.seq);
 }
 
+// ---------------------------------------------------------------------------------
+//		¥ Randomize
+// ---------------------------------------------------------------------------------
+void
+NumPtArray::Randomize()
+{
+	ShuffleArray shuffler( GetCount() );
+	for (short i=0; i<GetCount(); i++) {
+		NumberedPt temp = array.at(shuffler[i]);
+		array.at(shuffler[i]) = array.at(i);
+		array.at(i) = temp;
+	}
+}

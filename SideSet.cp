@@ -125,6 +125,15 @@ SideSet::PopSide()
 }
 
 // ---------------------------------------------------------------------------------
+//		¥ RemoveSide
+// ---------------------------------------------------------------------------------
+void
+SideSet::RemoveSide(int inAtIndex)
+{	
+	array.erase(array.begin() + inAtIndex);
+}
+
+// ---------------------------------------------------------------------------------
 //		¥ PushSide
 // ---------------------------------------------------------------------------------
 void
@@ -293,8 +302,8 @@ SideSet::PointOnBox(Point3DFloat &inPt)
 	if (mType != kSidesBox)
 		return false;
 	else {
-		for (int i = 0 ; i <= numSides ; i ++) {
-			thisSide = &(array.at(i-1));
+		for (int i = 0 ; i < numSides ; i ++) {
+			thisSide = &(array.at(i));
 			if (inPt == thisSide->pt1 || inPt == thisSide->pt2 || inPt == thisSide->pt3)
 				return true;
 		}
@@ -328,10 +337,10 @@ SideSet::MakeAllInVects()
 // ---------------------------------------------------------------------------
 //
 bool
-SideSet::RawPointInBox(Point3DFloat &inPt)
+SideSet::RawPointInBox(Point3DFloat &inPt, float tolerance)
 {
 	Side *thisSide;
-	Point3DFloat	vect1, vect2, xP, tempPt, testpt;
+	Point3DFloat	vect1, vect2, xP, tempVect, testpt;
 
 	switch (mType) {
 		case kCubeBox:
@@ -351,15 +360,17 @@ SideSet::RawPointInBox(Point3DFloat &inPt)
 		break;
 		case kSidesBox:
 			int		numSides = array.size();
-			for (int i = 0 ; i <= numSides-1 ; i ++) {
+			int i;
+			for (i = 0 ; i <= numSides-1 ; i ++) {
 				thisSide = &(array.at(i));
-				tempPt = inPt - (thisSide->pt1 + mOffset);
+				tempVect = inPt - (thisSide->pt1 + mOffset);
 				// Dot Product is positive if both vectors point within 90 degrees of each other...
-				if ((thisSide->inVect * tempPt) < 0 ) {
-						return false;
+//				if ((thisSide->inVect * tempVect) < 0 ) {
+				if (thisSide->inVect.Angle(tempVect) > (M_PI_2 - tolerance) ) {	// positive tolerance values make more points register as being outisde the box
+						return false;	// the point is outside this side
 				}
 			}
-			return true;
+			return true;	// the point is inside all sides of the box
 		break;
 		default:
 			throw(0);
@@ -472,6 +483,24 @@ SideSet::ToroidalDistance(Point3DFloat &inPt1, Point3DFloat &inPt2)
 	}
 	throw("Shouldn't Be Here!");
 	return -1;
+}
+
+// ---------------------------------------------------------------------------
+//		¥ CalcCtr
+// ---------------------------------------------------------------------------
+/* This doesn't calculate a true center, just a point that is guaranteed to be inside the SideSet */
+Point3DFloat &
+SideSet::CalcCtr()
+{
+	static Point3DFloat outPt;
+	
+	short numSides = array.size();
+	for (short i=0; i < numSides; i++) {
+		Side *thisSide = GetItemPtr(i);
+		outPt += thisSide->CenterOfMass();
+	}
+	outPt /= (float)numSides;
+	return outPt;
 }
 
 // ---------------------------------------------------------------------------

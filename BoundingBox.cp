@@ -517,28 +517,61 @@ BoundingBox::FindConvexHull()
 		mType = kSidesBox;	// we are going to be a Sides box (for now at least; if the user selected a different
 							// primitive, then that primitive will be adopted later
 		PrepForHullOrPrimitive();
-		DiscardInteriorPoints();
+		
+		if (false) {
+			// use old algorithm
+			DiscardInteriorPoints();
 
-		mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 0, 0, true);
-		char progMsg[200];
-		short numSides;
-		FindFirstSide();
-		while (FindNextEdge(sideNum, edgeNum)) {
-			FoldEdge(sideNum, edgeNum);
-			numSides = GetCount();
-			if ((numSides >= 10) && (numSides % 10 == 0)) {
-				sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", numSides);
+			mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 0, 0, true);
+			char progMsg[200];
+			short numSides;
+			FindFirstSide();
+			while (FindNextEdge(sideNum, edgeNum)) {
+				FoldEdge(sideNum, edgeNum);
+				numSides = GetCount();
+				if ((numSides >= 10) && (numSides % 10 == 0)) {
+					sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", numSides);
+					if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
+					mCalc->setProgMessage(progMsg);
+				}
+			}
+			mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
+		} else {
+
+/*			//testing Angle()
+			Point3DFloat vect1(0,1,0);
+			Point3DFloat vect2(1,1,0);
+			float testAngle=vect1.Angle(vect2);
+			for (float i=0.11; i <=2.0; i+=0.1) {
+				Point3DFloat vect3(1, 1-i, 0);
+				testAngle=vect1.Angle(vect3);
+				float dotProd = (vect1 * vect3);
+				if ((dotProd < 0) && (testAngle > M_PI_2)) {
+					bool somethingFishy=true;
+					throw;
+				}
+			}
+*/			
+		
+			char progMsg[200];
+			mCalc->setupProgress("Finding Sides in convex hull...", nil, nil, nil, -1, 0, 100, 0, false);
+			FindInitialTetrahedron();	// make the first tetrahedron and discard all interior points
+			while (UnfacetedPointsExist()) {
+				FindNextVertexAndMakeFacets();
+				sprintf(progMsg, "Finding Sides in convex hull... Found %d sides.", GetCount());
 				if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
 				mCalc->setProgMessage(progMsg);
+				float fractionDone = 1.0 - ((float)mPtArray->GetCount() / (float)theXls->GetNumXls());
+				mCalc->progress(::trunc(100 * fractionDone));
 			}
+			mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
 		}
-		mCalc->setProgMessage("Finding Sides in convex hull... Found all sides.");
 
 		MakeAllInVects();
 
 		// shouldn't need this, but there's some problem occasionally:
 		Side	*curSide;
-		numSides = GetCount();
+		short numSides = GetCount();
 		for (short i = 0; i <= numSides - 1; i++) {
 			curSide = GetItemPtr(i);
 			AlignSide(*curSide);
@@ -549,6 +582,218 @@ BoundingBox::FindConvexHull()
 	BetterInscribedBox();	// Now that we have a good convex hull, we want to optimize
 							// future Bounding-Box-related operations by creating a new inscribed box
 							// and an exscribed box, too (despite the name)
+}
+// ---------------------------------------------------------------------------
+//		¥ FindNextVertexAndMakeFacets
+// ---------------------------------------------------------------------------
+void
+BoundingBox::FindNextVertexAndMakeFacets()
+{
+	Point3DFloat tempCtr = CalcCtr();
+	char logMsg[255];
+	sprintf (logMsg, "\t Found temporary center: (%f, %f, %f)\n", tempCtr.x, tempCtr.y, tempCtr.z);
+	mCalc->log(logMsg);
+
+	short pointNum = 0;
+	while (((*mPtArray)[pointNum]).flag == true) {
+		pointNum++;
+	}	
+	// flag the point in the original array, and move it to the end.  It will either remain flagged, if 
+	// the point happens to be a true convex hull point, or will get deleted by being found inside the
+	// hull at some future point.
+	NumberedPt newVertex = (*mPtArray)[pointNum];
+	newVertex.flag = true;
+	mPtArray->PushPt(newVertex);
+	mPtArray->RemoveItem(pointNum);
+	
+	// figure out what facets this point can "see"
+	SideSet visibleSides;
+	Side *thisSide;
+	
+	for (int i = 0 ; i <= array.size() - 1 ; i ++) {
+		thisSide = &(array.at(i));
+		if (thisSide->IsWithout(newVertex)) {
+			// the vertex can see this side, so add it to the list of seen sides
+			visibleSides.PushSide(*thisSide);
+			
+			// remove it from the current set of sides, since it will be superceded by the new facets
+			RemoveSide(i);
+			i--;	// decrement to be sure we don't skip any
+		}
+	}
+	
+	// Go through the set of visible sides and find the edges of that set (the "horizon")
+	short numVisibleSides = visibleSides.GetCount();
+	// first mark all edges as unshared (false)
+	for (short j=0; j < numVisibleSides; j++) {
+		Side *thisSide = visibleSides.GetItemPtr(j);
+		thisSide->edge1 = false;
+		thisSide->edge2 = false;
+		thisSide->edge3 = false;
+	}
+	
+	short numSharedPairs = 0;
+	// examine the Sides pairwise and look for shared edges
+	for (short j=0; j < numVisibleSides; j++) {
+		Side *thisSide = visibleSides.GetItemPtr(j);
+		for (short k=j+1; k < numVisibleSides; k++) {
+			Side *otherSide = visibleSides.GetItemPtr(k);
+			bool foundShared = false;
+			// see if the two sides share any edges in common, and mark the shared edges true
+			if (thisSide->PointOnSide(otherSide->pt1) && thisSide->PointOnSide(otherSide->pt2)) {
+				// we know that edge3 (from pt1-pt2) of the other side is the one that is shared, so mark that:
+				otherSide->edge3 = true;
+				foundShared = true;
+			} else if (thisSide->PointOnSide(otherSide->pt2) && thisSide->PointOnSide(otherSide->pt3)) {
+				// we know that edge1 (from pt2-pt3) of the other side is the one that is shared, so mark that:
+				otherSide->edge1 = true;
+				foundShared = true;
+			} else if (thisSide->PointOnSide(otherSide->pt1) && thisSide->PointOnSide(otherSide->pt3)) {
+				// we know that edge2 (from pt1-pt3) of the other side is the one that is shared, so mark that:
+				otherSide->edge2 = true;
+				foundShared = true;
+			}
+			
+			if (foundShared) {
+				// we found a shared edge, and marked the right one for the otherSide->
+				// we can look for the unshared point on thisSide->  The other two must be shared.
+				if (!otherSide->PointOnSide(thisSide->pt1)) thisSide->edge1 = true;
+				if (!otherSide->PointOnSide(thisSide->pt2)) thisSide->edge2 = true;
+				if (!otherSide->PointOnSide(thisSide->pt3)) thisSide->edge3 = true;
+				numSharedPairs++;
+			}				
+		}
+	}
+	
+	// Now we have marked all the shared edges as true.  The false edges are the horizon line (unshared
+	// edges).  These will be used to create new facets (Sides)
+	// examine the Sides pairwise and look for shared edges
+	Side newSide;
+	for (short j=0; j < numVisibleSides; j++) {
+		Side *thisSide = visibleSides.GetItemPtr(j);
+		if (!thisSide->edge1) {	// edge1 is a horizon edge
+			newSide.pt1=newVertex;
+			newSide.pt2=thisSide->pt2;
+			newSide.pt3=thisSide->pt3;
+			newSide.MakeInVect(tempCtr);	// we know that thisSide's pt1 is interior of the new facet
+			PushSide(newSide);
+			char logMsg[255];
+			sprintf (logMsg, "\t Made a new side: (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", 
+					 newSide.pt1.x, newSide.pt1.y, newSide.pt1.z,
+					 newSide.pt2.x, newSide.pt2.y, newSide.pt2.z,
+					 newSide.pt3.x, newSide.pt3.y, newSide.pt3.z
+					 );
+			mCalc->log(logMsg);
+			
+		}
+		if (!thisSide->edge2) {	// edge2 is a horizon edge
+			newSide.pt1=newVertex;
+			newSide.pt2=thisSide->pt1;
+			newSide.pt3=thisSide->pt3;
+			newSide.MakeInVect(tempCtr);	// we know that thisSide's pt2 is interior of the new facet
+			PushSide(newSide);
+			char logMsg[255];
+			sprintf (logMsg, "\t Made a new side: (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", 
+					 newSide.pt1.x, newSide.pt1.y, newSide.pt1.z,
+					 newSide.pt2.x, newSide.pt2.y, newSide.pt2.z,
+					 newSide.pt3.x, newSide.pt3.y, newSide.pt3.z
+					 );
+			mCalc->log(logMsg);
+		}
+		if (!thisSide->edge3) {	// edge3 is a horizon edge
+			newSide.pt1=newVertex;
+			newSide.pt2=thisSide->pt1;
+			newSide.pt3=thisSide->pt2;
+			newSide.MakeInVect(tempCtr);	// we know that thisSide's pt3 is interior of the new facet
+			PushSide(newSide);
+			char logMsg[255];
+			sprintf (logMsg, "\t Made a new side: (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", 
+					 newSide.pt1.x, newSide.pt1.y, newSide.pt1.z,
+					 newSide.pt2.x, newSide.pt2.y, newSide.pt2.z,
+					 newSide.pt3.x, newSide.pt3.y, newSide.pt3.z
+					 );
+			mCalc->log(logMsg);
+		}
+	}
+
+	// Discard the interior points
+	short discarded = 0;
+	for (short k=0; k < mPtArray->GetCount(); k++) {
+		if (PointInBox((*mPtArray)[k], -0.00001) && !PointOnBox((*mPtArray)[k])) {	// the tolerance value for PointInBox is an extra angular measure in radians.  Negative values will cause close points to register as being inside the box.
+			mPtArray->RemoveItem(k);
+			k--;
+			discarded++;
+		}
+	}
+//	char logMsg[255];
+	sprintf (logMsg, "\t Hull now has %d sides and %f volume. Found %d shared edge pairs. Discarded %d interior points.  %d points remain\n", GetCount(), Volume(), numSharedPairs,  discarded, mPtArray->GetCount());
+	mCalc->log(logMsg);
+}
+
+// ---------------------------------------------------------------------------
+//		¥ UnfacetedPointsExist
+// ---------------------------------------------------------------------------
+bool
+BoundingBox::UnfacetedPointsExist()
+{
+	bool returnValue=false;
+	for (short k=0; k < mPtArray->GetCount(); k++) {
+		if (((*mPtArray)[k]).flag == false) {
+			returnValue = true;
+			return returnValue;
+		}
+	}	
+	return returnValue;
+}
+
+// ---------------------------------------------------------------------------
+//		¥ FindInitialTetrahedron
+// ---------------------------------------------------------------------------
+/*  This chooses four random crystals and makes a tetrahedron out of them, which is the 
+	first step in creating the convex hull (the new way).
+ */
+void 
+BoundingBox::FindInitialTetrahedron()
+{
+	mPtArray->Randomize();
+	NumPtArray tetPts;
+	Point3DFloat average;
+	// Choose four random points in the set
+	NumberedPt tempPt;
+	for (short i=0; i<4; i++) {
+		tempPt= (*mPtArray)[0];
+		tempPt.flag = true;
+
+		tetPts.PushPt(tempPt);
+		
+		// flag the point in the original array
+		mPtArray->RemoveItem(0);
+		
+		mPtArray->PushPt(tempPt);
+		
+		average += tempPt;
+	}
+	
+	Point3DFloat tetCtr = average / 4.0;
+	
+	// Now tetPts has four random points
+	// Make a set of Sides and push them onto me
+	Side tempSide;
+	for (short j=0; j<4; j++) {
+		tempSide.pt1 = tetPts[j];
+		tempSide.pt2 = tetPts[(j+1) % 4];
+		tempSide.pt3 = tetPts[(j+2) % 4];
+		AlignSide(tempSide);
+		tempSide.MakeInVect(tetCtr);
+		PushSide(tempSide);
+	}
+
+	// Discard the interior points
+	for (short k=0; k < mPtArray->GetCount(); k++) {
+		if (PointInBox((*mPtArray)[k]) && !PointOnBox((*mPtArray)[k])) {
+			mPtArray->RemoveItem(k);
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -566,7 +811,7 @@ BoundingBox::FindFirstSide()
 	NumberedPt thisPt, fakePt1, fakePt2, newPt, betterPt;
 
 	fakePt1.seq = -1;
-	fakePt1.x = zMin.x + 1;
+	fakePt1.x = zMin.x;
 	fakePt1.y = zMin.y + 1;
 	fakePt1.z = zMin.z;
 
@@ -1020,7 +1265,7 @@ BoundingBox::CheckSides (Point3DFloat inPt1, Point3DFloat inPt2)
 // ---------------------------------------------------------------------------
 //
 bool
-BoundingBox::PointInBox(Point3DFloat &inPt)
+BoundingBox::PointInBox(Point3DFloat &inPt, float tolerance)
 {
 	if (mType == kSidesBox) {
 		// if it's inside the inscribed box, which we hope is a cube, then return true
@@ -1037,7 +1282,7 @@ BoundingBox::PointInBox(Point3DFloat &inPt)
 			}
 		}
 	}
-	return RawPointInBox(inPt);
+	return RawPointInBox(inPt, tolerance);
 }
 
 

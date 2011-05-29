@@ -607,7 +607,7 @@ than is the plane of intersection of the sphere surfaces.
 ** Currently, clusters of >1 crystal are dealt with by examining the set pairwise
 */
 void
-CrystalArray::FilterForObservability()
+CrystalArray::FilterForObservability(short *crit1rejecs, short *crit2rejects)
 {
 	bool unobservable;
 	
@@ -633,10 +633,12 @@ CrystalArray::FilterForObservability()
 				float IntPlaneDist = (sqr(larger->r) - sqr(smaller->r) + sqr(separation)) / (2 * separation);
 				if (separation < mPrefs->crit1Factor * IntPlaneDist) {	// criterion (1)
 					unobservable = 1;
+					crit1rejecs++;
 				} else {
 					float totalLength = separation + larger->r + smaller->r;
 					if (totalLength < mPrefs->crit2Factor * smaller->r) {	// criterion (2)
 						unobservable = 2;
+						crit2rejects++;
 					}
 				}
 				
@@ -658,15 +660,9 @@ CrystalArray::FilterForObservability()
 					newXl.r = CubeRoot(0.75 * totalVol / pi);
 					
 					if (mPrefs->verbose) {
-						std::string debugStr ("Tossed out a pair dur to criterion #");
-						debugStr += (SInt32) unobservable;
-						debugStr += "; numbers were ";
-						debugStr += (SInt32) i;
-						debugStr += " and ";
-						debugStr += (SInt32) j;
-						debugStr += ", and added a new one, number ";
-						debugStr += (SInt32) GetNumXls() - 1;
-						debugStr += "\n";
+						char debugStr[255];
+						sprintf(debugStr, "Tossed out a pair dur to criterion #%d; numbers were %d and %d, and added a new one, number %d\n",
+								unobservable, i, j, GetNumXls() - 1);
 						mCalc->log(debugStr);
 					}
 

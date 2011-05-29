@@ -1,0 +1,171 @@
+John.Int
+Reduce3D 2.57
+John redo
+Processing Parameters:
+includeMeanCSD: 0
+includeMaxCSD: 0
+includeLogCSD: 0
+includeRegCSD: 0
+doQuadrat: 0
+doOthers: 1
+doRandomPt: 1
+make3DModel: 0
+outputSigmas: 0
+outputCrystals: 0
+outputR3STT: 0
+outputReduce: 1
+doImpingement: 1
+numClassesMeanCSD: 63
+numClassesMaxCSD: 63
+numClassesLogCSD: 63
+quadratNumPlacings: 1000
+quadratNumReps: 10
+RPNumPlacings: 1000
+RPNumReps: 10
+maxValueMeanCSD: 3.000
+deltaLRegCSD: 0.100
+impingementMeanErr: 0.100
+impingementMaxErr: 20.000
+doLMcfPcf: 1
+numNNDist: 6
+numCFOffsetVolPts: 500
+EpanecnikovCVal: 0.100
+numQD3DEqPts: 5
+numQD3DLngPts: 5
+sampleShape: 2
+numEnvelopeRuns: 100
+greediness: 9
+inflateBBox: 0
+observabilityFilter: 1
+crit1Factor: 0.850
+crit2Factor: 3.000
+Not shaved
+minPercent: 10.000
+minPopulation: 200
+maxAspectRatio: 1000.000
+smaller: 0
+ShaveSave: 0
+discardNegs: 1
+useRaeburn: 0
+confidence: 96
+seed: 1234567
+MCReps: 5000
+tidyUp: 1
+useVolume: 0
+overlap: 50
+matchVF: 0
+makeDCEnv: 0
+verbose: 0
+VFPercent: 10.000
+matchPDF: 0
+Holes File: none
+Number of crystals:	4399
+Total Volume (cubic cm):	 1.6367e+0
+Surface Area (sq cm):	 8.0340e+0
+Surface to Volume Ratio:	 4.9085e+0
+Crystal Volume Fraction:	 1.0518e-1
+Crystal density:	 2.6876e+3
+Crystal intensity:	 2.6876e+3
+Crystal Intensity Sqd:	 7.2218e+6
+Crystal Volume Fraction (MC Method):	 1.0400e-1
+Minimum radius:	 6.1000e-3
+Maximum radius:	 4.1590e-2
+Mean radius:	 1.9227e-2
+Std deviation:	 6.2458e-3
+Skewness:	 2.5287e-1
+Excess Kurtosis:	-2.2408e-1
+Minimum ext volume:	 9.5078e-7
+Maximum ext volume:	 3.0134e-4
+Mean ext volume:	 3.9452e-5	Env Min:	 3.9452e-5	Env Max:	 3.9452e-5
+Std deviation:	 3.6849e-5
+Minimum act volume:	 1.4090e-7
+Maximum act volume:	 2.9660e-4
+Mean act volume:	 3.9135e-5
+Std deviation:	 3.6554e-5
+Num engulfed crystals:	0
+Minimum separation:	 1.0264e-2	Env Min:	 6.5742e-3	Env Max:	 1.3265e-2
+Maximum separation:	 8.4785e-2
+Mean separation:	 4.5427e-2	Env Min:	 3.9517e-2	Env Max:	 4.0898e-2
+Std deviation:	 1.0719e-2
+Num valid crystals:	3496
+Ordering index:	 1.1401e+0	Env Min:	 9.9175e-1	Env Max:	 1.0232e+0
+Ordering index t-test:	 3.0785e+1
+Mean NN radius:	 1.8334e-2	Env Min:	 1.8911e-2	Env Max:	 1.9411e-2
+Esd NN radius:	 5.9686e-3
+Num valid pairs:	3496
+Isolation index:	 4.6403e+0	Env Min:	-9.0586e-1	Env Max:	 1.6427e+0
+Isolation index t-test:	-8.4170e+0
+Quadrat stat mean:	nc
+Quadrat stat esd:	nc
+Spherical quad stat mean:	 0.0000e+0	Env Min:	 0.0000e+0	Env Max:	 0.0000e+0
+Spherical quad stat esd:	 0.0000e+0
+Quadrat stat d.o.f:	0
+Random point stat mean:	 8.2223e-1	Env Min:	 8.7703e-1	Env Max:	 9.4636e-1
+Random point std dev:	 2.8837e-2
+Avrami act vol:	 1.0518e-1
+Avrami ext vol:	 1.0603e-1
+Avrami ext vol rand:	 1.1113e-1
+Avrami ratio:	 9.5410e-1	Env Min:	 9.7920e-1	Env Max:	 9.8735e-1
+CSD shape stat 1 (skew):	-8.7418e-2
+CSD shape stat 2 (flat):	 5.3105e-2
+Decile#	Decile value
+1	 1.1020e-2
+2	 1.3620e-2
+3	 1.5830e-2
+4	 1.7470e-2
+5	 1.9000e-2
+6	 2.0620e-2
+7	 2.2410e-2
+8	 2.4630e-2
+9	 2.7380e-2
+Mean CSD/Num Classes:	-1
+Mean CSD/Max Val:	-1
+Max CSD/Num Classes:	-1
+Log CSD/Num Classes:	-1
+Reg CSD/Delta L:	-1
+Impingement Correction/Mean Err:	0
+Impingement Correction/Max Err:	 2.0000e+1
+Number of runs to calculate boundary envelopes:	100
+Num points in Offset Interesction Volume Monte Carlo:	500
+C value for Epanecnikov kernel bandwidth calc:	 1.0000e-1
+NumXlsUsed in L/PCF/MCF:	4399
+Mean R of Xls used in L/PCF/MCF:	 1.9227e-2
+hDistance(cm)	L value	L Min	L Max	Lgd value	Lgd Min	Lgd Max	PCF	PCF Min	PCF Max	PCFgd	PCFgd Min	PCFgd Max	MCF	MCF Min	MCF Max	MCF3	MCF3 Min	MCF3 Max	MCFgd	MCFgd Min	MCFgd Max	MCF3gd	MCF3gd Min	MCF3gd Max
+ 7.1924e-3	-7.1924e-3	-7.1924e-3	 INF	-7.1924e-3	-7.1924e-3	-3.7204e-3	 INF	 INF	 INF	 3.0936e-2	 1.0023e-2	 2.5685e-1				 5.8903e-1	 5.8123e-1	 8.8073e-1	 2.7555e-1	 2.9598e-1	 7.5713e-1	 5.8903e-1	 5.8123e-1	 8.8073e-1
+ 1.4385e-2	 INF	 INF	 INF	-9.9576e-3	-9.6157e-3	-5.0083e-3	 INF	 INF	 INF	 6.2990e-2	 3.9584e-1	 6.3726e-1				 7.0637e-1	 8.6392e-1	 9.4833e-1	 4.2834e-1	 6.9811e-1	 8.9543e-1	 7.0637e-1	 8.6334e-1	 9.4980e-1
+ 2.1577e-2	 INF	 INF	 INF	-1.3108e-2	-5.3759e-3	-2.9987e-3	 INF	 INF	 INF	 1.6256e-1	 7.9878e-1	 1.0102e+0				 8.1711e-1	 9.3458e-1	 9.8588e-1	 6.4138e-1	 8.7757e-1	 9.8833e-1	 8.1670e-1	 9.3710e-1	 9.8776e-1
+ 2.8770e-2	 INF	 INF	 INF	-1.2875e-2	-3.3318e-3	-1.1541e-3	 INF	 INF	 INF	 4.4600e-1	 9.0594e-1	 1.1010e+0				 8.9452e-1	 9.7472e-1	 1.0125e+0	 7.8196e-1	 9.4419e-1	 1.0258e+0	 8.9307e-1	 9.7228e-1	 1.0125e+0
+ 3.5962e-2	 INF	 INF	 INF	-9.7026e-3	-2.3540e-3	-3.7661e-4	 INF	 INF	 INF	 7.2008e-1	 9.4329e-1	 1.0891e+0				 9.2868e-1	 9.8827e-1	 1.0187e+0	 8.4394e-1	 9.7373e-1	 1.0401e+0	 9.2258e-1	 9.8489e-1	 1.0141e+0
+ 4.3155e-2	 INF	 INF	 INF	-7.3035e-3	-1.5695e-3	 3.7226e-5	 INF	 INF	 INF	 9.2865e-1	 9.4051e-1	 1.0638e+0				 9.5313e-1	 9.8757e-1	 1.0110e+0	 8.7372e-1	 9.6566e-1	 1.0334e+0	 9.4350e-1	 9.8502e-1	 1.0143e+0
+ 5.0347e-2	 INF	 INF	 INF	-4.9289e-3	-1.4437e-3	 2.3428e-4	 INF	 INF	 INF	 1.0576e+0	 9.4980e-1	 1.0580e+0				 9.8055e-1	 9.8833e-1	 1.0079e+0	 9.4565e-1	 9.7234e-1	 1.0294e+0	 9.7126e-1	 9.8657e-1	 1.0136e+0
+ 5.7539e-2	 INF	 INF	 INF	-2.9489e-3	-1.3753e-3	 3.5662e-4	 INF	 INF	 INF	 1.0897e+0	 9.5121e-1	 1.0577e+0				 1.0000e+0	 9.9058e-1	 1.0091e+0	 9.8424e-1	 9.7157e-1	 1.0275e+0	 9.9109e-1	 9.8961e-1	 1.0134e+0
+ 6.4732e-2	 INF	 INF	 INF	-1.8185e-3	-1.2841e-3	 6.6922e-4	 INF	 INF	 INF	 1.0363e+0	 9.6300e-1	 1.0613e+0				 1.0071e+0	 9.9169e-1	 1.0112e+0	 1.0015e+0	 9.7705e-1	 1.0251e+0	 9.9661e-1	 9.8909e-1	 1.0129e+0
+ 7.1924e-2	 INF	 INF	 INF	-1.2007e-3	-1.1968e-3	 7.0437e-4	 INF	 INF	 INF	 1.0150e+0	 9.6365e-1	 1.0382e+0				 1.0008e+0	 9.9205e-1	 1.0068e+0	 9.7854e-1	 9.7735e-1	 1.0209e+0	 9.8671e-1	 9.8884e-1	 1.0101e+0
+ 7.9117e-2	 INF	 INF	 INF	-1.0648e-3	-1.3990e-3	 1.0757e-3	 INF	 INF	 INF	 9.9837e-1	 9.6575e-1	 1.0474e+0				 9.9143e-1	 9.9366e-1	 1.0061e+0	 9.6065e-1	 9.8315e-1	 1.0228e+0	 9.7732e-1	 9.8875e-1	 1.0093e+0
+ 8.6309e-2	 INF	 INF	 INF	-1.0681e-3	-1.4651e-3	 1.3591e-3	 INF	 INF	 INF	 9.9101e-1	 9.6546e-1	 1.0404e+0				 9.9190e-1	 9.9219e-1	 1.0052e+0	 9.6056e-1	 9.7444e-1	 1.0189e+0	 9.7894e-1	 9.8860e-1	 1.0069e+0
+ 9.3502e-2	 INF	 INF	 INF	-1.3734e-3	-1.7038e-3	 1.5497e-3	 INF	 INF	 INF	 9.7394e-1	 9.6827e-1	 1.0438e+0				 9.9521e-1	 9.9220e-1	 1.0051e+0	 9.6430e-1	 9.7715e-1	 1.0176e+0	 9.8220e-1	 9.8760e-1	 1.0080e+0
+ 1.0069e-1	 INF	 INF	 INF	-1.7852e-3	-1.9220e-3	 1.8808e-3	 INF	 INF	 INF	 9.7463e-1	 9.6664e-1	 1.0461e+0				 9.9411e-1	 9.9415e-1	 1.0053e+0	 9.7039e-1	 9.7901e-1	 1.0246e+0	 9.8353e-1	 9.8827e-1	 1.0112e+0
+ 1.0789e-1	 INF	 INF	 INF	-1.9384e-3	-1.8508e-3	 1.9208e-3	 INF	 INF	 INF	 9.8875e-1	 9.7307e-1	 1.0307e+0				 9.9308e-1	 9.9482e-1	 1.0041e+0	 9.6098e-1	 9.7826e-1	 1.0231e+0	 9.8003e-1	 9.8968e-1	 1.0096e+0
+ 1.1508e-1	 INF	 INF	 INF	-2.2923e-3	-2.1548e-3	 2.2296e-3	 INF	 INF	 INF	 9.9303e-1	 9.7554e-1	 1.0373e+0				 9.9679e-1	 9.9385e-1	 1.0038e+0	 9.6356e-1	 9.7803e-1	 1.0167e+0	 9.8126e-1	 9.8958e-1	 1.0089e+0
+ 1.2227e-1	 INF	 INF	 INF	-2.2060e-3	-2.0717e-3	 2.3329e-3	 INF	 INF	 INF	 1.0286e+0	 9.6568e-1	 1.0387e+0				 9.9663e-1	 9.9501e-1	 1.0059e+0	 9.7164e-1	 9.7720e-1	 1.0241e+0	 9.8314e-1	 9.8527e-1	 1.0090e+0
+ 1.2946e-1	 INF	 INF	 INF	-1.9093e-3	-2.6579e-3	 2.6321e-3	 INF	 INF	 INF	 9.9327e-1	 9.6827e-1	 1.0396e+0				 9.9252e-1	 9.9518e-1	 1.0043e+0	 9.5175e-1	 9.7694e-1	 1.0222e+0	 9.7767e-1	 9.8877e-1	 1.0103e+0
+ 1.3666e-1	 INF	 INF	 INF	-2.2857e-3	-2.7976e-3	 2.6378e-3	 INF	 INF	 INF	 9.9035e-1	 9.7366e-1	 1.0357e+0				 9.9185e-1	 9.9486e-1	 1.0044e+0	 9.5703e-1	 9.6977e-1	 1.0207e+0	 9.7730e-1	 9.8432e-1	 1.0096e+0
+ 1.4385e-1	 INF	 INF	 INF	-2.0991e-3	-2.8336e-3	 3.1357e-3	 INF	 INF	 INF	 9.8045e-1	 9.6936e-1	 1.0371e+0				 9.9410e-1	 9.9553e-1	 1.0056e+0	 9.6001e-1	 9.7384e-1	 1.0224e+0	 9.8002e-1	 9.8528e-1	 1.0116e+0
+ 1.5104e-1	 INF	 INF	 INF	-2.1860e-3	-3.2211e-3	 3.2960e-3	 INF	 INF	 INF	 9.9850e-1	 9.6616e-1	 1.0348e+0				 9.9219e-1	 9.9630e-1	 1.0049e+0	 9.5571e-1	 9.7472e-1	 1.0233e+0	 9.7687e-1	 9.8671e-1	 1.0126e+0
+ 1.5823e-1	 INF	 INF	 INF	-2.1815e-3	-3.4584e-3	 3.4411e-3	 INF	 INF	 INF	 9.9050e-1	 9.6053e-1	 1.0296e+0				 9.9158e-1	 9.9601e-1	 1.0049e+0	 9.5249e-1	 9.7650e-1	 1.0259e+0	 9.7758e-1	 9.8731e-1	 1.0128e+0
+ 1.6543e-1	 INF	 INF	 INF	-1.9686e-3	-3.5069e-3	 3.5859e-3	 INF	 INF	 INF	 9.9996e-1	 9.7206e-1	 1.0293e+0				 9.9289e-1	 9.9585e-1	 1.0041e+0	 9.6241e-1	 9.7487e-1	 1.0220e+0	 9.8066e-1	 9.8715e-1	 1.0105e+0
+ 1.7262e-1	 INF	 INF	 INF	-1.4432e-3	-3.6539e-3	 4.3672e-3	 INF	 INF	 INF	 1.0040e+0	 9.7217e-1	 1.0320e+0				 9.9362e-1	 9.9641e-1	 1.0040e+0	 9.6291e-1	 9.7530e-1	 1.0222e+0	 9.8137e-1	 9.8808e-1	 1.0112e+0
+ 1.7981e-1	 INF	 INF	 INF	-1.7431e-3	-4.0028e-3	 4.9937e-3	 INF	 INF	 INF	 9.8771e-1	 9.7476e-1	 1.0393e+0				 9.9400e-1	 9.9577e-1	 1.0037e+0	 9.6453e-1	 9.7844e-1	 1.0222e+0	 9.8088e-1	 9.8895e-1	 1.0115e+0
+ 1.8700e-1	 INF	 INF	 INF	-1.8283e-3	-3.7740e-3	 5.2777e-3	 INF	 INF	 INF	 1.0013e+0	 9.6869e-1	 1.0442e+0				 9.9196e-1	 9.9622e-1	 1.0039e+0	 9.5988e-1	 9.7797e-1	 1.0199e+0	 9.8075e-1	 9.8713e-1	 1.0095e+0
+ 1.9420e-1	 INF	 INF	 INF	-2.2081e-3	-4.0502e-3	 6.0842e-3	 INF	 INF	 INF	 9.9007e-1	 9.6745e-1	 1.0381e+0				 9.9135e-1	 9.9637e-1	 1.0041e+0	 9.6572e-1	 9.7688e-1	 1.0215e+0	 9.8370e-1	 9.8562e-1	 1.0127e+0
+ 2.0139e-1	 INF	 INF	 INF	-2.1471e-3	-4.0545e-3	 6.3429e-3	 INF	 INF	 INF	 9.9434e-1	 9.6722e-1	 1.0360e+0				 9.9145e-1	 9.9552e-1	 1.0039e+0	 9.6771e-1	 9.6975e-1	 1.0254e+0	 9.8188e-1	 9.8254e-1	 1.0127e+0
+ 2.0858e-1	 INF	 INF	 INF	-2.0102e-3	-4.3300e-3	 6.0787e-3	 INF	 INF	 INF	 1.0059e+0	 9.6654e-1	 1.0451e+0				 9.9166e-1	 9.9448e-1	 1.0040e+0	 9.6033e-1	 9.6617e-1	 1.0223e+0	 9.7970e-1	 9.8241e-1	 1.0126e+0
+ 2.1577e-1	 INF	 INF	 INF	-1.4220e-3	-4.6853e-3	 6.8437e-3	 INF	 INF	 INF	 9.9064e-1	 9.6923e-1	 1.0389e+0				 9.9203e-1	 9.9635e-1	 1.0037e+0	 9.6276e-1	 9.6501e-1	 1.0230e+0	 9.8062e-1	 9.8226e-1	 1.0111e+0
+ 2.2297e-1	 INF	 INF	 INF	-2.3604e-3	-5.2951e-3	 6.1917e-3	 INF	 INF	 INF	 9.8126e-1	 9.6023e-1	 1.0336e+0				 9.9202e-1	 9.9587e-1	 1.0030e+0	 9.6086e-1	 9.7046e-1	 1.0254e+0	 9.8132e-1	 9.8440e-1	 1.0117e+0
+ 2.3016e-1	 INF	 INF	 INF	-1.9392e-3	-6.1596e-3	 6.6264e-3	 INF	 INF	 INF	 9.8274e-1	 9.6579e-1	 1.0343e+0				 9.9214e-1	 9.9545e-1	 1.0042e+0	 9.6377e-1	 9.6493e-1	 1.0219e+0	 9.8016e-1	 9.8146e-1	 1.0125e+0
+ 2.3735e-1	 INF	 INF	 INF	-8.0441e-4	-6.5731e-3	 7.3507e-3	 INF	 INF	 INF	 9.8402e-1	 9.6921e-1	 1.0313e+0				 9.9145e-1	 9.9493e-1	 1.0036e+0	 9.6263e-1	 9.6407e-1	 1.0254e+0	 9.8048e-1	 9.8234e-1	 1.0127e+0
+ 2.4454e-1	 INF	 INF	 INF	-8.5773e-4	-7.0868e-3	 8.0187e-3	 INF	 INF	 INF	 1.0041e+0	 9.6625e-1	 1.0345e+0				 9.9235e-1	 9.9591e-1	 1.0029e+0	 9.6059e-1	 9.7007e-1	 1.0288e+0	 9.8012e-1	 9.8580e-1	 1.0146e+0
+ 2.5174e-1	 INF	 INF	 INF	 1.8258e-4	-7.2040e-3	 8.0268e-3	 INF	 INF	 INF	 1.0057e+0	 9.6712e-1	 1.0335e+0				 9.9345e-1	 9.9671e-1	 1.0039e+0	 9.6575e-1	 9.6415e-1	 1.0319e+0	 9.8230e-1	 9.8236e-1	 1.0155e+0
+ 2.5893e-1	 INF	 INF	 INF	 1.3687e-3	-7.6320e-3	 8.6573e-3	 INF	 INF	 INF	 9.9281e-1	 9.6847e-1	 1.0325e+0				 9.9168e-1	 9.9655e-1	 1.0035e+0	 9.6398e-1	 9.6772e-1	 1.0218e+0	 9.8160e-1	 9.8384e-1	 1.0164e+0
+ 2.6612e-1	 INF	 INF	 INF	 8.9634e-4	-7.8374e-3	 8.9627e-3	 INF	 INF	 INF	 9.9670e-1	 9.6884e-1	 1.0377e+0				 9.8979e-1	 9.9667e-1	 1.0034e+0	 9.5540e-1	 9.6791e-1	 1.0291e+0	 9.7823e-1	 9.8454e-1	 1.0161e+0
+ 2.7331e-1	 INF	 INF	 INF	 1.1067e-3	-7.5659e-3	 9.6001e-3	 INF	 INF	 INF	 9.8428e-1	 9.7073e-1	 1.0393e+0				 9.9064e-1	 9.9565e-1	 1.0037e+0	 9.5495e-1	 9.6162e-1	 1.0273e+0	 9.7868e-1	 9.8172e-1	 1.0168e+0

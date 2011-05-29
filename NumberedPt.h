@@ -8,10 +8,10 @@
 class NumberedPt : public Point3DFloat {
 	public:
 						NumberedPt();
-						NumberedPt(short inSeq, float inX, float inY, float inZ);
+						NumberedPt(short inSeq, float inX, float inY, float inZ, bool inFlag);
 						NumberedPt(const NumberedPt &inPt);
 						NumberedPt(const Point3DFloat &inPt);
-		NumberedPt	&operator= (NumberedPt &inPt);
+	NumberedPt	&operator= (NumberedPt &inPt);
 		NumberedPt	&operator= (Point3DFloat &inPt);
 		void		Copy (NumberedPt &inPt);
 		bool		operator== (const NumberedPt &inPt);
@@ -20,4 +20,5 @@ class NumberedPt : public Point3DFloat {
 	public:		// I'm making these public, in violation of good style,
 					// in order to keep function calls to a minimum
 		short seq;
+	bool flag;		// a flag to indicate whether it's been allocated to a hull facet
 };

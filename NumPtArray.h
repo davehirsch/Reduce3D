@@ -29,6 +29,8 @@ class NumPtArray {
 		void			PushPt(NumberedPt &inXl);
 		void			Clear();
 		inline int		GetCount() {return array.size();};
+	void			Randomize();
+	
 	
 	public:
 		bool	NumPtArray::Compare(const NumberedPt &inItem1, const NumberedPt &inItem2);

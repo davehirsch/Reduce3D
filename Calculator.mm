@@ -85,7 +85,7 @@ Calculator::reduceDataInFile(std::string inputFilePath, std::string holesFilePat
 			NSString *curDesktop = [NSString stringWithString:@"~/Desktop"];
 			curDesktop = [curDesktop stringByExpandingTildeInPath];
 			NSString *logPath = [curDesktop stringByAppendingPathComponent:filename];
-			mLogFile = new stringFile(true, (CFStringRef) logPath);
+			mLogFile = new stringFile(true, (CFStringRef) logPath, true);
 		}
 		
 		std::string message = "Reading data file: ";
@@ -105,7 +105,7 @@ Calculator::reduceDataInFile(std::string inputFilePath, std::string holesFilePat
 		// If a holes file was selected, then load that data in now	
 		if (holesFilePath != "") {
 			holesFile = new stringFile(false, holesFilePath.c_str());
-		if (holes != nil)
+			if (holes != nil)
 				delete holes;
 			holes = new HoleSet(this, 100, holesFile);
 		} else {
@@ -178,7 +178,7 @@ Calculator::shaveAndReduceData(std::string inputFilePath)
 			NSString *curDesktop = [NSString stringWithString:@"~/Desktop"];
 			curDesktop = [curDesktop stringByExpandingTildeInPath];
 			NSString *logPath = [curDesktop stringByAppendingPathComponent:filename];
-			mLogFile = new stringFile(true, (CFStringRef) logPath);
+			mLogFile = new stringFile(true, (CFStringRef) logPath, true);
 		}
 		curInputFile = new stringFile(false, inputFilePath.c_str());
 		startBBox = new BoundingBox(this, curInputFile);
@@ -252,6 +252,7 @@ Calculator::reduceOneDataset(BoundingBox *ioBBox, HoleSet *inHoles)
 	AppController *cont = (AppController *)controller;
 	
 	try {
+		(ioBBox->GetXls())->FilterForObservability(&(stats->observabilityCrit1), &(stats->observabilityCrit2)); 
 		/* Have the bounding box find the convex hull; it will also find 
 		the appropriate primitive as part of this process (if Sides wasn't 
 		selected by the user), and adapt the crystal data set to that primitive */
@@ -539,14 +540,21 @@ Calculator::setupProgress(const char *inMainMessage,
 					max:inMax
 					cur:inCur
 		  indeterminate:inInd]; 
+	progMin = inMin;
+	progMax = inMax;
+	lastProgCall = inMin;
+	progInc = (inMax - inMin) / kNumberOfProgressCalls;
 }
 
 void
 Calculator::progress(double inCur)
 {
-	// cast the stored AppController pointer into an Obj-C object for making Obj-C calls
-	AppController *cont = (AppController *)controller;
-	[cont progress: inCur];
+	if (inCur > lastProgCall + progInc) {
+		// cast the stored AppController pointer into an Obj-C object for making Obj-C calls
+		AppController *cont = (AppController *)controller;
+		[cont progress: inCur];
+		lastProgCall = inCur;
+	}
 }
 
 void
@@ -670,12 +678,18 @@ Calculator::calcStats(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles)
 
 
 	if (prefs->doLMcfPcf) {
-		if (stats->forRealDataset) {	// for the simulations, this is set in DoEnvelopeSimulations based
+		if (stats->forRealDataset) {	// for the envelope simulations, this is set in DoEnvelopeSimulations based
 							// on the real data params (intensity, mean NN dist, etc.)
-
+			float scaleIncrement, bandwidth;
+			if (prefs->specifyTestDistance) {
+				scaleIncrement = prefs->testDistanceInterval;
+				bandwidth = scaleIncrement / (1.0 - prefs->overlap * 0.01);
+			} else {
 				// figure out the bandwidth - twice the calculated value is the whole width
-			float bandwidth = 2.0 * prefs->EpanecnikovCVal / CubeRoot(stats->intensity);
-			float scaleIncrement = bandwidth * (1.0 - prefs->overlap * 0.01);
+				bandwidth = 2.0 * prefs->EpanecnikovCVal / CubeRoot(stats->intensity);
+				scaleIncrement = bandwidth * (1.0 - prefs->overlap * 0.01);
+			}
+
 			float totScale = prefs->numNNDist * stats->meanSep;
 			short numScales = trunc(totScale / scaleIncrement) + 1;
 
@@ -969,6 +983,11 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 					curPrim.SetDimensions(curLengths);
 				}
 
+				log("\tFound RP primitive:");
+				char logMsg[kStdStringSize];
+				sprintf (logMsg, "\t\t center = (%f, %f, %f); x = %f; y = %f; z = %f\n", ctr.x, ctr.y, ctr.z, curLengths.x, curLengths.y, curLengths.z);
+				log(logMsg);
+
 				// take this primitive we've made, and make the BBox that primitive
 				ioBBox->SetType(kRPBox);
 				ioBBox->SetCtr(curPrim.GetCtr());
@@ -1094,6 +1113,12 @@ Calculator::FindBestPrimitive(BoundingBox *ioBBox, HoleSet *inHoles)
 						rad *= 0.999;
 					curPrim.SetDimensions(rad, ht);
 				}
+
+				log("\tFound Cyl primitive:");
+				char logMsg[kStdStringSize];
+				sprintf (logMsg, "\t\t center = (%f, %f, %f); ht = %f; rad = %f\n", ctr.x, ctr.y, ctr.z, rad, ht);
+				log(logMsg);
+
 				// take this primitive we've made, and make the BBox that primitive
 				ioBBox->SetType(kCylBox);
 				ioBBox->SetCtr(ctr);
@@ -2742,6 +2767,7 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 	int numXls = theXls->GetNumXls();
 
 	setupProgress("Making and reducing IC simulations...", nil, "Preparing for Envelopes", "Calculating Envelope Simulations", -1, 1, prefs->numEnvelopeRuns, 0, false);
+	log("Starting DoEnvelopeSimulations");
 
 	// This line uses the comment string to look for Crystallize stuff.  That ought to be refined
 	//	somehow, but for now, it will have to do.
@@ -2796,7 +2822,7 @@ Calculator::DoEnvelopeSimulations(BoundingBox *inBBox, Stats *stats, HoleSet *in
 				thisSistats->hDistances[i] = stats->hDistances[i];
 			}
 			
-// I wrote this, and I'm no longer sure why (it was late at night): "need to be sure that the env xls doesn't think it;s a diffsimulation (for example)"
+// I wrote this, and I'm no longer sure why (it was late at night): "need to be sure that the env xls doesn't think it's a diffsimulation (for example)"
 // It seems wrong, because the CrystalArray::CrystalIntersects method knows when to use the DC criterion based on the
 // prefs settings, and I can't find anyplace else that cares whether the CrystalArray is a DCSimulation or not.
 // Also, it's important to distinguish between a DC simulation input file that was created by Crystallize (common), 
@@ -3189,6 +3215,7 @@ void
 Calculator::saveResults(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, short shaveIteration)
 {
 	setupProgress("Writing Output Files...", nil, nil, nil, 6, 0, 6, 0, false);
+	log("Starting saveResults");
 
 	if (prefs->includeMeanCSD)
 		DoMeanCumCSD(stats, inBBox, shaveIteration);
@@ -3679,6 +3706,9 @@ Calculator::DoReduce3DFile(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, 
 	sprintf(tempStr, "Crystal Intensity Sqd:\t%.7E", stats->intensitySqd); saveFile.putOneLine(tempStr);
 	sprintf(tempStr, "Crystal Volume Fraction (MC Method):\t%.7E", stats->volFrxn); saveFile.putOneLine(tempStr);
 
+	sprintf(tempStr, "Observability criterion 1 rejects:\t%d", stats->observabilityCrit1);
+	sprintf(tempStr, "Observability criterion 2 rejects:\t%d", stats->observabilityCrit2);
+	
 // write min, max, mean and esd for radius
 	sprintf(tempStr, "Minimum radius:\t%.7E", stats->minR); saveFile.putOneLine(tempStr);
 	sprintf(tempStr, "Maximum radius:\t%.7E", stats->maxR); saveFile.putOneLine(tempStr);

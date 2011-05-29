@@ -140,6 +140,21 @@ Side::MakeInVect(Point3DFloat &inCtr)
 }
 
 // ---------------------------------------------------------------------------
+//		¥ IsWithout
+// ---------------------------------------------------------------------------
+/* Determines whether a point is outside the side (with "in" defined by the inVect) */
+bool
+Side::IsWithout(Point3DFloat &inPt)
+{
+	Point3DFloat ptVector = inPt - pt1; // a vector from Pt1 to the inPt
+	float angle = inVect.Angle(ptVector);
+	if (angle > M_PI/2.0)
+		return true;
+	return false;
+}
+
+
+// ---------------------------------------------------------------------------
 //		¥ AwayVect
 // ---------------------------------------------------------------------------
 /* Returns a unit vector orthogonal to the side, pointing in the direction away
@@ -183,4 +198,17 @@ Side::Vect12to3()
 	return outPt.Unit();
 }
 
+// ---------------------------------------------------------------------------
+//		¥ CenterofMass
+// ---------------------------------------------------------------------------
+Point3DFloat &
+Side::CenterOfMass()
+{
+	static Point3DFloat outPt;
+
+	outPt = pt1 + pt2 + pt3;
+	outPt /= 3.0;
+	
+	return outPt;
+}
 

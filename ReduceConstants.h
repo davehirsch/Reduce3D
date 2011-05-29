@@ -27,7 +27,9 @@ enum Models {kNone, kBBox, kXls, kHoles};
 
 // Misc constants
 const short		kStdStringSize			= 500;
-const short		kDefaultNumThermoIncrements = 50;
+const short		kNumberOfProgressCalls = 10;	// how many times in a loop the progress call should be made.  Can't 
+												// offload this to the progressController itself, because calls to it must 
+												// cross thread boundaries and thus are themselves slow
 const long		kNumTriesToPlaceXl = 10000;
 const short		kNumSimMakerRestarts = 6;
 const short		kNumOctantPoints = 25;	// number of points to use (*16) for BoundingBox::PrimitiveInBox

@@ -409,7 +409,9 @@
 	thePrefs.numNNDist = [defaults integerForKey:@"numNNDist"];
 	thePrefs.overlap = [defaults integerForKey:@"overlap"];
 	thePrefs.numCFOffsetVolPts = [defaults integerForKey:@"numCFOffsetVolPts"];
+	thePrefs.specifyTestDistance = [defaults boolForKey:@"specifyTestDistance"];
 	thePrefs.EpanecnikovCVal = [defaults floatForKey:@"EpanecnikovCVal"];
+	thePrefs.testDistanceInterval = [defaults floatForKey:@"testDistanceInterval"];
 	thePrefs.sampleShape = [defaults integerForKey:@"sampleShape"];
 	thePrefs.exscribedPrimitive = [defaults boolForKey:@"exscribedPrimitive"];
 	thePrefs.shrinkExscribedPrimitive = [defaults floatForKey:@"shrinkExscribedPrimitive"];
@@ -422,6 +424,7 @@
 	thePrefs.observabilityFilter = [defaults boolForKey:@"observabilityFilter"];
 	thePrefs.crit1Factor = [defaults floatForKey:@"crit1Factor"];
 	thePrefs.crit2Factor = [defaults floatForKey:@"crit2Factor"];
+	thePrefs.applyObservabilityFilter = [defaults boolForKey:@"applyObservabilityFilter"];
 
 	thePrefs.outputReduce = [defaults boolForKey:@"outputReduce"];
 	thePrefs.outputCrystals = [defaults boolForKey:@"outputCrystals"];
@@ -718,6 +721,8 @@
 		[NSNumber numberWithInt:6],	@"numNNDist",
 		[NSNumber numberWithInt:50],	@"overlap",
 		[NSNumber numberWithInt:500],	@"numCFOffsetVolPts",
+		@"NO",	@"specifyTestDistance",
+		[NSNumber numberWithFloat:0.05],	@"testDistanceInterval",
 		[NSNumber numberWithFloat:0.1],	@"EpanecnikovCVal",
 		[NSNumber numberWithInt:kRectPrism],	@"sampleShape",
 		@"YES",	@"exscribedPrimitive",
@@ -731,6 +736,7 @@
 		@"YES",	@"observabilityFilter",
 		[NSNumber numberWithFloat:0.85],	@"crit1Factor",
 		[NSNumber numberWithFloat:3.0],	@"crit2Factor",
+		@"NO",	@"applyObservabilityFilter",
 		
 		@"YES",	@"outputReduce",
 		@"NO",	@"outputCrystals",

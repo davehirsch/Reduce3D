@@ -123,4 +123,5 @@ protected:
 	void *					controller; // Just as above, this is the AppController, given as a void *
 	PrefStruct *			prefs;
 	stringFile *			mLogFile;
+	double					progMin, progMax, lastProgCall, progInc;
 };

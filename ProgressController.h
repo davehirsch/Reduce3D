@@ -9,6 +9,7 @@
 #import <Cocoa/Cocoa.h>
 
 enum PauseButtonStates {kResume, kPause};
+const short		kDefaultNumThermoIncrements = 50;	// number of increments in progress bar
 
 @interface ProgressController : NSWindowController {
 	IBOutlet NSButton		*pauseButton;

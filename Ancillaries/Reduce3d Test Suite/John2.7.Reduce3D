@@ -1,0 +1,170 @@
+John.Int
+Reduce3D 
+John redo
+Processing Parameters:
+includeMeanCSD: 0
+includeMaxCSD: 0
+includeLogCSD: 0
+includeRegCSD: 0
+doQuadrat: 0
+doOthers: 1
+doRandomPt: 0
+make3DModel: 0
+outputSigmas: 0
+outputCrystals: 0
+outputR3STT: 0
+outputReduce: 1
+doImpingement: 1
+numClassesMeanCSD: 63
+numClassesMaxCSD: 63
+numClassesLogCSD: 63
+quadratNumPlacings: 1000
+quadratNumReps: 10
+RPNumPlacings: 1000
+RPNumReps: 10
+maxValueMeanCSD: 3.000
+deltaLRegCSD: 0.100
+impingementMeanErr: 0.100
+impingementMaxErr: 20.000
+doLMcfPcf: 1
+numNNDist: 6
+numCFOffsetVolPts: 500
+EpanecnikovCVal: 0.100
+numQD3DEqPts: 5
+numQD3DLngPts: 5
+sampleShape: 1
+numEnvelopeRuns: 0
+inflateBBox: 0
+observabilityFilter: 1
+crit1Factor: 0.850
+crit2Factor: 3.000
+Not shaved
+minPercent: 10.000
+minPopulation: 200
+maxAspectRatio: 1000.000
+smaller: 0
+ShaveSave: 0
+discardNegs: 1
+useRaeburn: 0
+confidence: 96
+seed: 1234567
+MCReps: 5000
+tidyUp: 1
+useVolume: 0
+overlap: 50
+matchVF: 1
+makeDCEnv: 0
+verbose: 0
+VFPercent: 10.000
+matchPDF: 0
+Holes File: none
+Number of crystals:	4986
+Total Volume (cubic cm):	 1.8392e+0
+Surface Area (sq cm):	 8.3660e+0
+Surface to Volume Ratio:	 4.5488e+0
+Crystal Volume Fraction:	 1.0509e-1
+Crystal density:	 2.7110e+3
+Crystal intensity:	 2.6871e+3
+Crystal Intensity Sqd:	 7.2158e+6
+Crystal Volume Fraction (MC Method):	 1.0540e-1
+Minimum radius:	 6.1000e-3
+Maximum radius:	 4.1590e-2
+Mean radius:	 1.9152e-2
+Std deviation:	 6.2415e-3
+Skewness:	 2.6846e-1
+Excess Kurtosis:	-1.9824e-1
+Minimum ext volume:	 9.5078e-7
+Maximum ext volume:	 3.0134e-4
+Mean ext volume:	 3.9073e-5	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Std deviation:	 3.6786e-5
+Minimum act volume:	 1.4090e-7
+Maximum act volume:	 2.9660e-4
+Mean act volume:	 3.8763e-5
+Std deviation:	 3.6505e-5
+Num engulfed crystals:	0
+Minimum separation:	 1.0264e-2	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Maximum separation:	 8.7093e-2
+Mean separation:	 4.5552e-2	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Std deviation:	 1.0742e-2
+Num valid crystals:	3976
+Ordering index:	 1.1431e+0	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Ordering index t-test:	 3.3481e+1
+Mean NN radius:	 1.8386e-2	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Esd NN radius:	 5.9834e-3
+Num valid pairs:	3976
+Isolation index:	 4.0002e+0	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Isolation index t-test:	 0.0000e+0
+Quadrat stat mean:	nc
+Quadrat stat esd:	nc
+Spherical quad stat mean:	 0.0000e+0	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Spherical quad stat esd:	 0.0000e+0
+Quadrat stat d.o.f:	0
+Random point stat mean:	 0.0000e+0	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+Random point std dev:	 0.0000e+0
+Avrami act vol:	 1.0509e-1
+Avrami ext vol:	 1.0593e-1
+Avrami ext vol rand:	 1.1103e-1
+Avrami ratio:	 9.5406e-1	Env Min:	 3.4028e+38	Env Max:	 1.1755e-38
+CSD shape stat 1 (skew):	-9.8901e-2
+CSD shape stat 2 (flat):	 4.6805e-2
+Decile#	Decile value
+1	 1.0950e-2
+2	 1.3580e-2
+3	 1.5770e-2
+4	 1.7390e-2
+5	 1.8900e-2
+6	 2.0540e-2
+7	 2.2270e-2
+8	 2.4450e-2
+9	 2.7220e-2
+Mean CSD/Num Classes:	-1
+Mean CSD/Max Val:	-1
+Max CSD/Num Classes:	-1
+Log CSD/Num Classes:	-1
+Reg CSD/Delta L:	-1
+Impingement Correction/Mean Err:	0
+Impingement Correction/Max Err:	 2.0000e+1
+Number of runs to calculate boundary envelopes:	0
+Num points in Offset Interesction Volume Monte Carlo:	500
+C value for Epanecnikov kernel bandwidth calc:	 1.0000e-1
+NumXlsUsed in L/PCF/MCF:	4986
+Mean R of Xls used in L/PCF/MCF:	 1.9152e-2
+hDistance(cm)	L value	L Mean	L SD	Lgd value	Lgd Mean	Lgd SD	PCF	PCF Mean	PCF SD	PCFgd	PCFgd Mean	PCFgd SD	MCF	MCF Mean	MCF SD	MCF3	MCF3 Mean	MCF3 SD	MCFgd	MCFgd Mean	MCFgd SD	MCF3gd	MCF3gd Mean	MCF3gd SD
+ 7.1929e-3	-7.1929e-3		-7.1929e-3		 2.8008e-2		 2.8003e-2		 2.8251e-1		 2.7771e-1		 5.9132e-1		 5.9132e-1		
+ 1.4386e-2	-1.0103e-2		-1.0130e-2		 6.0805e-2		 5.6422e-2		 4.3402e-1		 4.3171e-1		 7.0884e-1		 7.0912e-1		
+ 2.1579e-2	-1.3320e-2		-1.3342e-2		 1.6558e-1		 1.6198e-1		 6.1774e-1		 6.3246e-1		 8.0549e-1		 8.1271e-1		
+ 2.8772e-2	-1.2905e-2		-1.2961e-2		 4.5633e-1		 4.5134e-1		 7.8683e-1		 7.8657e-1		 8.9176e-1		 8.9517e-1		
+ 3.5965e-2	-9.8395e-3		-9.8071e-3		 7.0545e-1		 7.0586e-1		 8.5751e-1		 8.5690e-1		 9.3122e-1		 9.2981e-1		
+ 4.3158e-2	-7.5866e-3		-7.2658e-3		 9.3459e-1		 9.2220e-1		 9.0372e-1		 8.9419e-1		 9.5632e-1		 9.5254e-1		
+ 5.0351e-2	-5.2454e-3		-4.9301e-3		 1.0570e+0		 1.0491e+0		 9.6987e-1		 9.5808e-1		 9.8350e-1		 9.7821e-1		
+ 5.7544e-2	-3.0925e-3		-2.9763e-3		 1.0968e+0		 1.0844e+0		 1.0065e+0		 9.9405e-1		 1.0025e+0		 9.9631e-1		
+ 6.4736e-2	-1.9169e-3		-1.7164e-3		 1.0474e+0		 1.0450e+0		 1.0309e+0		 1.0128e+0		 1.0097e+0		 1.0028e+0		
+ 7.1929e-2	-1.3248e-3		-1.2215e-3		 1.0304e+0		 1.0236e+0		 1.0103e+0		 9.9559e-1		 1.0032e+0		 9.9548e-1		
+ 7.9122e-2	-9.6571e-4		-1.0010e-3		 1.0152e+0		 1.0038e+0		 9.9608e-1		 9.7890e-1		 9.9367e-1		 9.8589e-1		
+ 8.6315e-2	-7.2585e-4		-7.5673e-4		 9.9873e-1		 9.9145e-1		 9.8942e-1		 9.7311e-1		 9.9307e-1		 9.8499e-1		
+ 9.3508e-2	-7.0932e-4		-7.2610e-4		 1.0051e+0		 9.8444e-1		 9.9485e-1		 9.7575e-1		 9.9538e-1		 9.8750e-1		
+ 1.0070e-1	-4.8515e-4		-1.5599e-3		 1.0039e+0		 9.8340e-1		 9.9377e-1		 9.7746e-1		 9.9556e-1		 9.8747e-1		
+ 1.0789e-1	-4.0401e-4		-6.2376e-4		 1.0153e+0		 9.9837e-1		 9.9346e-1		 9.7122e-1		 9.9533e-1		 9.8491e-1		
+ 1.1509e-1	-2.7499e-4		-1.2651e-3		 1.0146e+0		 9.9850e-1		 9.9624e-1		 9.7852e-1		 9.9802e-1		 9.8891e-1		
+ 1.2228e-1	-1.1368e-4		 1.2017e-4		 1.0290e+0		 1.0234e+0		 1.0005e+0		 9.8137e-1		 9.9816e-1		 9.8800e-1		
+ 1.2947e-1	 1.3928e-4		-1.5591e-3		 1.0124e+0		 9.9446e-1		 9.8694e-1		 9.6322e-1		 9.9496e-1		 9.8331e-1		
+ 1.3667e-1	 1.2423e-4		-6.2150e-4		 1.0155e+0		 9.8969e-1		 9.9165e-1		 9.6666e-1		 9.9444e-1		 9.8236e-1		
+ 1.4386e-1	 2.4152e-4		-9.0350e-4		 1.0043e+0		 9.8099e-1		 9.9268e-1		 9.7029e-1		 9.9566e-1		 9.8466e-1		
+ 1.5105e-1	 1.5774e-4		-3.9908e-4		 1.0094e+0		 9.9675e-1		 9.8950e-1		 9.6686e-1		 9.9381e-1		 9.8273e-1		
+ 1.5824e-1	 3.1091e-4		-3.2932e-3		 1.0072e+0		 9.8923e-1		 9.8704e-1		 9.5858e-1		 9.9348e-1		 9.8011e-1		
+ 1.6544e-1	 2.7729e-4		-4.3558e-3		 1.0101e+0		 9.9772e-1		 9.8866e-1		 9.6323e-1		 9.9432e-1		 9.8147e-1		
+ 1.7263e-1	 3.6267e-4		-1.7788e-3		 1.0141e+0		 1.0033e+0		 9.9111e-1		 9.6410e-1		 9.9535e-1		 9.8188e-1		
+ 1.7982e-1	 4.0790e-4		-3.3679e-3		 1.0111e+0		 9.9581e-1		 9.9315e-1		 9.6611e-1		 9.9537e-1		 9.8253e-1		
+ 1.8702e-1	 5.1474e-4		 7.1837e-4		 1.0146e+0		 1.0013e+0		 9.8741e-1		 9.6370e-1		 9.9345e-1		 9.8249e-1		
+ 1.9421e-1	 5.1834e-4		 2.0059e-3		 1.0072e+0		 9.9572e-1		 9.8565e-1		 9.6761e-1		 9.9295e-1		 9.8433e-1		
+ 2.0140e-1	 5.3574e-4		-2.8096e-3		 1.0069e+0		 9.9669e-1		 9.8655e-1		 9.7711e-1		 9.9320e-1		 9.8723e-1		
+ 2.0860e-1	 5.9158e-4		 4.1083e-4		 1.0121e+0		 1.0063e+0		 9.8993e-1		 9.7061e-1		 9.9399e-1		 9.8474e-1		
+ 2.1579e-1	 5.9709e-4		 2.6506e-3		 1.0060e+0		 9.9112e-1		 9.8804e-1		 9.7299e-1		 9.9395e-1		 9.8610e-1		
+ 2.2298e-1	 5.9276e-4		 1.5504e-3		 9.9997e-1		 9.8114e-1		 9.8886e-1		 9.6828e-1		 9.9372e-1		 9.8446e-1		
+ 2.3017e-1	 5.0593e-4		-4.9971e-3		 9.9654e-1		 9.8069e-1		 9.8924e-1		 9.7398e-1		 9.9392e-1		 9.8540e-1		
+ 2.3737e-1	 4.4690e-4		-4.1191e-3		 9.9595e-1		 9.7906e-1		 9.8851e-1		 9.7106e-1		 9.9312e-1		 9.8472e-1		
+ 2.4456e-1	 4.1368e-4		 1.9714e-3		 1.0122e+0		 1.0043e+0		 9.8812e-1		 9.6991e-1		 9.9413e-1		 9.8494e-1		
+ 2.5175e-1	 5.3704e-4		-1.6385e-3		 1.0117e+0		 1.0027e+0		 9.9161e-1		 9.7638e-1		 9.9515e-1		 9.8746e-1		
+ 2.5895e-1	 5.5929e-4		 4.6546e-3		 1.0017e+0		 9.9118e-1		 9.8855e-1		 9.7231e-1		 9.9344e-1		 9.8552e-1		
+ 2.6614e-1	 4.9458e-4		 1.4920e-4		 1.0024e+0		 9.9241e-1		 9.8269e-1		 9.6532e-1		 9.9172e-1		 9.8319e-1		
+ 2.7333e-1	 5.2790e-4		-8.6395e-4		 9.9995e-1		 9.8317e-1		 9.8539e-1		 9.6421e-1		 9.9245e-1		 9.8310e-1		

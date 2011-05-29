@@ -1,4 +1,12 @@
 To Do:
+	
+Need to fix MCF problem; compare to old version
+
+Fix random crashing problem
+
+Add to help:  can hold down shift-option during envelope creation and envelope data will be saved to desktop.
+
+Display estimate of total time to envelope completion in progress
 
 Error Handling - need to add auto-removing window after set time
 
@@ -7,6 +15,10 @@ Add better logging to log file
 Need more checks for cancel button
 
 Be sure that we aren't doing any primitive fitting or hull stuff if bounds are present in the file.
+
+explicitly record format of versioned integrate files in docs.  Then use the version to do a better job of 
+parsing the input files.
+
 
 for writing envelope int files:
 /*	} else {
@@ -20,10 +32,6 @@ for writing envelope int files:
 		firstLine += FltStr(inNewMeanR, 5);
 	}
 */
-
-
-explicitly record format of versioned integrate files in docs.  Then use the version to do a better job of 
-parsing the input files.
 
 sloccount output:
 (note that it can't handle .mm files, and some must be .m some must be .cpp.  Also it needs C++ to be .cpp not .cp)

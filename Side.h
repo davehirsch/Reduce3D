@@ -24,6 +24,8 @@ class	Side {
 		bool			PointOnSide(Point3DFloat &inPt);
 		Side&			operator= (const Side &inSide);
 		bool			operator== (const Side &inSide);
+		bool			IsWithout(Point3DFloat &inPt);
+		Point3DFloat &	CenterOfMass();
 
 		
 

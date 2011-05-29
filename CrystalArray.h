@@ -82,7 +82,7 @@ class CrystalArray {
 		Point3DFloat &		Average();
 		double				GetMeanRadius();
 		inline short		GetNegRadii() {return mNegRadii;};
-		void				FilterForObservability();
+		void				FilterForObservability(short *crit1rejecs, short *crit2rejects);
 		nuclProbType*		GetNuclProb();
 		void				ChangeRadii(double *outRadiiList, float inDelta);
 		bool				AdjustLocations();

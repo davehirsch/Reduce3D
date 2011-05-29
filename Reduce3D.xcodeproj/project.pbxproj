@@ -14,6 +14,7 @@
 		5504A7DA0D03785E00CE281B /* Mediator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5504A7D90D03785E00CE281B /* Mediator.mm */; };
 		5504AB4C0D04604800CE281B /* HoleSet.cp in Sources */ = {isa = PBXBuildFile; fileRef = 5504AA680D03E33200CE281B /* HoleSet.cp */; };
 		5504ABD10D04648700CE281B /* BoundingBox.cp in Sources */ = {isa = PBXBuildFile; fileRef = 5504AA5A0D03E2AD00CE281B /* BoundingBox.cp */; };
+		5517771F0E9FE7B700ED23F2 /* Progress.nib in Resources */ = {isa = PBXBuildFile; fileRef = 5517771D0E9FE7B700ED23F2 /* Progress.nib */; };
 		5566EE9B0D0A0FD50026F0EA /* ChordProgression.aiff in Resources */ = {isa = PBXBuildFile; fileRef = 5566EE9A0D0A0FD50026F0EA /* ChordProgression.aiff */; };
 		5566FADC0D1070740026F0EA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5566FADB0D1070740026F0EA /* Carbon.framework */; };
 		5566FB1C0D1076720026F0EA /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 5566FB1B0D1076720026F0EA /* Credits.rtf */; };
@@ -35,7 +36,6 @@
 		55D60D150CFA19FB0028A6D2 /* CFloatArray.cp in Sources */ = {isa = PBXBuildFile; fileRef = 55D60D130CFA19FB0028A6D2 /* CFloatArray.cp */; };
 		55D60D7A0CFA1DEB0028A6D2 /* ShuffleArray.cp in Sources */ = {isa = PBXBuildFile; fileRef = 55D60D780CFA1DEB0028A6D2 /* ShuffleArray.cp */; };
 		55D60DB80CFA26AD0028A6D2 /* ProgressController.m in Sources */ = {isa = PBXBuildFile; fileRef = 55D60DB70CFA26AD0028A6D2 /* ProgressController.m */; };
-		55D60DC00CFA283C0028A6D2 /* Progress.nib in Resources */ = {isa = PBXBuildFile; fileRef = 55D60DBF0CFA283C0028A6D2 /* Progress.nib */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -67,6 +67,7 @@
 		5504AA680D03E33200CE281B /* HoleSet.cp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = HoleSet.cp; sourceTree = "<group>"; };
 		5504AA690D03E33200CE281B /* HoleSet.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = HoleSet.h; sourceTree = "<group>"; };
 		5504AC8D0D04A68900CE281B /* To Do & Misc */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = "To Do & Misc"; sourceTree = "<group>"; };
+		5517771E0E9FE7B700ED23F2 /* English */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = English; path = English.lproj/Progress.nib; sourceTree = "<group>"; };
 		5566EE9A0D0A0FD50026F0EA /* ChordProgression.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = ChordProgression.aiff; sourceTree = "<group>"; };
 		5566FADB0D1070740026F0EA /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		5566FB1B0D1076720026F0EA /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
@@ -104,7 +105,6 @@
 		55D60D790CFA1DEB0028A6D2 /* ShuffleArray.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ShuffleArray.h; sourceTree = "<group>"; };
 		55D60DB60CFA26AD0028A6D2 /* ProgressController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProgressController.h; sourceTree = "<group>"; };
 		55D60DB70CFA26AD0028A6D2 /* ProgressController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProgressController.m; sourceTree = "<group>"; };
-		55D60DBF0CFA283C0028A6D2 /* Progress.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Progress.nib; path = build/Progress.nib; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Reduce3D.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reduce3D.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -198,8 +198,8 @@
 				55D604500CF3AA570028A6D2 /* Reduce.icns */,
 				5566FB4C0D1099420026F0EA /* Reduce3DHelp */,
 				5566FB1B0D1076720026F0EA /* Credits.rtf */,
+				5517771D0E9FE7B700ED23F2 /* Progress.nib */,
 				8D1107310486CEB800E47090 /* Info.plist */,
-				55D60DBF0CFA283C0028A6D2 /* Progress.nib */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
 				5566EE9A0D0A0FD50026F0EA /* ChordProgression.aiff */,
@@ -360,10 +360,10 @@
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
 				55D604510CF3AA570028A6D2 /* Reduce Int Doc.icns in Resources */,
 				55D604520CF3AA570028A6D2 /* Reduce.icns in Resources */,
-				55D60DC00CFA283C0028A6D2 /* Progress.nib in Resources */,
 				5566EE9B0D0A0FD50026F0EA /* ChordProgression.aiff in Resources */,
 				5566FB1C0D1076720026F0EA /* Credits.rtf in Resources */,
 				5566FB610D1099420026F0EA /* Reduce3DHelp in Resources */,
+				5517771F0E9FE7B700ED23F2 /* Progress.nib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -419,6 +419,14 @@
 			name = MainMenu.nib;
 			sourceTree = "<group>";
 		};
+		5517771D0E9FE7B700ED23F2 /* Progress.nib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				5517771E0E9FE7B700ED23F2 /* English */,
+			);
+			name = Progress.nib;
+			sourceTree = "<group>";
+		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -459,6 +467,7 @@
 			buildSettings = {
 				GCC_ALTIVEC_EXTENSIONS = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_MODEL_TUNING = G4;
 				GCC_SHORT_ENUMS = NO;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
@@ -471,6 +480,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G4;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;

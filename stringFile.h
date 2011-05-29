@@ -22,8 +22,8 @@ public:
 	};
 
 	stringFile();
-	stringFile(bool inForOutput, const char *inPath);
-	stringFile(bool inForOutput, CFStringRef inPath);
+	stringFile(bool inForOutput, const char *inPath, bool inWriteAsap=false);
+	stringFile(bool inForOutput, CFStringRef inPath, bool inWriteAsap=false);
 	~stringFile();
 	void setIsForOutput(bool inForOutput);
 
@@ -50,6 +50,8 @@ private:
 	CFArrayRef mLines;	// an array of NSStrings, one per line
 	CFStringRef	path;	// path to the filename associated with this object.  The file at that path
 						// may or may not exist.
+	void *mFileHandle;	// used only if we are writing asap instead of all at once at deallocation
 	long		mCurLine;	// what line we're ready to read from (for input files)
 	bool		mForOutput;	// the file is desginated for saving (or for reading)
+	bool		mWriteAsap;	// should we write to the file as soon as we get a string, or hold it until writeToFile is called?
 };
