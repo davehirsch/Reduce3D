@@ -352,6 +352,7 @@ SideSet::RawPointInBox(Point3DFloat &inPt, double tolerance)
 {
 	Side *thisSide;
 	Point3DFloat	vect1, vect2, xP, tempVect, testpt;
+    int numSides = 0;
 
 	switch (mType) {
 		case kCubeBox:
@@ -370,7 +371,7 @@ SideSet::RawPointInBox(Point3DFloat &inPt, double tolerance)
 					(::fabs(mCtr.z + mOffset.z - inPt.z) <= (mHeight / 2.0)));
 		break;
 		case kSidesBox:
-			int		numSides = array.size();
+			numSides = array.size();
 			int i;
 			for (i = 0 ; i <= numSides-1 ; i ++) {
 				thisSide = &(array.at(i));

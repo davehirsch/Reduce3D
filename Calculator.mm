@@ -51,7 +51,9 @@ Calculator::runAnalysis(std::vector<std::string> inputFiles, std::string holesFi
 			std::string logStr = "Calculator::runAnalysis Caught a thrown error: ";
 			logStr += msgString;
 			postError(msgString, "Reduce 3D Error", nil, -1, -1);
-		}
+		} catch (...) {
+            continueToProcess = false;
+        }
 	}
 	if (!continueToProcess) {
 		// then we bugged out due to an error / exception
@@ -84,7 +86,7 @@ Calculator::reduceDataInFile(std::string inputFilePath, std::string holesFilePat
 		NSString *filename = [[NSString stringWithUTF8String:inputFilePath.c_str()] lastPathComponent];
 		if (prefs->verbose) {
 			filename = [filename stringByAppendingString:@"_Log.txt"];
-			NSString *curDesktop = [NSString stringWithString:@"~/Desktop"];
+			NSString *curDesktop = @"~/Desktop";
 			curDesktop = [curDesktop stringByExpandingTildeInPath];
 			NSString *logPath = [curDesktop stringByAppendingPathComponent:filename];
 			mLogFile = new stringFile(true, (CFStringRef) logPath, true);
@@ -137,6 +139,10 @@ Calculator::reduceDataInFile(std::string inputFilePath, std::string holesFilePat
 			delete mLogFile;
 			mLogFile = nil;
 		}
+        if (err == kProcessingError) {
+            // then there was an ugly error, and the state is fucked up.  Try to quit.
+            return kProcessingError;
+        }
 		return false;
 	} catch (const char *msgString) {
 		std::string logStr = "Calculator::reduceDataInFile Caught a thrown error: ";
@@ -178,7 +184,7 @@ Calculator::shaveAndReduceData(std::string inputFilePath)
 		if (prefs->verbose) {
 			NSString *filename = [[NSString stringWithUTF8String:inputFilePath.c_str()] lastPathComponent];
 			filename = [filename stringByAppendingString:@"_log"];
-			NSString *curDesktop = [NSString stringWithString:@"~/Desktop"];
+			NSString *curDesktop = @"~/Desktop";
 			curDesktop = [curDesktop stringByExpandingTildeInPath];
 			NSString *logPath = [curDesktop stringByAppendingPathComponent:filename];
 			mLogFile = new stringFile(true, (CFStringRef) logPath, true);
@@ -3795,8 +3801,8 @@ Calculator::DoReduce3DFile(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles, 
 	sprintf(tempStr, "Crystal Intensity Sqd:\t%.7E", stats->intensitySqd); saveFile.putOneLine(tempStr);
 	sprintf(tempStr, "Crystal Volume Fraction (MC Method):\t%.7E", stats->volFrxn); saveFile.putOneLine(tempStr);
 
-	sprintf(tempStr, "Observability criterion 1 setting:\t%d", stats->observabilityCrit1value);
-	sprintf(tempStr, "Observability criterion 2 setting:\t%d", stats->observabilityCrit2value);
+	sprintf(tempStr, "Observability criterion 1 setting:\t%f", stats->observabilityCrit1value);
+	sprintf(tempStr, "Observability criterion 2 setting:\t%f", stats->observabilityCrit2value);
 	sprintf(tempStr, "Observability criterion 1 rejects:\t%d", stats->observabilityCrit1rejects);
 	sprintf(tempStr, "Observability criterion 2 rejects:\t%d", stats->observabilityCrit2rejects);
 	
@@ -4028,7 +4034,7 @@ if ((stats->fileType != kDiffSimulation) || prefs->doImpingement) {
 		// write data
 		for (i=0; i <= numXls - 1; i++) {
 			thisXl = theXls->GetItemPtr(i);
-			sprintf(tempStr, "%d\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%d\t%d\t%d\t%.7E\t%.7E\t%.7E",
+			sprintf(tempStr, "%d\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%d\t%ld\t%d\t%.7E\t%.7E\t%.7E",
 					i,
 					thisXl->ctr.x,
 					thisXl->ctr.y,

@@ -35,52 +35,58 @@ BoundingBox::BoundingBox(Calculator *inCalc)
 BoundingBox::BoundingBox(Calculator *inCalc, stringFile *inFile)
 	: SideSet()
 {
-	mCalc = inCalc;
-	mPtArray = nil;
-	theXls = new CrystalArray(inCalc);
-	theXls->SetFile(inFile);
-	theXls->ReadMergeFile();
-	mPrefs = mCalc->getPrefs();
+    try {
+        mCalc = inCalc;
+        mPtArray = nil;
+        theXls = new CrystalArray(inCalc);
+        theXls->SetFile(inFile);
+        theXls->ReadMergeFile();
+        mPrefs = mCalc->getPrefs();
 
-	// Temporarily set the box type from the Merge file header (stored in the CrystalArray)
-	//	If bounds were set in the input file, that should override any sample shape setting
-	//	by the user.
-	switch (theXls->GetBounds()) {
-		case kBoundsNone:
-			mType = kSidesBox;
-			break;
-		case kBoundsRP:
-			mType = kRPBox;
-			mPrefs->sampleShape = kRectPrism;
-			break;
-		case kBoundsCyl:
-			mType = kCylBox;
-			mPrefs->sampleShape = kCylinder;
-			break;
-	}
-	
-	if (((theXls->GetBounds() != kBoundsNone) && CheckedAgainstBounds()) 
-		&& !(mPrefs->discardNegs && theXls->GetNegRadii())) {
-		/* If:	1. The file had bounds stated
-		 2. CheckedAgainstBounds suggested we discard crystals outside the bounds (returned true)
-		 3. It is not the case that there are negative-radii crystals to be discarded
-		 Then: we should discard the crystals outside the bounds.  (Criterion 3 is important,
-		 because negative radii crystals will be near the edges.  If they are discarded, then the 
-		 bounds no longer really apply.)
-		 Note: by the time execution arrives here, the bounding box must have already been set as
-		 a bounds-bearing type (not a kSidesBox).*/
-		Crystal *thisXl;
-		for (int i=0; i <= theXls->GetNumXls() - 1; i++) {
-			thisXl = theXls->GetItemPtr(i);
-			if (!PointInBox(thisXl->ctr)) {
-				theXls->RemoveItem(i, false);
-				i--;
-			}
-		}
-		theXls->RebuildList();
-		BetterInscribedBox();	// shouldn't need this; but couldn't
-	}
-	
+        // Temporarily set the box type from the Merge file header (stored in the CrystalArray)
+        //	If bounds were set in the input file, that should override any sample shape setting
+        //	by the user.
+        switch (theXls->GetBounds()) {
+            case kBoundsNone:
+                mType = kSidesBox;
+                break;
+            case kBoundsRP:
+                mType = kRPBox;
+                mPrefs->sampleShape = kRectPrism;
+                break;
+            case kBoundsCyl:
+                mType = kCylBox;
+                mPrefs->sampleShape = kCylinder;
+                break;
+        }
+        
+        if (((theXls->GetBounds() != kBoundsNone) && CheckedAgainstBounds()) 
+            && !(mPrefs->discardNegs && theXls->GetNegRadii())) {
+            /* If:	1. The file had bounds stated
+             2. CheckedAgainstBounds suggested we discard crystals outside the bounds (returned true)
+             3. It is not the case that there are negative-radii crystals to be discarded
+             Then: we should discard the crystals outside the bounds.  (Criterion 3 is important,
+             because negative radii crystals will be near the edges.  If they are discarded, then the 
+             bounds no longer really apply.)
+             Note: by the time execution arrives here, the bounding box must have already been set as
+             a bounds-bearing type (not a kSidesBox).*/
+            Crystal *thisXl;
+            for (int i=0; i <= theXls->GetNumXls() - 1; i++) {
+                thisXl = theXls->GetItemPtr(i);
+                if (!PointInBox(thisXl->ctr)) {
+                    theXls->RemoveItem(i, false);
+                    i--;
+                }
+            }
+            theXls->RebuildList();
+            BetterInscribedBox();	// shouldn't need this; but couldn't
+        }
+    } catch (...) {
+        std::string logStr ("In BoundingBox::BoundingBox .  Catching error and re-throwing.\n");
+        mCalc->log(logStr);
+        throw kUserCanceledErr;
+    }
+
 
 	// This is now handled in Calculator::reduceOneDataset
 
@@ -262,7 +268,7 @@ BoundingBox::writeIntegrateFile(stringFile *saveFile, const char *firstLine, con
 	for (int i = 0; i <= numXls-1; i++) {
 		mCalc->progress(i);
 		thisXl = theXls->GetItemPtr(i);
-		sprintf(tempLine, "%d\t%.5f\t%.5f\t%.5f\t%.5f\t%d\t%d",
+		sprintf(tempLine, "%d\t%.5f\t%.5f\t%.5f\t%.5f\t%d\t%ld",
 				i+1, thisXl->ctr.x, thisXl->ctr.y, thisXl->ctr.z, thisXl->r, thisXl->ctrSlice, thisXl->ctrID);
 		saveFile->putOneLine(tempLine);
 	}
@@ -319,7 +325,7 @@ BoundingBox::CheckedAgainstBounds()
 	}
 	if (numOutside > 0) {
 		char msg[kStdStringSize];
-		sprintf(msg, "There is a problem: %d crystals (out of %d) are outside the bounds stated in the input file.  Do you want to discard the offending crystals, or fit a new bounding box?", numOutside, numXls);
+		sprintf(msg, "There is a problem: %ld crystals (out of %d) are outside the bounds stated in the input file.  Do you want to discard the offending crystals, or fit a new bounding box?", numOutside, numXls);
 		short result = mCalc->postError(msg, "Bounds Error", "Discard Crystals|New Bounding Box", 0, -1);
 
 		if (result == 0) {
@@ -1875,7 +1881,7 @@ BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 	
 	if (!holes) {
 		switch (mType) {
-			case kSidesBox:
+			{ case kSidesBox:
 				SideSet *mEC = GetExscribedBox();
 				for (long i = 1; i <= MCTries; i++) {
 					tryPoint = mEC->RandPtInPrimitive();
@@ -1888,13 +1894,15 @@ BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 				}
 				outVol = Volume()*goodPts/numBoxPts;
 				break;
-			case kCubeBox:
+            }
+			{ case kCubeBox:
 				if (mSideLen - 2 * guardWidth > 0)
 					outVol = pow((mSideLen - 2 * guardWidth), 3);
 				else
 					outVol = 0;
 				break;
-			case kRPBox:
+            }
+			{ case kRPBox:
 				if ((mSideLenX - 2 * guardWidth) < 0 ||
 					(mSideLenY - 2 * guardWidth) < 0 ||
 					(mSideLenZ - 2 * guardWidth) < 0)
@@ -1904,7 +1912,8 @@ BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 							  (mSideLenY - 2 * guardWidth) *
 							  (mSideLenZ - 2 * guardWidth));
 				break;
-			case kCylBox:
+            }
+			{ case kCylBox:
 				if ((mHeight - 2 * guardWidth) < 0 ||
 					(mRadius - guardWidth < 0))
 					outVol = 0;
@@ -1912,10 +1921,11 @@ BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 					outVol = ((mHeight - 2 * guardWidth) * 
 							  M_PI * sqr(mRadius - guardWidth));
 				break;
+            }
 		}
 	} else {	// else we have a HolesSet to deal with
 		switch (mType) {
-			case kSidesBox:
+			{ case kSidesBox:
 				SideSet *mEC = GetExscribedBox();
 				for (long i = 1; i <= MCTries; i++) {
 					tryPoint = mEC->RandPtInPrimitive();
@@ -1928,8 +1938,8 @@ BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 					}
 				}
 				outVol = Volume()*goodPts/numBoxPts;
-				break;
-			case kCubeBox:
+				break; }
+			{ case kCubeBox:
 			case kRPBox:
 			case kCylBox:
 				for (long i = 1; i <= MCTries; i++) {
@@ -1943,7 +1953,7 @@ BoundingBox::VolumeMinusGuard(HoleSet *holes, double guardWidth)
 					}
 				}
 				outVol = Volume()*goodPts/numBoxPts;
-				break;
+				break; }
 		}
 	}
 	return outVol;

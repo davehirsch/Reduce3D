@@ -176,7 +176,7 @@ stringFile::readFromFile()
 		return false;
 	} else {
 		unsigned length = [buffer length];
-		unsigned paraStart = 0, paraEnd = 0, contentsEnd = 0;
+		unsigned long paraStart = 0, paraEnd = 0, contentsEnd = 0;
 		NSRange currentRange;
 		NSLock *theLock = [NSLock new];
 		[theLock lock];

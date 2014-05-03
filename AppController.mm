@@ -309,9 +309,9 @@
 //
 // The Mediator calls this to notify us that it is finished, either due to completion or cancellation.
 //-------------------------------------------------------------
-- (oneway void)runEnded:(bool)goodRun
+- (oneway void)runEnded:(int)goodRun
 {
-	if (userHasCanceled || !goodRun) {
+    if (userHasCanceled || !goodRun) {
 		[theProgressCtl close];
 		[self showSettingsWindow];
 	} else {
@@ -330,8 +330,8 @@
 			[chord play];
 			for (;[chord isPlaying];);	// wait until chord completes;
 		}
-		[NSApp terminate:self];	// Quit; we're done
 	}
+    [NSApp terminate:self];	// Quit; we're done
 }
 
 //-------------------------------------------------------------

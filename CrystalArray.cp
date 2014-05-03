@@ -14,6 +14,7 @@
 #import <sstream>
 #import <algorithm>
 #import "stringFile.h"
+#import "math.h"
 #import "Calculator.h"
 
 // ---------------------------------------------------------------------------
@@ -371,14 +372,34 @@ CrystalArray::ReadMergeHeader()
 			sscanResult = sscanf(tempStr.c_str(), "%*25c%i", &mNumCrystals);
 		else
 			sscanResult = sscanf(tempStr.substr(tempStr.find('\t'), std::string::npos).c_str(), "%i", &mNumCrystals);
-		if (sscanResult != 1) throw(MergeIOErr());
+		if (sscanResult != 1) {
+            MergeIOErr err;
+            err.briefDesc = "Poorly formed Number of Crystals line.";
+            err.longDesc = "The number of crystals line must conform to the format [text][tab][number].";
+            mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
+            throw kProcessingError;	// toss it up the chain
+        }
 		
 		tempStr = mFile->getOneLine();		// Total volume line 
+		if (tempStr[0] != 'T') {			// If it doesn't begin with 'T', then it wasn't a Total Volume line
+            MergeIOErr err;
+            err.briefDesc = "Missing Total Volume line.";
+            err.longDesc = "The total volume line must come after the Number of Crystals line.";
+            mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
+            throw kProcessingError;	// toss it up the chain
+        }
 		if (tempStr.find('\t') == std::string::npos)	// no tab present
 			sscanResult = sscanf(tempStr.c_str(), "%*25c%lf", &mTotalVolume);
 		else
 			sscanResult = sscanf(tempStr.substr(tempStr.find('\t'), std::string::npos).c_str(), "%lf", &mTotalVolume);
-		if (sscanResult != 1) throw(MergeIOErr());
+		if (sscanResult != 1)  {
+            MergeIOErr err;
+            err.briefDesc = "Poorly formed Total Volume line.";
+            err.longDesc = "The total volume line must conform to the format [text][tab][number].";
+            mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
+            throw kProcessingError;	// toss it up the chain
+        }
+
 		
 		tempStr = mFile->peekLine();		// Bounds line 
 		if (tempStr.find("Bound") != std::string::npos) {	// "Bound" present (RP)
@@ -406,7 +427,7 @@ CrystalArray::ReadMergeHeader()
 //		sprintf(tempLongDesc, "Problem reading header data from file: %s.", sfErr.filename);
 		err.longDesc = "Problem reading header data from file";
 		mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
-		throw;	// toss it up the chain
+		throw kProcessingError;	// toss it up the chain
 	}
 }
 
@@ -423,63 +444,69 @@ CrystalArray::ReadMergeHeader()
 	 short	curCrystal;
 	 Crystal	oneCrystal;
 	 
-	 ReadMergeHeader();
-	 mCalc->setupProgress("Reading Crystals...", nil, nil, nil, -1, 1, mNumCrystals, 0, false);	 
+     try {
+         ReadMergeHeader();
+         mCalc->setupProgress("Reading Crystals...", nil, nil, nil, -1, 1, mNumCrystals, 0, false);	 
 
-	 // Note that in the file, the crystals are numbered beginning at 1, but in all the arrays, the
-	 // numbering is zero-based	 
-	 for (curCrystal = 1; curCrystal <= mNumCrystals; curCrystal++) {
-		 try {
-			 mCalc->progress(curCrystal);
-			 if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
-			 tempStr = mFile->getOneLine();	// if this tries to get a line past the end (e.g., if the number of crystals claimed in
-											// the header was false), then it will throw an exception.
-		 } catch (stringFile::UnexpectedEOF sfErr) {
-			 if (curCrystal < mNumCrystals)	{ // hit EOF before last line - bad
-				 MergeIOErr err;
-				 char xlNumStr[15];
-				 sprintf(xlNumStr, "%d", curCrystal-1);
-				 err.briefDesc = "Unexpected End of File";
-//				 char tempLongDesc[kStdStringSize];
-//				 int lastGoodXl = curCrystal-1;
-//				 sprintf(tempLongDesc, "Problem reading crystals from file: %s. Last crystal read and verified was: %d.",
-//						 sfErr.filename, 
-//						 lastGoodXl);	// This reported crystal number is the one from the file (1-based)
-				 err.longDesc = "Problem reading crystals from file.  Probably number of crystal header is wrong.";
-				 mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
-				 throw;	// toss it up the chain
-			 } // else: ignore the problem; we've got all the crystals we need
-		 }
-		 if (tempStr.find('\t') == std::string::npos) {	// no tab present
-			 sscanf(tempStr.c_str(), "%hi%lf%lf%lf%lf%hi%li", 
-					&checkCrystalNum,
-					&oneCrystal.ctr.x,
-					&oneCrystal.ctr.y,
-					&oneCrystal.ctr.z,
-					&oneCrystal.r,
-					&oneCrystal.ctrSlice,
-					&oneCrystal.ctrID);
-		 } else {
-			 sscanf(tempStr.c_str(), "%hi\t%lf\t%lf\t%lf\t%lf\t%hi\t%li", 
-					&checkCrystalNum,
-					&oneCrystal.ctr.x,
-					&oneCrystal.ctr.y,
-					&oneCrystal.ctr.z,
-					&oneCrystal.r,
-					&oneCrystal.ctrSlice,
-					&oneCrystal.ctrID);
-		 }
-		 if (oneCrystal.r == 0)
-			 continue;	// run next for() loop
-		 PushXl(oneCrystal, false);
-		 if (checkCrystalNum != curCrystal)  {	// this crystal number isn't the one we expected next 
-			 BadOrderErr thisErr;
-			 thisErr.expectedNum = curCrystal;
-			 thisErr.foundNum = checkCrystalNum;
-			 throw thisErr;
-		 }
-	 } // end for
-	 SortInternalList();
+         // Note that in the file, the crystals are numbered beginning at 1, but in all the arrays, the
+         // numbering is zero-based	 
+         for (curCrystal = 1; curCrystal <= mNumCrystals; curCrystal++) {
+             try {
+                 mCalc->progress(curCrystal);
+                 if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
+                 tempStr = mFile->getOneLine();	// if this tries to get a line past the end (e.g., if the number of crystals claimed in
+                                                // the header was false), then it will throw an exception.
+             } catch (stringFile::UnexpectedEOF sfErr) {
+                 if (curCrystal < mNumCrystals)	{ // hit EOF before last line - bad
+                     MergeIOErr err;
+                     char xlNumStr[15];
+                     sprintf(xlNumStr, "%d", curCrystal-1);
+                     err.briefDesc = "Unexpected End of File";
+    //				 char tempLongDesc[kStdStringSize];
+    //				 int lastGoodXl = curCrystal-1;
+    //				 sprintf(tempLongDesc, "Problem reading crystals from file: %s. Last crystal read and verified was: %d.",
+    //						 sfErr.filename, 
+    //						 lastGoodXl);	// This reported crystal number is the one from the file (1-based)
+                     err.longDesc = "Problem reading crystals from file.  Probably number of crystal header is wrong.";
+                     mCalc->postError(err.longDesc.c_str(), err.briefDesc.c_str(), nil, -1, -1);
+                     throw;	// toss it up the chain
+                 } // else: ignore the problem; we've got all the crystals we need
+             }
+             if (tempStr.find('\t') == std::string::npos) {	// no tab present
+                 sscanf(tempStr.c_str(), "%hi%lf%lf%lf%lf%hi%li", 
+                        &checkCrystalNum,
+                        &oneCrystal.ctr.x,
+                        &oneCrystal.ctr.y,
+                        &oneCrystal.ctr.z,
+                        &oneCrystal.r,
+                        &oneCrystal.ctrSlice,
+                        &oneCrystal.ctrID);
+             } else {
+                 sscanf(tempStr.c_str(), "%hi\t%lf\t%lf\t%lf\t%lf\t%hi\t%li", 
+                        &checkCrystalNum,
+                        &oneCrystal.ctr.x,
+                        &oneCrystal.ctr.y,
+                        &oneCrystal.ctr.z,
+                        &oneCrystal.r,
+                        &oneCrystal.ctrSlice,
+                        &oneCrystal.ctrID);
+             }
+             if (oneCrystal.r == 0)
+                 continue;	// run next for() loop
+             PushXl(oneCrystal, false);
+             if (checkCrystalNum != curCrystal)  {	// this crystal number isn't the one we expected next 
+                 BadOrderErr thisErr;
+                 thisErr.expectedNum = curCrystal;
+                 thisErr.foundNum = checkCrystalNum;
+                 throw thisErr;
+             }
+         } // end for
+         SortInternalList();
+     } catch (...) {
+         std::string logStr ("In CrystalArray::ReadMergeFile .  Catching error and re-throwing.\n");
+         mCalc->log(logStr);
+         throw kUserCanceledErr;
+     }
  }
  
 // ---------------------------------------------------------------------------------
@@ -754,19 +781,19 @@ CrystalArray::FilterForObservability(double crit1Factor, double crit2Factor, sho
 				if (unobservable) {	// then we need to combine them as a human would in fuzzy CT data
 					Crystal newXl;
 					// put center at combined center-of-mass
-					double smallVol = (4.0 * pi * pow(smaller->r, 3) / 3.0);
-					double largeVol = (4.0 * pi * pow(larger->r, 3) / 3.0);
+					double smallVol = (4.0 * M_PI * pow(smaller->r, 3) / 3.0);
+					double largeVol = (4.0 * M_PI * pow(larger->r, 3) / 3.0);
 					newXl.ctr = (larger->ctr * (largeVol/(largeVol + smallVol)));
 					newXl.ctr += (smaller->ctr * (smallVol/(largeVol + smallVol)));
 					// make volume (via radius) be combined volume: we need to add the two volumes, and subtract
 					// the spherical caps of each one that form the intersection volume (spherical cap
 					// volume formula is taken from pg. 314 of CRC Math Tables, 30th Ed.)
 					double h = larger->r - IntPlaneDist;
-					double largeCapVol = pi * sqr(h) * (3.0 * larger->r - h) / 3.0;
+					double largeCapVol = M_PI * sqr(h) * (3.0 * larger->r - h) / 3.0;
 					h = smaller->r - separation + IntPlaneDist;
-					double smallCapVol = pi * sqr(h) * (3.0 * smaller->r - h) / 3.0;
+					double smallCapVol = M_PI * sqr(h) * (3.0 * smaller->r - h) / 3.0;
 					double totalVol = smallVol + largeVol - largeCapVol - smallCapVol;
-					newXl.r = CubeRoot(0.75 * totalVol / pi);
+					newXl.r = CubeRoot(0.75 * totalVol / M_PI);
 					
 					if (mPrefs->verbose) {
 						char debugStr[255];

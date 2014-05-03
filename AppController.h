@@ -67,7 +67,7 @@
 		   buttons:(NSArray *) inButtons
 	 defaultButton:(short) inDefault
 		 dismissIn:(double) inDismiss;
-- (oneway void)runEnded:(bool)goodRun;
+- (oneway void)runEnded:(int)goodRun;
 - (bool)shouldStopCalculating;
 - (NSArray *)getInputFiles;
 - (NSString *)getHolesFile;

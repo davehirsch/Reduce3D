@@ -36,8 +36,8 @@ class NumPtArray {
 	
 	
 	public:
-		bool	NumPtArray::Compare(const NumberedPt &inItem1, const NumberedPt &inItem2);
-		static bool	NumPtArray::AreEqual(const NumberedPt &inItem1, const NumberedPt &inItem2);
+		bool	Compare(const NumberedPt &inItem1, const NumberedPt &inItem2);
+		static bool	AreEqual(const NumberedPt &inItem1, const NumberedPt &inItem2);
 		
 	private:
 		std::vector<NumberedPt> array;
