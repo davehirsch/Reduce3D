@@ -1786,6 +1786,7 @@ double
 BoundingBox::GetVolumeFraction(double inMaxRadius, long Tries, HoleSet *inHoles)
 {
 	long numInside1=0, numInside=0;
+    char logMsg[kStdStringSize];
 	Point3DFloat boxPt;
 	Crystal *thisXl;
 	std::vector<int> nearby;
@@ -1823,6 +1824,9 @@ BoundingBox::GetVolumeFraction(double inMaxRadius, long Tries, HoleSet *inHoles)
 			mCalc->progress(j);
 			if (mCalc->shouldStopCalculating()) throw(kUserCanceledErr);
 			for (long innerJ = 1; innerJ <= 20; innerJ++) {
+                sprintf (logMsg, "In BoundingBox::GetVolumeFraction. (j, innerJ)= (%li, %li)\n", j, innerJ);
+                mCalc->log(logMsg);
+
 				// boxPt is a random point in the bounding box (it uses the primitive to help do the calculation)
 				RandPtInPrimitiveNotHole(boxPt, inHoles);
 				

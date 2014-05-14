@@ -1339,6 +1339,9 @@ CrystalArray::NearbyCount(double inVal, double inDistance,
 		frxn = dmh_min(1.0, (lowerValue - (mList.at(0)).location) / ((mList.at(numXls-1)).location - (mList.at(0)).location));
 		curLoc = dmh_max(0, (numXls * frxn) - 1);	// start at approx location
 		direction = sign(lowerValue - (mList.at(curLoc)).location);
+        if (curLoc <= 0) direction = 1;
+        if (curLoc >= numXls - 1) direction = -1;
+        
 		double curXVal = (mList.at(curLoc)).location;
 		while ((curLoc >= 0) && (curLoc <= numXls-1) && 
 			   (lowerValue * direction > (mList.at(curLoc)).location * direction)) {
@@ -1369,6 +1372,8 @@ CrystalArray::NearbyCount(double inVal, double inDistance,
 		curLoc = dmh_max(0, (numXls * frxn) - 1);	// start at approx location
 		curXVal = (mList.at(curLoc)).location;
 		direction = sign(upperValue - (mList.at(curLoc)).location);
+        if (curLoc <= 0) direction = 1;
+        if (curLoc >= numXls - 1) direction = -1;
 
 		while ((curLoc >= 0) && (curLoc <= numXls-1) && 
 			   (upperValue * direction > (mList.at(curLoc)).location * direction)) {

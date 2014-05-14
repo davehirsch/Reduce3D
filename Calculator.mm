@@ -248,7 +248,7 @@ Calculator::shaveAndReduceData(std::string inputFilePath)
 		std::string logStr = "Calculator::shaveAndReduceData Caught a thrown error: ";
 		logStr += msgString;
 		logStr += "\n";
-		log(msgString);
+		log(logStr);
 		postError(msgString, "Reduce 3D Error", nil, -1, -1);
 		
 		// clean up
