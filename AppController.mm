@@ -326,9 +326,13 @@
 						cur:1
 			  indeterminate:false]; 
 		if ([defaults boolForKey:@"playSoundWhenDone"]) {
-			NSSound *chord = [NSSound soundNamed:@"ChordProgression.aiff"];
+			NSSound *chord = [[NSSound soundNamed:@"ChordProgression.aiff"] retain];
 			[chord play];
-			for (;[chord isPlaying];);	// wait until chord completes;
+			for (;[chord isPlaying] && [chord currentTime] < [chord duration];) { // wait until chord completes.
+                // there appears to be a bug in isPlaying.  It doesn't ever return false, even after the playing is complete.
+                NSLog([NSString stringWithFormat:@"Playing chord.  Time=%g", [chord currentTime]]);
+            }
+            [chord release];
 		}
 	}
     [NSApp terminate:self];	// Quit; we're done
