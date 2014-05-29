@@ -1742,6 +1742,7 @@ Calculator::ComputeNeighbors(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles
 				if (testDistSq < minDistSq) {
 					minDistSq = testDistSq;
 					currXl->neighbor = j;
+                    currXl->neighborR = otherXl->r;
 				}
 				testDistEdge = pt1.Distance(pt2) - currXl->r - otherXl->r;
 				if (testDistEdge < minDistEdge)
@@ -4030,11 +4031,11 @@ if ((stats->fileType != kDiffSimulation) || prefs->doImpingement) {
 		saveFile.putOneLine("============ Begin Crystal Dataset ============");
 		int numXls = theXls->GetNumXls();
 		// write labels for expanded raw data file
-		saveFile.putOneLine("n\tx\ty\tz\tr\tvact\tvext\ts\tid\tnear\tdist\tvpoly\tedgeToEdge");
+		saveFile.putOneLine("n\tx\ty\tz\tr\tv(act)\tv(ext)\tCtr Slice#\tid\tNearest Neighbor\tNearest Neighbor Radius\tNN Distance (ctr to ctr)\tv(poly)\tEdgeToEdge Distance (poss. modified by maxOverlap setting");
 		// write data
 		for (i=0; i <= numXls - 1; i++) {
 			thisXl = theXls->GetItemPtr(i);
-			sprintf(tempStr, "%d\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%d\t%ld\t%d\t%.7E\t%.7E\t%.7E",
+			sprintf(tempStr, "%d\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%.7E\t%d\t%ld\t%d\t%.7E\t%.7E\t%.7E\t%.7E",
 					i,
 					thisXl->ctr.x,
 					thisXl->ctr.y,
@@ -4045,6 +4046,7 @@ if ((stats->fileType != kDiffSimulation) || prefs->doImpingement) {
 					thisXl->ctrSlice,
 					thisXl->ctrID,
 					thisXl->neighbor,
+					thisXl->neighborR,
 					thisXl->ctcDist,
 					thisXl->polyV, 
 					thisXl->diffV);

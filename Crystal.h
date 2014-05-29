@@ -31,7 +31,8 @@ class Crystal {
 		double extV;		// a simple volume calculation based on the radius
 		double ctcDist;
 		double polyV;
-		double diffV;
+        double diffV;
+        double neighborR;   // the radius of the nearest neighbor
 		short neighbor;
 		short ctrSlice;	/* The slice in which the center of the sphere lies */
 		long ctrID;		/* The ID of the circle in which the center of the sphere lies */

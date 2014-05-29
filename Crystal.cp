@@ -14,7 +14,7 @@
 // ---------------------------------------------------------------------------
 Crystal::Crystal()
 {
-	r = actV = extV = ctcDist = polyV = diffV = 0.0;
+	r = actV = extV = ctcDist = polyV = diffV = neighborR = 0.0;
 	neighbor = ctrSlice = 0;
 	ctrID = 0;
 }
@@ -32,6 +32,7 @@ Crystal::Crystal(const Crystal &inXl)
 	polyV = inXl.polyV;
 	diffV = inXl.diffV;
 	neighbor = inXl.neighbor;
+	neighborR = inXl.neighborR;
 	ctrSlice = inXl.ctrSlice;
 	ctrID = inXl.ctrID;
 }
@@ -51,6 +52,7 @@ Crystal::operator= (const Crystal &inXl)
 	polyV = inXl.polyV;
 	diffV = inXl.diffV;
 	neighbor = inXl.neighbor;
+	neighborR = inXl.neighborR;
 	ctrSlice = inXl.ctrSlice;
 	ctrID = inXl.ctrID;
 
@@ -62,6 +64,7 @@ Crystal::operator= (const Crystal &inXl)
 	outXl.polyV = inXl.polyV;
 	outXl.diffV = inXl.diffV;
 	outXl.neighbor = inXl.neighbor;
+	outXl.neighborR = inXl.neighborR;
 	outXl.ctrSlice = inXl.ctrSlice;
 	outXl.ctrID = inXl.ctrID;
 	return outXl;
@@ -81,6 +84,7 @@ Crystal::operator== (Crystal &inXl)
 			&&	(polyV	== inXl.polyV)						\
 			&&	(diffV	== inXl.diffV)						\
 			&&	(neighbor	== inXl.neighbor)				\
+			&&	(neighborR	== inXl.neighborR)				\
 			&&	(ctrSlice	== inXl.ctrSlice)				\
 			&&	(ctrID	== inXl.ctrID));
 }
