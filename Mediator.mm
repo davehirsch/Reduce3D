@@ -130,8 +130,8 @@
 		}
 		short numFiles = [inNSStrFiles count];
 		for (short i=0; i < numFiles; i++) {
-			std::string thisPath = [[inNSStrFiles objectAtIndex:i] UTF8String];
-			inputFiles.push_back(thisPath);
+			std::string thisURL = [[[inNSStrFiles objectAtIndex:i] path] UTF8String];
+			inputFiles.push_back(thisURL);
 		}
 		bool result = calc->runAnalysis(inputFiles, holesFile);
 		[controller runEnded: result];

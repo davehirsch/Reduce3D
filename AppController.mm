@@ -137,23 +137,25 @@
 //-------------------------------------------------------------
 - (void)chooseFilesToProcess
 {
-	short *context = (short *)malloc(sizeof(short));
-	*context = kPrimaryInput;
 	NSArray *fileTypes = [NSArray arrayWithObjects:@"txt", @"text", @"Int", NSFileTypeForHFSTypeCode( 'TEXT' ), nil];
-	
-	NSOpenPanel *oPanel = [NSOpenPanel openPanel];
-	
-	[oPanel setAllowsMultipleSelection:YES];
-	[oPanel setTitle:@"Choose Integrate Files"];
-	[oPanel setMessage:@"Choose an integrate file containing crystals to be analysed."];
-	[oPanel setDelegate:self];
-	[oPanel beginSheetForDirectory:nil
-							  file:nil
-							 types:fileTypes 
-					modalForWindow:mainWindow 
-					 modalDelegate:self
-					didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-					   contextInfo:(void *)context];	
+   
+    // Create and configure the panel.
+    NSOpenPanel* panel = [NSOpenPanel openPanel];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:YES];
+    [panel setMessage:@"Choose an integrate file containing crystals to be analysed."];
+ 	[panel setTitle:@"Choose Integrate Files"];
+ //	[panel setDelegate:self];
+ 	[panel setAllowedFileTypes:fileTypes];
+  
+    // Display the panel attached to the document's window.
+    [panel beginSheetModalForWindow:mainWindow completionHandler:^(NSInteger result){
+        if (result == NSFileHandlingPanelOKButton) {
+                mFilesToOpen = [panel URLs];
+                [mFilesToOpen retain];
+                [self runAnalysis];
+        }
+    }];
 }
 
 //-------------------------------------------------------------
@@ -167,24 +169,25 @@
 //-------------------------------------------------------------
 - (IBAction)loadHolesFile:(id)sender
 {
-	short *context = (short *)malloc(sizeof(short));
-	*context = kHolesInput;
-	
 	NSArray *fileTypes = [NSArray arrayWithObjects:@"txt", @"text", @"Int", NSFileTypeForHFSTypeCode( 'TEXT' ), nil];
-	
-	NSOpenPanel *oPanel = [NSOpenPanel openPanel];
-	
-	[oPanel setAllowsMultipleSelection:NO];
-	[oPanel setTitle:@"Choose Holes File"];
-	[oPanel setMessage:@"Choose an integrate file containing regions to be omitted from calculation."];
-	[oPanel setDelegate:self];
-	[oPanel beginSheetForDirectory:nil
-							  file:nil
-							 types:fileTypes 
-					modalForWindow:mainWindow 
-					 modalDelegate:self
-					didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
-					   contextInfo:(void *)context];	
+
+    // Create and configure the panel.
+    NSOpenPanel* panel = [NSOpenPanel openPanel];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:NO];
+    [panel setMessage:@"Choose an integrate file containing regions to be omitted from calculation."];
+ 	[panel setTitle:@"Choose Holes File"];
+    //	[panel setDelegate:self];
+ 	[panel setAllowedFileTypes:fileTypes];
+    
+    // Display the panel attached to the document's window.
+    [panel beginSheetModalForWindow:mainWindow completionHandler:^(NSInteger result){
+        if (result == NSFileHandlingPanelOKButton) {
+			holesFile = [[[panel URLs] objectAtIndex:0] path];
+			[holesText setStringValue:holesFile];
+        }
+    }];
+
 }
 
 //-------------------------------------------------------------
@@ -198,11 +201,11 @@
 	short *context = (short *)contextInfo;
 	if (returnCode == NSOKButton) {
 		if (*context == kPrimaryInput) {
-			mFilesToOpen = [panel filenames];
+			mFilesToOpen = [panel URLs];
 			[mFilesToOpen retain];
 			[self runAnalysis];
 		} else if (*context == kHolesInput) {
-			holesFile = [[panel filenames] objectAtIndex:0];
+			holesFile = [[[panel URLs] objectAtIndex:0] path];
 			[holesText setStringValue:holesFile];
 		}
 	}
@@ -330,7 +333,7 @@
 			[chord play];
 			for (;[chord isPlaying] && [chord currentTime] < [chord duration];) { // wait until chord completes.
                 // there appears to be a bug in isPlaying.  It doesn't ever return false, even after the playing is complete.
-                NSLog([NSString stringWithFormat:@"Playing chord.  Time=%g", [chord currentTime]]);
+                NSLog(@"%@", [NSString stringWithFormat:@"Playing chord.  Time=%g", [chord currentTime]]);
             }
             [chord release];
 		}
@@ -629,7 +632,7 @@
 	while ((key = [enumerator nextObject])) {
 		/* code that uses the returned key */
 		NSObject *thisObj = [appDefaults objectForKey:key];
-		NSLog([NSString stringWithFormat:@"Found key %@ and Object %@", key, thisObj]);
+		NSLog(@"%@",[NSString stringWithFormat:@"Found key %@ and Object %@", key, thisObj]);
 		if ([thisObj isKindOfClass:[NSString class]]) {
 			NSString *thisStr = (NSString *) thisObj;
 			if ([thisStr isEqualToString:@"NO"] || [thisStr isEqualToString:@"N"] || [thisStr isEqualToString:@"0"]) {
