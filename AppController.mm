@@ -444,6 +444,7 @@
 	thePrefs.crit1Factor = [defaults floatForKey:@"crit1Factor"];
 	thePrefs.crit2Factor = [defaults floatForKey:@"crit2Factor"];
 	thePrefs.applyObservabilityFilter = [defaults boolForKey:@"applyObservabilityFilter"];
+	thePrefs.considerEdgesForNN = [defaults boolForKey:@"considerEdgesForNN"];
 
 	thePrefs.outputReduce = [defaults boolForKey:@"outputReduce"];
 	thePrefs.outputCrystals = [defaults boolForKey:@"outputCrystals"];
@@ -758,6 +759,7 @@
 								 [NSNumber numberWithFloat:0.85],	@"crit1Factor",
 								 [NSNumber numberWithFloat:3.0],	@"crit2Factor",
 								 @"YES",	@"applyObservabilityFilter",
+								 @"YES",	@"considerEdgesForNN",
 								 
 								 @"YES",	@"outputReduce",
 								 @"NO",	@"outputCrystals",

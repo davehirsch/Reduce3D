@@ -1723,7 +1723,7 @@ Calculator::ComputeNeighbors(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles
 
 	setupProgress("Calculating Nearest Neighbors...", nil, nil, nil, -1, 0, numXls-1, 0, false);
 
-		for (short i = 0; i <= numXls - 1; i++) {
+    for (short i = 0; i <= numXls - 1; i++) {
 		currXl = (Crystal *) theXls->GetItemPtr(i);
 		progress(i);
 		pt1 = currXl->ctr;
@@ -1731,8 +1731,13 @@ Calculator::ComputeNeighbors(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles
 		if (inHoles != nil) {
 			boundDist = dmh_min(boundDist, inHoles->NearestHoleDist(pt1));
 		}
-		minDistSq = sqr(boundDist);
-		minDistEdge = boundDist;
+        
+        minDistSq = DBL_MAX;    // set these for the comparison search
+        minDistEdge = DBL_MAX;
+        if (prefs->considerEdgesForNN) {
+            minDistSq = sqr(boundDist); // reset them if we are considering the edges
+            minDistEdge = boundDist;
+        }
 		currXl->neighbor = 0; // this will only be changed if a xl is closer then the BBox or a hole
 		for (short j = 0; j <= numXls-1; j++) {
 			otherXl = (Crystal *) theXls->GetItemPtr(j);
@@ -1753,8 +1758,8 @@ Calculator::ComputeNeighbors(Stats *stats, BoundingBox *inBBox, HoleSet *inHoles
 		currXl->diffV = minDistEdge;
 		if (minDistEdge < 0)
 			stats->maxOverlap = dmh_max(-minDistEdge, stats->maxOverlap);
-	}	// for currXl 
-	}
+	}	// for i (currXl)
+}
 
 // ---------------------------------------------------------------------------
 //		• ComputeRandomPt

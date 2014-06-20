@@ -38,6 +38,7 @@ typedef struct {
 	bool		exscribedPrimitive;
 	bool		specifyTestDistance;
 	bool		applyObservabilityFilter;
+    bool        considerEdgesForNN; // whether to label nearest neighbor as zero to indicate the edge of the volume is closer than the nearest crystal
 	short		numClassesMeanCSD;
 	short		numClassesMaxCSD;
 	short		numClassesLogCSD;

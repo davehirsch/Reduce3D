@@ -12,7 +12,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="185" y="200" width="640" height="494"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1280" height="778"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="878"/>
             <value key="minSize" type="size" width="213" height="107"/>
             <view key="contentView" id="2">
                 <rect key="frame" x="0.0" y="0.0" width="640" height="494"/>
@@ -610,6 +610,7 @@
                                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                         <connections>
+                                                            <binding destination="237" name="value" keyPath="values.EpanecnikovCVal" id="331"/>
                                                             <binding destination="237" name="editable" keyPath="values.specifyTestDistance" id="1351">
                                                                 <dictionary key="options">
                                                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
@@ -620,7 +621,6 @@
                                                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                                                 </dictionary>
                                                             </binding>
-                                                            <binding destination="237" name="value" keyPath="values.EpanecnikovCVal" id="331"/>
                                                         </connections>
                                                     </textField>
                                                     <textField toolTip="Dictates the size of the bandwidth, together with the crystal number density.  See Hirsch, et al. (2000) for more details" verticalHuggingPriority="750" id="1336">
@@ -736,7 +736,7 @@
                                             <string key="toolTip">If this is set at “Sides”, a convex hull is used (maximizes both crystals used and run duration).  In other settings, a geometric primitive is fit inside the initial sides-based bounding box and used as the new bounding box (fast, but omits some crystals).  Using explicit Bounds in the input file is best, however.</string>
                                             <popUpButtonCell key="cell" type="push" title="Cylinder" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="675" id="1603">
                                                 <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                <font key="font" metaFont="system"/>
+                                                <font key="font" metaFont="menu"/>
                                                 <menu key="menu" title="OtherViews" id="674">
                                                     <items>
                                                         <menuItem title="Sides" id="677"/>
@@ -768,12 +768,12 @@
                                                 <font key="font" metaFont="system"/>
                                             </buttonCell>
                                             <connections>
+                                                <binding destination="237" name="value" keyPath="values.exscribedPrimitive" id="683"/>
                                                 <binding destination="237" name="hidden" keyPath="values.sampleShape" id="1010">
                                                     <dictionary key="options">
                                                         <string key="NSValueTransformerName">NSNegateBoolean</string>
                                                     </dictionary>
                                                 </binding>
-                                                <binding destination="237" name="value" keyPath="values.exscribedPrimitive" id="683"/>
                                             </connections>
                                         </button>
                                         <textField verticalHuggingPriority="750" id="793">
@@ -843,6 +843,17 @@
                                                 </binding>
                                             </connections>
                                         </textField>
+                                        <button toolTip="This causes the nearest neighbor data to be zero if the edge of the volume is closer than the nearest crystal." id="m1V-LX-S93">
+                                            <rect key="frame" x="18" y="46" width="258" height="18"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <buttonCell key="cell" type="check" title="Consider edges for nearest neighbors" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="Qux-to-1k3">
+                                                <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
+                                                <font key="font" metaFont="system"/>
+                                            </buttonCell>
+                                            <connections>
+                                                <binding destination="237" name="value" keyPath="values.considerEdgesForNN" id="OzS-2K-b7I"/>
+                                            </connections>
+                                        </button>
                                     </subviews>
                                 </view>
                             </tabViewItem>
@@ -985,12 +996,12 @@
                                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                         <connections>
+                                                            <binding destination="237" name="value" keyPath="values.crit1Factor" id="362"/>
                                                             <binding destination="237" name="enabled" keyPath="values.observabilityMethod" id="1705">
                                                                 <dictionary key="options">
                                                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                                                 </dictionary>
                                                             </binding>
-                                                            <binding destination="237" name="value" keyPath="values.crit1Factor" id="362"/>
                                                         </connections>
                                                     </textField>
                                                     <textField toolTip="Dictates how close together crystals may be and still be recognizable as separate" verticalHuggingPriority="750" id="352">
@@ -1034,12 +1045,12 @@
                                                             <color key="backgroundColor" name="textBackgroundColor" catalog="System" colorSpace="catalog"/>
                                                         </textFieldCell>
                                                         <connections>
+                                                            <binding destination="237" name="value" keyPath="values.crit2Factor" id="363"/>
                                                             <binding destination="237" name="enabled" keyPath="values.observabilityMethod" id="1708">
                                                                 <dictionary key="options">
                                                                     <string key="NSValueTransformerName">NSNegateBoolean</string>
                                                                 </dictionary>
                                                             </binding>
-                                                            <binding destination="237" name="value" keyPath="values.crit2Factor" id="363"/>
                                                         </connections>
                                                     </textField>
                                                     <popUpButton verticalHuggingPriority="750" id="1680">
@@ -1048,7 +1059,7 @@
                                                         <string key="toolTip">Setting the observability factors from the data set means that the data set's impinged pairs will be examined, and the observability criterion set to the value that would exclude n% of the pairs.  Setting directly means that the criteria are set below.</string>
                                                         <popUpButtonCell key="cell" type="push" title="Set factors from data" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" imageScaling="proportionallyDown" inset="2" selectedItem="1684" id="1681">
                                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                            <font key="font" metaFont="system"/>
+                                                            <font key="font" metaFont="menu"/>
                                                             <menu key="menu" title="OtherViews" id="1682">
                                                                 <items>
                                                                     <menuItem title="Set factors directly" id="1683"/>
@@ -1102,7 +1113,7 @@
                                                         <rect key="frame" x="14" y="19" width="244" height="18"/>
                                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
                                                         <string key="toolTip">If checked, then the observability criteria will be applied to the incoming dataset as well as the envelope simulations.  Otherwise it will only be applied to the simulations.</string>
-                                                        <buttonCell key="cell" type="check" title="Apply observability filter to dataset" bezelStyle="regularSquare" imagePosition="left" alignment="left" imageScaling="proportionallyDown" inset="2" id="1636">
+                                                        <buttonCell key="cell" type="check" title="Apply observability filter to dataset" bezelStyle="regularSquare" imagePosition="left" alignment="left" inset="2" id="1636">
                                                             <behavior key="behavior" changeContents="YES" doesNotDimImage="YES" lightByContents="YES"/>
                                                             <font key="font" metaFont="system"/>
                                                         </buttonCell>
@@ -1408,7 +1419,7 @@ Gw
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <popUpButtonCell key="cell" type="push" title="X" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="413" id="1658">
                                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                            <font key="font" metaFont="system"/>
+                                                            <font key="font" metaFont="menu"/>
                                                             <menu key="menu" title="OtherViews" id="412">
                                                                 <items>
                                                                     <menuItem title="X" state="on" id="413"/>
@@ -1453,7 +1464,7 @@ Gw
                                                         <autoresizingMask key="autoresizingMask"/>
                                                         <popUpButtonCell key="cell" type="push" title="max value" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="421" id="1662">
                                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                            <font key="font" metaFont="system"/>
+                                                            <font key="font" metaFont="menu"/>
                                                             <menu key="menu" title="OtherViews" id="420">
                                                                 <items>
                                                                     <menuItem title="max value" state="on" id="421"/>
@@ -1544,7 +1555,7 @@ Gw
                                                         <string key="toolTip">Really, “larger” means larger-larger-smaller for the three fields just above it.  In other words, shaving will continue longer if this is set to “smaller”, and it will stop sooner if this is set to “larger”</string>
                                                         <popUpButtonCell key="cell" type="push" title="larger (less restrictive)" bezelStyle="rounded" alignment="left" lineBreakMode="truncatingTail" state="on" borderStyle="borderAndBezel" inset="2" arrowPosition="arrowAtCenter" preferredEdge="maxY" selectedItem="436" id="1670">
                                                             <behavior key="behavior" lightByBackground="YES" lightByGray="YES"/>
-                                                            <font key="font" metaFont="system"/>
+                                                            <font key="font" metaFont="menu"/>
                                                             <menu key="menu" title="OtherViews" id="433">
                                                                 <items>
                                                                     <menuItem title="smaller (more restrictive)" id="434"/>
