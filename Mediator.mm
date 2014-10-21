@@ -120,7 +120,7 @@
 		if (calc != nil) delete calc;
 		calc = new Calculator(self, controller, prefs);
 		std::vector<std::string> inputFiles;
-		NSArray *inNSStrFiles = [controller getInputFiles];
+		NSArray *inNSURLFiles = [controller getInputFiles];
 		NSString *holesFilePath = [controller getHolesFile];
 		std::string holesFile;
 		if (holesFilePath != nil) {
@@ -128,9 +128,9 @@
 		} else {
 			holesFile = "";
 		}
-		short numFiles = [inNSStrFiles count];
+		short numFiles = [inNSURLFiles count];
 		for (short i=0; i < numFiles; i++) {
-			std::string thisURL = [[[inNSStrFiles objectAtIndex:i] path] UTF8String];
+			std::string thisURL = [[[inNSURLFiles objectAtIndex:i] path] UTF8String];
 			inputFiles.push_back(thisURL);
 		}
 		bool result = calc->runAnalysis(inputFiles, holesFile);

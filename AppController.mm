@@ -115,8 +115,15 @@
 
 	NSLog(@"Got these files:%@", filenames);
 	// record the list of files to open
-	mFilesToOpen = filenames;
-	[mFilesToOpen retain];	// hang onto this for later
+    // Need to translate the NSArray of NSStrings (paths) to an NSArray of NSURLs, for
+    // compatibility with the mFilesToOpen contents as a result of the Open Dialog
+	NSMutableArray *urlArray = [NSMutableArray arrayWithCapacity:filenames.count];
+    for (int i=0; i < filenames.count; i++) {
+        NSURL *newURL = [NSURL fileURLWithPath:[filenames objectAtIndex:i]];
+        [urlArray addObject:newURL];
+    }
+    mFilesToOpen = urlArray;
+    [mFilesToOpen retain];	// hang onto this for later
 	mFilesAreFromAE = true;
 	
 	if ([mFilesToOpen count] > 1)
